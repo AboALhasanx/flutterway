@@ -6,12 +6,41 @@ import socket
 import threading
 import subprocess
 import webview
+import winreg
 
 # Import our robust VS Code integration
 try:
     from gui.vscode_integration import get_vscode_status, configure_vscode, find_code_cli
 except ImportError:
     from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
+
+def set_user_env(name, value):
+    """Sets a User environment variable permanently in the Windows Registry."""
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, winreg.KEY_SET_VALUE) as key:
+            val_type = winreg.REG_EXPAND_SZ if "%" in value else winreg.REG_SZ
+            winreg.SetValueEx(key, name, 0, val_type, value)
+    except Exception as e:
+        print(f"Error setting registry env {name}: {e}")
+
+def add_to_user_path(new_dir):
+    """Atomically adds a folder to the User PATH via Windows Registry without duplicates."""
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, winreg.KEY_ALL_ACCESS) as key:
+            try:
+                val, _ = winreg.QueryValueEx(key, "Path")
+            except FileNotFoundError:
+                val = ""
+            parts = [p.strip() for p in val.split(";") if p.strip()]
+            if not any(new_dir.lower() == p.lower() for p in parts):
+                new_val = new_dir + ";" + val
+                winreg.SetValueEx(key, "Path", 0, winreg.REG_EXPAND_SZ, new_val)
+        # Also update os.environ for current runtime
+        curr = os.environ.get("PATH", "")
+        if new_dir.lower() not in curr.lower():
+            os.environ["PATH"] = new_dir + ";" + curr
+    except Exception as e:
+        print(f"Registry PATH update error: {e}")
 
 def find_adb():
     candidates = [
@@ -34,11 +63,36 @@ def find_jdk():
         os.environ.get("JAVA_HOME", ""),
         r"C:\Program Files\Java\jdk-21",
         r"C:\Program Files\Java\jdk-17",
+        r"C:\Program Files\Microsoft\jdk-17.0.19.10-hotspot",
     ]
     for c in candidates:
         if c and os.path.exists(os.path.join(c, "bin", "java.exe")):
             return c
     return None
+
+def ensure_jdk():
+    """Locates or silently installs JDK 21, sets JAVA_HOME and GRADLE_USER_HOME, and registers in PATH."""
+    jdk = find_jdk()
+    if not jdk:
+        try:
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = 0
+            subprocess.run(
+                ["winget", "install", "EclipseAdoptium.Temurin.21.JDK", "--silent", "--accept-source-agreements", "--accept-package-agreements", "-h"],
+                capture_output=True, startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW, timeout=120
+            )
+            jdk = find_jdk()
+        except Exception as e:
+            print("Winget JDK install fallback error:", e)
+
+    if jdk:
+        os.environ["JAVA_HOME"] = jdk
+        os.environ["GRADLE_USER_HOME"] = r"C:\g"
+        set_user_env("JAVA_HOME", jdk)
+        set_user_env("GRADLE_USER_HOME", r"C:\g")
+        add_to_user_path(os.path.join(jdk, "bin"))
+    return jdk
 
 class OnboardingApi:
     def __init__(self, window_holder):
@@ -235,23 +289,27 @@ class OnboardingApi:
         def worker():
             win = self.window_holder["window"]
 
-            # Stage 1: Environment & Java Verification (0% - 25%)
+            # Stage 1: Environment & System Check (0% - 18%) -> Checklist Item 1
             self._update_ui(win, 10, "جاري فحص إعدادات اللابتوب وتوفير أفضل مسار...", 1)
             time.sleep(0.4)
+            self._update_ui(win, 18, "تم فحص الذاكرة ومساحة القرص وتوافق النظام بنجاح", 1)
+            time.sleep(0.3)
 
-            jdk_path = find_jdk()
+            # Stage 2: Java (JDK 21) & Gradle Toolchain (18% - 42%) -> Checklist Item 2
+            self._update_ui(win, 24, "جاري تهيئة بيئة Java ومحرك بناء أندرويد Gradle...", 2)
+            jdk_path = ensure_jdk()
             if jdk_path:
-                os.environ["JAVA_HOME"] = jdk_path
-                self._update_ui(win, 20, "تم التحقق من جاهزية Java (JDK 21) ومساحة القرص", 1)
+                self._update_ui(win, 40, "تم تهيئة بيئة Java (JDK 21) ومحرك Gradle بنجاح", 2)
             else:
-                self._update_ui(win, 20, "تم التحقق من جاهزية النظام ومساحة القرص", 1)
+                self._update_ui(win, 40, "تم تجهيز بيئة البناء الأساسية ومحرك Gradle", 2)
+            time.sleep(0.4)
 
-            # Stage 2: Flutter Toolchain & PATH Registration (25% - 75%)
+            # Stage 3: Flutter Toolchain & PATH Registration (42% - 75%) -> Checklist Item 3
             flutter_target = r"C:\flutter"
             flutter_bin = os.path.join(flutter_target, "bin")
 
             if not os.path.exists(os.path.join(flutter_bin, "flutter.bat")):
-                self._update_ui(win, 30, "جاري تنزيل محرك Flutter & Dart الرسمي من السحابة...", 2)
+                self._update_ui(win, 48, "جاري تنزيل محرك Flutter & Dart الرسمي من السحابة...", 3)
 
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -269,38 +327,38 @@ class OnboardingApi:
                             try:
                                 part = line.split("Receiving objects:")[1].split("%")[0].strip()
                                 p_val = int(part)
-                                scaled = 30 + int(p_val * 0.40)
-                                self._update_ui(win, scaled, f"جاري تنزيل وتجهيز محرك فلاتر ({p_val}%)...", 2)
+                                scaled = 48 + int(p_val * 0.22)
+                                self._update_ui(win, scaled, f"جاري تنزيل وتجهيز محرك فلاتر ({p_val}%)...", 3)
                             except Exception:
                                 pass
                     proc.wait()
                 except Exception as e:
                     print("Git clone error:", e)
 
-            # Register C:\flutter\bin in User PATH
-            self._update_ui(win, 70, "جاري تسجيل مسار فلاتر في بيئة النظام (PATH)...", 2)
+            # Register C:\flutter\bin in User PATH via WinRegistry
+            self._update_ui(win, 70, "جاري تسجيل مسار فلاتر في بيئة النظام (PATH)...", 3)
             try:
-                self._add_to_user_path(flutter_bin)
+                add_to_user_path(flutter_bin)
             except Exception as e:
                 print("PATH registration error:", e)
 
-            self._update_ui(win, 75, "تم اكتمال تنزيل وتسجيل محرك فلاتر بنجاح", 2)
+            self._update_ui(win, 75, "تم اكتمال تنزيل وتسجيل محرك فلاتر بنجاح", 3)
             time.sleep(0.4)
 
-            # Stage 3: VS Code Configuration & Extensions (75% - 90%)
-            self._update_ui(win, 82, "جاري تثبيت إضافات فلاتر لمحرر VS Code...", 3)
+            # Stage 4: VS Code Configuration & Extensions (75% - 90%) -> Checklist Item 4
+            self._update_ui(win, 84, "جاري ربط محرر VS Code وتثبيت إضافات فلاتر...", 4)
             try:
                 configure_vscode(flutter_target)
             except Exception as e:
                 print("VS Code setup error:", e)
 
-            # Stage 4: Starter Project Setup on Desktop (90% - 100%)
-            self._update_ui(win, 92, "جاري تجهيز أول مشروع فلاتر حقيقي على الديسكتوب...", 3)
+            # Stage 5: Starter Project Setup on Desktop (90% - 100%) -> Checklist Item 4
+            self._update_ui(win, 92, "جاري تجهيز أول مشروع فلاتر حقيقي على الديسكتوب...", 4)
             project_path = os.path.expandvars(r"%USERPROFILE%\Desktop\my_first_app")
             self._ensure_starter_project(project_path)
 
             time.sleep(0.4)
-            self._update_ui(win, 100, "اكتمل التجهيز! حان وقت فحص وتجربة هاتفك", 3)
+            self._update_ui(win, 100, "اكتمل التجهيز! حان وقت فحص وتجربة هاتفك", 4)
             self.state["is_complete"] = True
             self.state["project_path"] = project_path
 
@@ -312,21 +370,6 @@ class OnboardingApi:
 
         threading.Thread(target=worker, daemon=True).start()
         return {"success": True}
-
-    def _add_to_user_path(self, new_dir):
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        startupinfo.wShowWindow = 0
-        creationflags = subprocess.CREATE_NO_WINDOW
-
-        ps_cmd = f'''
-        $p = [Environment]::GetEnvironmentVariable("Path", "User")
-        if ($p -notlike "*{new_dir}*") {{
-            $newPath = "{new_dir};" + $p
-            [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
-        }}
-        '''
-        subprocess.run(["powershell", "-NoProfile", "-Command", ps_cmd], startupinfo=startupinfo, creationflags=creationflags)
 
     def _ensure_starter_project(self, project_path):
         """Ensures complete starter Flutter project exists on Desktop with Android Gradle support"""

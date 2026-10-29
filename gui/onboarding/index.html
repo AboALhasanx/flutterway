@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FlutterWay — طريق فلاتر للمبتدئين</title>
+  <link rel="icon" type="image/png" href="flutter_logo.png">
   <style>
     :root {
       --bg: #0b0f19;
@@ -658,14 +659,79 @@
       margin-top: 1px;
     }
 
+    /* Beginner Explainer Card */
+    .beginner-explainer-card {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      text-align: right;
+    }
+
+    .explainer-header {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .explainer-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .explainer-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 10px 12px;
+      border-radius: 10px;
+    }
+
+    .explainer-icon-box {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: var(--highlight);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .explainer-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .explainer-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
     /* Live Build Diagnostics Box */
     .build-console-box {
       display: none;
       width: 100%;
       background: var(--bg);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 14px 16px;
+      border-radius: 14px;
+      padding: 16px;
       margin-bottom: 16px;
       text-align: right;
       animation: fadeIn 0.3s ease;
@@ -675,7 +741,7 @@
       font-size: 13px;
       font-weight: 700;
       color: var(--text);
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -690,18 +756,66 @@
 
     .build-step-row {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      align-items: flex-start;
+      gap: 12px;
       color: var(--text-muted);
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      transition: all 0.25s ease;
     }
 
     .build-step-row.active {
       color: var(--accent);
-      font-weight: 600;
+      border-color: var(--accent);
+      background: var(--highlight);
     }
 
     .build-step-row.done {
+      color: var(--text);
+      border-color: var(--card-border);
+    }
+
+    .build-step-row.done .bstep-icon {
       color: var(--success);
+    }
+
+    .bstep-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    .bstep-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: right;
+    }
+
+    .bstep-title {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .bstep-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .build-console-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--accent);
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--card-border);
+      justify-content: center;
     }
 
     /* Success Benchmarks Celebration Card */
@@ -830,11 +944,12 @@
   <header>
     <div class="brand">
       <div class="logo-box">
-        <!-- SVG Flutter Logo -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M14.5 4H18.5L9.5 13L5.5 13L14.5 4Z" fill="#38BDF8"/>
-          <path d="M13.5 13.5L18.5 18.5L14.5 18.5L9.5 13.5L13.5 13.5Z" fill="#0284C7"/>
-          <path d="M11.5 11.5L15.5 15.5L13 18L9 14L11.5 11.5Z" fill="#00B0FF"/>
+        <!-- Mathematically Exact Official 2D Flutter Logo -->
+        <svg viewBox="0 0 225 225" width="22" height="22">
+          <polygon points="134,0 204,0 56,148 22,114" fill="#54C5F8"/>
+          <polygon points="134,103 204,103 143,164 73,164" fill="#54C5F8"/>
+          <polygon points="73,164 108,129 143,164 108,199" fill="#29B6F6"/>
+          <polygon points="143,164 108,199 134,225 204,225" fill="#01579B"/>
         </svg>
       </div>
       <div>
@@ -1023,6 +1138,21 @@
     <!-- STEP 2: SILENT SETUP PROGRESS & DYNAMIC TIPS -->
     <section id="step-2" class="step-view">
       <div class="progress-container">
+        <!-- Pure 2D Official Flutter Logo with Download Arrow -->
+        <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+          <svg viewBox="0 0 225 225" width="68" height="68">
+            <polygon points="134,0 204,0 56,148 22,114" fill="#54C5F8"/>
+            <polygon points="134,103 204,103 143,164 73,164" fill="#54C5F8"/>
+            <polygon points="73,164 108,129 143,164 108,199" fill="#29B6F6"/>
+            <polygon points="143,164 108,199 134,225 204,225" fill="#01579B"/>
+            <!-- 2D Download Arrow + Tray -->
+            <g transform="translate(66, 68)">
+              <line x1="24" y1="6" x2="24" y2="32" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round"/>
+              <polyline points="13,22 24,33 35,22" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <line x1="10" y1="44" x2="38" y2="44" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+            </g>
+          </svg>
+        </div>
         <div class="step-badge" id="setup-step-badge">الخطوة 2 من 4</div>
         <div class="hero-title" id="setup-step-title" style="font-size: 20px;">جاري التجهيز الذكي الصامت...</div>
         <div class="hero-desc" id="setup-step-desc" style="font-size: 13px; margin-bottom: 18px;">
@@ -1055,13 +1185,19 @@
             <span class="step-chk-icon icon" style="width: 14px; height: 14px;">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
             </span>
-            <span>فحص اللابتوب وتهيئة بيئة Java ومسارات ويندوز ومساحة القرص</span>
+            <span>فحص اللابتوب وتهيئة مسارات ويندوز ومساحة القرص</span>
+          </div>
+          <div class="step-item" id="chk-java">
+            <span class="step-chk-icon icon" style="width: 14px; height: 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            </span>
+            <span>تهيئة بيئة Java (JDK 21) ومحرك Gradle لبناء تطبيقات الأندرويد</span>
           </div>
           <div class="step-item" id="chk-dl">
             <span class="step-chk-icon icon" style="width: 14px; height: 14px;">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
             </span>
-            <span>تنزيل وتجهيز محرك Flutter & Dart الرسمي ومحرك Gradle</span>
+            <span>تنزيل وتجهيز محرك Flutter & Dart الرسمي وتسجيل المسار</span>
           </div>
           <div class="step-item" id="chk-vsc">
             <span class="step-chk-icon icon" style="width: 14px; height: 14px;">
@@ -1120,6 +1256,53 @@
           </ul>
         </div>
 
+        <!-- Beginner Concept Translation Card -->
+        <div class="beginner-explainer-card" id="beginner-explainer">
+          <div class="explainer-header">
+            <span class="icon" style="width: 15px; height: 15px; color: var(--accent);">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <span>دليل المبتدئ السريع: كيف يتحول الكود لتطبيق حقيقي على هاتفك؟</span>
+          </div>
+          <div class="explainer-grid">
+            <div class="explainer-item">
+              <div class="explainer-icon-box">
+                <span class="icon" style="width: 16px; height: 16px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                </span>
+              </div>
+              <div class="explainer-desc">
+                <div class="explainer-title">1. بيئة الجافا (Java Engine - JDK 21)</div>
+                <div>الأساس التقني لنظام أندرويد؛ تشغّل أدوات Google الرسمية ليتمكن نظام ويندوز من التحدث مع هاتفك.</div>
+              </div>
+            </div>
+
+            <div class="explainer-item">
+              <div class="explainer-icon-box">
+                <span class="icon" style="width: 16px; height: 16px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </span>
+              </div>
+              <div class="explainer-desc">
+                <div class="explainer-title">2. نظام البناء (Gradle Build System)</div>
+                <div>هو "الطبّاخ والمترجم"؛ يجمع كود دارت ورسومات فلاتر ويطبخها في حزمة تطبيق واحدة (APK) يفهمها هاتفك.</div>
+              </div>
+            </div>
+
+            <div class="explainer-item">
+              <div class="explainer-icon-box">
+                <span class="icon" style="width: 16px; height: 16px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </span>
+              </div>
+              <div class="explainer-desc">
+                <div class="explainer-title">3. النقل المباشر (USB Direct / ADB)</div>
+                <div>جسر التوصيل السريع؛ ينقل ملف التطبيق عبر الكيبل لذاكرة هاتفك ويفتحه فوراً على الشاشة أمام عينك.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Phone Action Buttons (Refresh & Fix) -->
         <div id="device-ctrl-btns" style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center;">
           <button id="btn-refresh-phone" class="btn-secondary" onclick="pollDevices(true)">
@@ -1136,7 +1319,7 @@
           </button>
         </div>
 
-        <!-- Live Real Build & Test Progress Box -->
+        <!-- Live Real Build & Test Progress Box with Beginner Explanations -->
         <div class="build-console-box" id="build-console">
           <div class="build-console-title">
             <span class="icon" style="width: 14px; height: 14px; color: var(--accent);">
@@ -1146,17 +1329,32 @@
           </div>
           <div class="build-steps-list">
             <div class="build-step-row done" id="bstep-1">
-              <span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span>فحص بيئة Java (JDK 21) وتوافق معمارية المعالج (ARM64)</span>
+              <span class="bstep-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <div class="bstep-info">
+                <div class="bstep-title">1. فحص بيئة الجافا ومعمارية المعالج (ARM64)</div>
+                <div class="bstep-sub">التأكد من جاهزية محرك Java (JDK 21) ومخاطبة أندرويد عبر معمارية هاتفك</div>
+              </div>
             </div>
             <div class="build-step-row done" id="bstep-2">
-              <span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span>تجميع حزم Gradle وتشغيل assembleDebug لبناء كود فلاتر</span>
+              <span class="bstep-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <div class="bstep-info">
+                <div class="bstep-title">2. ترجمة وتجميع التطبيق بنظام Gradle (assembleDebug)</div>
+                <div class="bstep-sub">"طبخ" وترجمة كود فلاتر ودارت وتحويلها إلى حزمة تطبيق واحدة (APK) جاهزة للتثبيت</div>
+              </div>
             </div>
             <div class="build-step-row active" id="bstep-3">
-              <span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
-              <span>إرسال وتثبيت ملف APK عبر كيبل USB على شاشة الهاتف</span>
+              <span class="bstep-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
+              <div class="bstep-info">
+                <div class="bstep-title">3. النقل والتثبيت المباشر بالكيبل (USB Direct / ADB)</div>
+                <div class="bstep-sub">إرسال ملف APK عبر كيبل USB لذاكرة الهاتف وإطلاق الواجهة على الشاشة فوراً</div>
+              </div>
             </div>
+          </div>
+          <div class="build-console-footer">
+            <span class="icon" style="width: 13px; height: 13px; color: var(--accent);">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </span>
+            <span>كل هذا البناء المعقد يجري تلقائياً بدون أن تضطر لكتابة سطر أوامر واحد!</span>
           </div>
         </div>
 
@@ -1437,8 +1635,9 @@
 
       // Update checklists
       if (chkStep >= 1) markChecklist('chk-env');
-      if (chkStep >= 2) markChecklist('chk-dl');
-      if (chkStep >= 3) markChecklist('chk-vsc');
+      if (chkStep >= 2) markChecklist('chk-java');
+      if (chkStep >= 3) markChecklist('chk-dl');
+      if (chkStep >= 4) markChecklist('chk-vsc');
 
       if (percent >= 100) {
         currentProgress = 100;
@@ -1557,43 +1756,83 @@
       const benchmarkCard = document.getElementById('benchmark-card');
       const guideBox = document.getElementById('device-guide-box');
       const ctrlBtns = document.getElementById('device-ctrl-btns');
+      const explainer = document.getElementById('beginner-explainer');
+      const skipBtn = document.getElementById('btn-skip-to-vscode');
 
       btn.style.display = 'none';
       if (guideBox) guideBox.style.display = 'none';
       if (ctrlBtns) ctrlBtns.style.display = 'none';
+      if (explainer) explainer.style.display = 'none';
+      if (skipBtn) skipBtn.style.display = 'none';
       consoleBox.style.display = 'block';
+
+      // Reset step rows to initial state
+      const s1 = document.getElementById('bstep-1');
+      const s2 = document.getElementById('bstep-2');
+      const s3 = document.getElementById('bstep-3');
+
+      if (s1) {
+        s1.className = 'build-step-row active';
+        s1.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
+      }
+      if (s2) {
+        s2.className = 'build-step-row';
+        s2.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
+      }
+      if (s3) {
+        s3.className = 'build-step-row';
+        s3.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
+      }
 
       let serial = detectedDevices.length > 0 ? detectedDevices[0].serial : null;
 
-      // Animated steps
+      // Realistic progressive step transitions
       setTimeout(() => {
-        const s2 = document.getElementById('bstep-2');
-        if (s2) s2.classList.add('done');
-      }, 600);
+        if (s1) {
+          s1.className = 'build-step-row done';
+          s1.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+        }
+        if (s2) s2.className = 'build-step-row active';
+      }, 500);
 
       setTimeout(() => {
-        const s3 = document.getElementById('bstep-3');
-        if (s3) s3.classList.add('done');
-      }, 1200);
+        if (s2) {
+          s2.className = 'build-step-row done';
+          s2.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+        }
+        if (s3) s3.className = 'build-step-row active';
+      }, 1100);
 
       if (window.pywebview && window.pywebview.api) {
         try {
           const res = await window.pywebview.api.run_test_app(serial);
           console.log("Run test result:", res);
           setTimeout(() => {
-            consoleBox.style.display = 'none';
-            benchmarkCard.style.display = 'block';
-            if (res.device_name) {
-              document.getElementById('benchmark-head-text').innerText = `التطبيق يعمل الآن بنجاح على هاتف ${res.device_name}!`;
+            if (s3) {
+              s3.className = 'build-step-row done';
+              s3.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
             }
-          }, 1500);
+            setTimeout(() => {
+              consoleBox.style.display = 'none';
+              benchmarkCard.style.display = 'block';
+              if (res.device_name) {
+                document.getElementById('benchmark-head-text').innerText = `التطبيق يعمل الآن بنجاح على هاتف ${res.device_name}!`;
+              }
+            }, 600);
+          }, 1400);
         } catch (e) {
           console.error(e);
         }
       } else {
         setTimeout(() => {
-          consoleBox.style.display = 'none';
-          benchmarkCard.style.display = 'block';
+          if (s3) {
+            s3.className = 'build-step-row done';
+            s3.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+          }
+          setTimeout(() => {
+            consoleBox.style.display = 'none';
+            benchmarkCard.style.display = 'block';
+          }, 600);
         }, 1800);
       }
     }

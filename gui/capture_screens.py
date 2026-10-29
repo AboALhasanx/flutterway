@@ -51,7 +51,7 @@ def capture():
         page.screenshot(path=p4)
         print("Captured:", p4)
 
-        # Step 3 with detected phone state
+        # Step 3 with detected phone state & Beginner Explainer Card
         page.evaluate("""
         handleDeviceResponse({
             success: true,
@@ -63,10 +63,22 @@ def capture():
         page.screenshot(path=p5)
         print("Captured:", p5)
 
+        # Step 3 with Live Build Diagnostics Console
+        page.evaluate("""
+        document.getElementById('btn-run-test').style.display = 'none';
+        document.getElementById('device-guide-box').style.display = 'none';
+        document.getElementById('device-ctrl-btns').style.display = 'none';
+        document.getElementById('beginner-explainer').style.display = 'none';
+        document.getElementById('build-console').style.display = 'block';
+        """)
+        page.wait_for_timeout(300)
+        p5_build = os.path.join(artifact_dir, "step3_build_console.png")
+        page.screenshot(path=p5_build)
+        print("Captured:", p5_build)
+
         # Step 3 with celebration benchmark card
         page.evaluate("""
-        document.getElementById('device-guide-box').style.display = 'none';
-        document.getElementById('btn-run-test').style.display = 'none';
+        document.getElementById('build-console').style.display = 'none';
         document.getElementById('benchmark-card').style.display = 'block';
         document.getElementById('benchmark-head-text').innerText = 'التطبيق يعمل الآن بنجاح على هاتف Infinix X6878!';
         """)
