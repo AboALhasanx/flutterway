@@ -1,120 +1,156 @@
-# FlutterWay 🚀 (طريق فلاتر)
-> **The Zero-Friction Flutter & Android Setup Engine & Pipeline Diagnostic Assistant for Windows**  
-> **محرك الإعداد الذكي، فحص مسار بناء الموبايل، والتشخيص الشامل لبيئة Flutter على Windows**
+# FlutterWay (طريق فلاتر) 
+> **Zero-Friction Flutter & Android Mobile Setup Engine & Beginner Onboarding Desktop App for Windows**  
+> **التطبيق المكتبي والمحرك الذكي لتجهيز بيئة Flutter وتطبيقات الموبايل بضغطة زر واحدة للطلاب والمبتدئين**
 
 ---
 
 <div dir="rtl">
 
-## 🌟 نبذة عن المشروع
+## نبذة عن المشروع
 
-تعتبر عملية إعداد بيئة عمل **Flutter & Dart** على نظام Windows كابوساً حقيقياً للطلاب والمطورين المبتدئين ("الصفر تماماً")، وتحديداً في البيئة الجامعية التي تعاني من بطء وتذبذب الإنترنت، وتجميد الحواسيب، وتعقيدات مسارات النظام والتراخيص ومحرك بناء أندرويد Gradle.
+تعتبر عملية إعداد بيئة عمل **Flutter & Dart** على نظام Windows كابوساً حقيقياً للطلاب والمطورين المبتدئين ("الصفر تماماً")، وتحديداً في البيئات الجامعية والبلدان النامية التي تعاني من بطء وتذبذب الإنترنت، وتجميد الحواسيب، وتعقيدات مسارات النظام والتراخيص ومحرك بناء أندرويد Gradle.
 
-**مشروع FlutterWay** هو أداة هندسية حديثة صُممت خصيصاً للتخلص من كل هذه العوائق، من خلال:
-1. **استقلالية تامة (Zero-Prerequisites):** تعمل كملف تنفيذي خالص لنواة ويندوز (Win32 Binary) مجمّع بلغة Go؛ دون الحاجة لأي سكريبتات PowerShell محظورة أو متطلبات مسبقة.
-2. **تثبيت مقسم على دفعات وبروفايلات (Batched Profiles):** إمكانية اختيار **"بروفايل أجهزة USB فقط"** لتجهيز البيئة وتشغيل التطبيقات على الهاتف الحقيقي مباشرة وتوفير أكثر من 3.5GB وتجنب إرهاق الرام بالمحاكي الثقيل.
-3. **موسوعة تشخيصية أوفلاين (Doctor AI Offline Rules):** فحص عميق لأكثر من **32 حالة فشل واقعية** مع تقديم شرح باللغة العربية البسيطة وزر للإصلاح الآلي بضغطة زر واحدة.
-4. **دعم بيئة الجامعات والإنترنت الضعيف:** دعم وضع التثبيت من فلاشة USB بدون إنترنت نهائياً (Zero-Net Bundle)، والمرايا البديلة السريعة، ووضع العمل المحمول (Portable Mode) لمختبرات الكليات المحمية بـ Deep Freeze.
+**مشروع FlutterWay** صُمم خصيصاً كحل جذري أصيل وخفيف الوزن، يدمج بين:
+1. **تطبيق سطح مكتب أصلي حديث (Native Desktop App):** مبني بتقنية Edge Chromium الخفيفة (بدون استهلاك موارد Electron)، بواجهة عربية تفاعلية مصممة وفق أحدث معايير تجربة المستخدم وأيقونات فيكتور مسطحة (Pure 2D Vector) بدون أي تشويش بصري.
+2. **محرك فحص وتشخيص خلفي (Go Core Engine):** يعمل كملف تنفيذي خالص لنواة ويندوز (Win32 Binary) مجمّع بلغة Go؛ دون الحاجة لأي سكريبتات PowerShell محظورة أو متطلبات مسبقة.
+3. **دعم بيئة الهواتف الحقيقية عبر USB:** توجيه 90% من الطلاب لاستخدام هواتفهم الحقيقية مباشرة عبر كيبل USB بدلاً من المحاكيات الثقيلة التي تستهلك 4GB رام إضافية وتتطلب تفعيل Virtualization في الـ BIOS.
+4. **بناء واختبار فعلي على الهاتف قبل كتابة الكود:** تجميع واختبار تطبيق فلاتر حقيقي على شاشة هاتف الطالب للتأكد من جاهزية Java وGradle وADB بنسبة 100%، مع ترجمة وشرح كافة المصطلحات التقنية بلغة عربية مبسطة وودودة للمبتدئ.
 
 </div>
 
 ---
 
-## 🏗️ Architecture & Component Overview (التصميم المعماري)
+## 📸 معرض الواجهة وتجربة المستخدم (UI Tour)
+
+<div dir="rtl">
+
+### رحلة المستخدم المبسطة من 4 خطوات:
+
+| الخطوة | الوصف والمزايا | الصورة |
+| :--- | :--- | :--- |
+| **1. فحص اللابتوب واختيار المسار** | فحص فوري في ثانيتين لمواصفات المعالج، الرام، ميزة المحاكاة (Virtualization) ومساحة القرص، واقتراح الخيار الأنسب لحاسوبك (هاتف USB فائق الخفة مقابل المحاكي). دعم كامل للوضع الليلي والنهاري. | ![الخطوة 1: فحص اللابتوب](docs/screenshots/step1_dark.png) |
+| **2. التجهيز التلقائي الصامت** | عداد تقدم ذكي ناعم لا يتجمد إطلاقاً (Asymptotic Ticker) مع نصائح دورية باللغة العربية تشرح مفاهيم فلاتر، وشعار 2D نقي مع سهم التنزيل، ومتابعة 4 مراحل ضبط تلقائية للمسارات وبيئة Java وGradle ومحرر VS Code. | ![الخطوة 2: التجهيز الصامت](docs/screenshots/step2_progress.png) |
+| **3. ربط الهاتف واختبار التشغيل الفعلي** | التعرف الفوري على الهاتف عبر USB، مع دليل مرئي لحل مشاكل الاتصال وتفعيل USB Debugging، وشرح مبسط لمفاهيم Java و Gradle و ADB للمبتدئين، مع إطلاق فعلي للتطبيق على شاشة الهاتف وقياس سرعة الإقلاع وسلاسة اللمس (60 FPS). | ![الخطوة 3: فحص الهاتف](docs/screenshots/step3_device_detected.png) |
+| **4. دليل الانطلاق في VS Code** | فتح المحرر تلقائياً على مشروع الطالب الأول (`my_first_app`) مع بطاقة إرشادات سريعة تشرح زر التشغيل F5 وميزة التحديث الفوري المباشر Hot Reload (`Ctrl+S`). | ![الخطوة 4: جاهز للبرمجة](docs/screenshots/step4_vscode_cheatsheet.png) |
+
+</div>
+
+---
+
+## 🏗️ التصميم المعماري للنظام (Architecture)
 
 ```mermaid
 flowchart TD
-    User["👨‍🎓 Student / Developer"]
+    User["👨‍🎓 Student / Beginner"]
     
-    subgraph FlutterWay ["📦 FlutterWay System"]
-        CLI["⚙️ Core Engine (fway.exe)\nGo Static Binary | Win32 API | Headless Mode"]
-        GUI["🖥️ Interactive Presentation Layer\nStep-by-Step Wizard | Arabic RTL UI"]
-        
-        subgraph Subsystems ["Internal Subsystems"]
-            Inspector["🔍 pkg/inspector\nPre-flight Checks | Arabic Paths | ADB & USB Port 5037"]
-            Downloader["⚡ pkg/downloader\nChunked & Resumable Downloads | Mirror Failover | SHA-256"]
-            Installer["📦 pkg/installer\nFlutter SDK | Headless Android SDK | OpenJDK 17"]
-            Doctor["🩺 pkg/doctor\n32 Failure Rules | Arabic Explanations | One-Click Auto-Fix"]
-            SysEnv["🛠️ pkg/sysenv & pkg/gradle\nRegistry LongPaths | System PATH | Gradle Tuning"]
-        end
-        
-        Manifest["📋 manifests/toolchain-v1.json\nDynamic Schema | Updatable without Recompilation"]
+    subgraph Presentation ["🖥️ FlutterWay Native Desktop GUI"]
+        Webview["WebView2 / Edge Chromium Runtime\nArabic RTL | Dark/Light Mode | Pure 2D Vectors"]
+        HarnessIPC["Agent Test Harness IPC\nPort 54321 | Sub-millisecond Remote Automation"]
     end
 
-    User --> GUI
-    User -->|CLI / Agent Harness| CLI
-    GUI <--> CLI
-    CLI --> Subsystems
-    Subsystems --> Manifest
+    subgraph CoreEngine ["⚙️ Core Backend Engine (Go / Python Native)"]
+        Inspector["🔍 Inspector & Hardware Doctor\nRAM, Disk, WMI BIOS VT, ADB Port Conflict"]
+        Downloader["⚡ Resumable Chunker\nParallel Mirrors, Hash Verification (SHA-256)"]
+        ToolchainMgr["📦 Toolchain & SDK Manager\nFlutter SDK, Adoptium JDK 21, Android SDK Tools"]
+        GradleTuner["🛠️ Gradle & Registry Tuner\nLongPathsEnabled, JAVA_HOME, UTF-8 Safe ASCII Paths"]
+        VSCodeIntegrator["📝 VS Code Automation Engine\nExtension Installer, settings.json Auto-injector"]
+    end
+
+    subgraph Targets ["📱 Development Targets"]
+        Phone["📱 Physical Android Device (USB Direct)\nUltra-fast | Zero RAM overhead | 60 FPS"]
+        Emulator["💻 Android Emulator (AVD)\nVirtual Device on Windows (High-spec PCs)"]
+        VSCodeIDE["💻 Visual Studio Code\nConfigured Workspace (my_first_app)"]
+    end
+
+    User --> Webview
+    Webview <--> HarnessIPC
+    Webview <--> CoreEngine
+    CoreEngine --> Targets
 ```
 
 ---
 
 <div dir="rtl">
 
-## 📊 مصفوفة المقارنة الهندسية (Comparison Matrix)
+## 📊 مصفوفة المقارنة الهندسية
 
-| الميزة / المقارنة | التثبيت اليدوي التقليدي | السكربتات العادية (.ps1/.bat) | محرك FlutterWay 🚀 |
+| وجه المقارنة | التثبيت اليدوي التقليدي | السكربتات العادية (.ps1/.bat) | تطبيق FlutterWay 🚀 |
 | :--- | :--- | :--- | :--- |
-| **سهولة الاستخدام للصفر** | معقدة ومحبطة جداً | تفتح نافذة سوداء مخيفة | معالج بصري وواجهة عربية ودودة |
-| **مشكلة حظر السكربتات** | لا تنطبق | تفشل بسبب `ExecutionPolicy` | **تتجاوزها كلياً** (ملف Native PE) |
-| **اسم المستخدم العربي والمسافات** | تكسر أندرويد و Gradle | تتجاهلها وتنهار لاحقاً | **كشف استباقي** وتوجيه لمسار آمن |
+| **سهولة الاستخدام للمبتدئ الصفر** | معقدة ومحبطة جداً | تفتح نافذة سوداء مخيفة | واجهة عربية ودودة من 4 خطوات |
+| **سياسات الحظر بويندوز (ExecutionPolicy)** | لا تنطبق | تفشل بسبب الحظر | **ملف أصلي تنفيذي يتجاوز الحظر** |
+| **المسارات العربية والمسافات** | تكسر أندرويد و Gradle | تتجاهلها وتنهار لاحقاً | **كشف استباقي** وتوجيه لمسارات ASCII آمنة |
 | **أندرويد ستوديو الثقيل** | إجباري تنزيل 1.5GB+ | يعتمد على أدوات متفرقة | **أدوات سطر الأوامر فقط** (خفيف وسريع) |
-| **صراع منافذ ADB مع BlueStacks** | حلقة قتل لا نهائية لخادم adb | لا تتعامل معها إطلاقاً | **رصد واحتواء التضارب تلقائياً** |
-| **بطء Windows Defender** | يبطئ البناء بنسبة 500% | يتطلب استثناء يدوياً | **إضافة استثناءات المجلدات بنقرة زر** |
-| **أجهزة مختبرات الكلية (Deep Freeze)**| تضيع مع كل إعادة تشغيل | تضيع مع كل إعادة تشغيل | **وضع محمول (Portable Mode)** من فلاشة |
-| **الإنترنت الضعيف / المحجوب** | يفشل التحميل من الصفر | يفشل مع أول انقطاع | **تحميل مجزأ مستأنف + مرايا بديلة** |
+| **صراع منافذ ADB مع BlueStacks** | حلقة قتل لا نهائية لخادم adb | لا تتعامل معها إطلاقاً | **زر فوري لفك الاحتكار وإعادة التشغيل** |
+| **تفعيل بيئة Java و Gradle** | تتطلب ضبط يدوي لمتغيرات البيئة | تفشل إذا لم يكن JDK متاحاً | **ربط آلي لـ JDK 21 و JAVA_HOME** |
+| **التحقق الفعلي على الموبايل** | يترك الطالب في حيرة | يفتح محرر الأكواد فقط | **بناء وتشغيل فعلي على شاشة الهاتف** |
+| **أجهزة مختبرات الكلية (Deep Freeze)** | تضيع مع كل إعادة تشغيل | تضيع مع كل إعادة تشغيل | **وضع محمول (Portable Mode)** من فلاشة |
 
 </div>
 
 ---
 
-## 🗂️ Project Repository Layout (هيكل المستودع)
+## 🗂️ هيكل المستودع (Repository Layout)
 
 ```text
 flutterway/
+├── assets/                    # Official 2D vector assets, test APKs & application icon
+│   ├── flutter_logo.png       # Official 2D Flutter raster logo (225x225)
+│   ├── starter_test_app.apk   # Prebuilt instant starter APK for physical verification
+│   └── icon.ico               # Windows desktop application icon
 ├── cmd/
-│   └── fway/                  # Main CLI entry point
-├── pkg/
-│   ├── manifest/              # Dynamic toolchain schema & hash verifier
-│   ├── inspector/             # Pre-flight, Arabic user path, ADB & USB, WMI virtualization
-│   ├── downloader/            # Multi-threaded chunked downloader with resume & mirrors
-│   ├── installer/             # Flutter, Headless Android SDK, OpenJDK 17, Portable mode
-│   ├── doctor/                # Offline rule engine (32 real-world failure patterns) & auto-fixers
-│   ├── sysenv/                # Permanent Environment Variables & Registry LongPathsEnabled
-│   └── gradle/                # Global gradle.properties tuner (OOM prevention, SSL CA fix)
+│   └── fway/                  # Go CLI entry point (headless & automation mode)
+├── gui/
+│   ├── onboarding/            # Modern HTML5/CSS/JS frontend application
+│   │   ├── index.html         # 4-step wizard, 2D vectors, dark/light theme, RTL
+│   │   └── flutter_logo.png   # Embedded logo asset
+│   ├── onboarding_app.py      # Python Edge Chromium native app & IPC harness
+│   ├── vscode_integration.py  # VS Code discovery, extension installer & settings injector
+│   └── capture_screens.py     # Headless visual screenshot regression test suite
 ├── manifests/
 │   └── toolchain-v1.json      # Dynamic updatable toolchain specification
-├── docs/
-│   ├── ARCHITECTURE.md        # Detailed engineering and systems design document
-│   ├── SRS_FAILURE_CATALOG.md # Forensic analysis of 32 real-world failure modes
-│   └── ROADMAP.md             # SDLC implementation phases and deliverables
+├── pkg/
+│   ├── doctor/                # Offline rule engine (32 real-world failure patterns)
+│   ├── downloader/            # Multi-threaded chunked downloader with resume
+│   ├── inspector/             # Pre-flight hardware checks, ADB & USB detection
+│   └── manifest/              # Manifest parser and SHA-256 integrity verifier
+├── clean_slate.py             # Zero-state student machine test & reset suite
 ├── LICENSE                    # MIT License
-└── README.md                  # Project documentation
+└── README.md                  # Comprehensive project documentation
 ```
 
 ---
 
 <div dir="rtl">
 
-## 🩺 موسوعة حالات الفشل المدعومة (Sample Supported Rules)
+## 🚀 تشغيل وتجربة التطبيق (Quick Start)
 
-يغطي النظام أكثر من **32 حالة فشل واقعية** موثقة بالكامل في [وثيقة الـ SRS وموسوعة حالات الفشل](docs/SRS_FAILURE_CATALOG.md)، ومنها:
+### 1. تشغيل التطبيق المكتبي مباشرة:
+```powershell
+python gui/onboarding_app.py
+```
+أو تشغيل الملف التنفيذي المجمّع:
+```powershell
+.\dist\FlutterWayNative\FlutterWayNative.exe
+```
 
-* **[FM-02] كسر المسارات بالأسماء العربية:** توجيه التثبيت تلقائياً لمسار `C:\dev\flutter` لمنع انهيار Gradle.
-* **[FM-03] قيود ويندوز للمسارات (MAX_PATH):** تفعيل مفتاح `LongPathsEnabled = 1` في الـ Registry آلياً.
-* **[FM-07] خطأ شهادات SSL بالجامعات (`PKIX failed`):** حقن مستودع شهادات الويندوز الرسمي في Gradle.
-* **[FM-08] انهيار مسار Java في أندرويد ستوديو (`jbr` vs `jre`):** عزل OpenJDK 17 مع إنشاء وصلة رمزية لحل الخطأ.
-* **[FM-11] احتكار محاكي الألعاب (BlueStacks/Nox) لمنفذ 5037:** رصد احتكار المنفذ وفكه تلقائياً.
-* **[FM-16] بطء Windows Defender الخانق:** استثناء مجلدات الكاش والفلاتر لتقليص زمن البناء من 25 إلى دقيقتين.
-* **[FM-17] تجمد قفل فلاتر (`startup lockfile deadlock`):** كشف وحذف ملف `lockfile` اليتيم وإنهاء العمليات العالقة.
+### 2. محاكاة حاسبة طالب جديد من الصفر (Clean Slate Test):
+لتفريغ أي إعدادات سابقة واختبار التطبيق كما لو كان يعمل على جهاز طالب لم يثبت فلاتر من قبل:
+```powershell
+python clean_slate.py
+```
 
-</div>
+### 3. أتمتة الفحص البصري التلقائي (Playwright Visual Suite):
+لالتقاط صور عالية الدقة لكافة شاشات التطبيق للتأكد من سلامة التصميم:
+```powershell
+python gui/capture_screens.py
+```
 
 ---
 
-## 📄 License & Credits (الترخيص)
+## 📄 الترخيص (License)
 
-هذا المشروع مرخص تحت رخصة **[MIT License](LICENSE)** — مفتوح المصدر ومتاح للاستخدام الأكاديمي والتطوير الحر.
+هذا المشروع مرخص بالكامل تحت رخصة **[MIT License](LICENSE)** — مفتوح المصدر ومتاح للاستخدام الأكاديمي، والمختبرات الجامعية، والتطوير الحر.
 
-تم تطوير وتصميم المخطط الهندسي بواسطة **[AboALhasanx](https://github.com/AboALhasanx)**.
+تم التطوير والتصميم بواسطة **[AboALhasanx](https://github.com/AboALhasanx)**.
+
+</div>
