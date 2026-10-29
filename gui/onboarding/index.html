@@ -1,19 +1,40 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlutterWay — رفيقك لتجهيز فلاتر</title>
+  <title>FlutterWay — طريق فلاتر</title>
   <style>
     :root {
       --bg: #0b0f19;
       --card-bg: #111827;
       --card-border: #1f2937;
+      --card-hover: #1e293b;
       --accent: #38bdf8;
       --accent-hover: #0284c7;
       --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
       --text: #f8fafc;
       --text-muted: #94a3b8;
+      --highlight: rgba(56, 189, 248, 0.1);
+      --rec-card-bg: #0c1a2e;
+    }
+
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --card-hover: #f1f5f9;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --highlight: rgba(2, 132, 199, 0.08);
+      --rec-card-bg: #f0f9ff;
     }
 
     * {
@@ -22,6 +43,7 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
     }
 
     body {
@@ -40,9 +62,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 28px;
+      padding: 14px 28px;
       border-bottom: 1px solid var(--card-border);
-      background: rgba(17, 24, 39, 0.85);
+      background: var(--card-bg);
       backdrop-filter: blur(12px);
     }
 
@@ -56,31 +78,55 @@
       width: 40px;
       height: 40px;
       border-radius: 10px;
-      background: #1e293b;
+      background: var(--card-border);
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid #334155;
     }
 
     .brand-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
       color: var(--text);
     }
 
     .brand-sub {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-muted);
     }
 
-    .agent-pill {
-      font-size: 12px;
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-toggle-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
       padding: 6px 14px;
       border-radius: 20px;
-      background: #1e1b4b;
-      color: #a5b4fc;
-      border: 1px solid #312e81;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .theme-toggle-btn:hover {
+      background: var(--card-hover);
+      border-color: var(--accent);
+    }
+
+    .agent-pill {
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: var(--highlight);
+      color: var(--accent);
+      border: 1px solid var(--accent);
       font-weight: 600;
     }
 
@@ -91,8 +137,8 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 32px 24px;
-      max-width: 860px;
+      padding: 24px 24px;
+      max-width: 900px;
       margin: 0 auto;
       width: 100%;
     }
@@ -114,95 +160,223 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Step 1: Welcome & Setup Choice */
+    /* Step 1: Welcome & Choices */
     .hero-title {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 800;
-      color: #ffffff;
+      color: var(--text);
       text-align: center;
-      margin-bottom: 10px;
-      letter-spacing: -0.5px;
+      margin-bottom: 8px;
     }
 
     .hero-desc {
-      font-size: 15px;
+      font-size: 14px;
       color: var(--text-muted);
       text-align: center;
-      max-width: 580px;
-      margin-bottom: 36px;
+      max-width: 600px;
+      margin-bottom: 20px;
     }
 
+    /* Laptop Check Banner */
+    .laptop-check-banner {
+      width: 100%;
+      background: var(--highlight);
+      border: 1px dashed var(--accent);
+      border-radius: 16px;
+      padding: 14px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .check-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: right;
+    }
+
+    .check-info-icon {
+      font-size: 24px;
+    }
+
+    .check-info-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .check-info-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .btn-check {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-check:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Diagnostic Result Box (Hidden until clicked) */
+    .diag-result-card {
+      display: none;
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .diag-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .diag-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .spec-item {
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      padding: 8px 12px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .spec-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .spec-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .rec-box {
+      background: var(--highlight);
+      border: 1px solid var(--accent);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Choice Cards Grid */
     .choice-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
       width: 100%;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
 
     .choice-card {
       background: var(--card-bg);
       border: 2px solid var(--card-border);
       border-radius: 20px;
-      padding: 24px 20px;
+      padding: 24px 22px;
       cursor: pointer;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      text-align: center;
       position: relative;
     }
 
     .choice-card:hover {
       border-color: var(--accent);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 24px -10px rgba(56, 189, 248, 0.15);
+      transform: translateY(-2px);
     }
 
     .choice-card.selected {
       border-color: var(--accent);
-      background: #0c1a2e;
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+      background: var(--rec-card-bg);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
     }
 
     .card-badge {
-      position: absolute;
-      top: 14px;
-      left: 14px;
       font-size: 11px;
       font-weight: 700;
       padding: 4px 10px;
       border-radius: 12px;
-      background: rgba(56, 189, 248, 0.15);
+      background: var(--highlight);
       color: var(--accent);
     }
 
+    .card-badge.gold {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+    }
+
     .card-icon {
-      font-size: 40px;
-      margin-bottom: 16px;
-      margin-top: 10px;
+      font-size: 32px;
     }
 
     .card-title {
       font-size: 17px;
       font-weight: 700;
-      margin-bottom: 8px;
-      color: #ffffff;
+      margin-bottom: 12px;
+      color: var(--text);
     }
 
-    .card-desc {
-      font-size: 13px;
+    .card-bullets {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12.5px;
       color: var(--text-muted);
       line-height: 1.5;
     }
 
+    .card-bullets li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .card-bullets li span.icon {
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
     .btn-primary {
       background: var(--accent);
-      color: #0b0f19;
+      color: #ffffff;
       font-size: 15px;
       font-weight: 700;
-      padding: 14px 38px;
+      padding: 13px 40px;
       border-radius: 14px;
       border: none;
       cursor: pointer;
@@ -214,7 +388,6 @@
 
     .btn-primary:hover {
       background: var(--accent-hover);
-      color: #ffffff;
       transform: scale(1.02);
     }
 
@@ -234,7 +407,7 @@
       font-size: 13px;
       font-weight: 600;
       color: var(--accent);
-      background: rgba(56, 189, 248, 0.1);
+      background: var(--highlight);
       padding: 6px 16px;
       border-radius: 20px;
       margin-bottom: 18px;
@@ -244,6 +417,7 @@
       font-size: 22px;
       font-weight: 700;
       margin-bottom: 8px;
+      color: var(--text);
     }
 
     .progress-sub {
@@ -253,7 +427,7 @@
     }
 
     .track {
-      background: #1f2937;
+      background: var(--card-border);
       height: 12px;
       border-radius: 6px;
       overflow: hidden;
@@ -263,7 +437,7 @@
     .fill {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #38bdf8, #10b981);
+      background: linear-gradient(90deg, var(--accent), var(--success));
       border-radius: 6px;
       transition: width 0.3s ease;
     }
@@ -284,11 +458,11 @@
       color: var(--text-muted);
       padding: 10px 14px;
       border-radius: 12px;
-      background: #0f172a;
+      background: var(--bg);
     }
 
     .step-item.done {
-      color: #f8fafc;
+      color: var(--text);
     }
 
     .step-item.done .step-icon {
@@ -314,14 +488,14 @@
     .finished-title {
       font-size: 24px;
       font-weight: 800;
-      color: #ffffff;
+      color: var(--text);
       margin-bottom: 10px;
     }
 
     .finished-desc {
       font-size: 14px;
       color: var(--text-muted);
-      margin-bottom: 32px;
+      margin-bottom: 30px;
       line-height: 1.6;
     }
 
@@ -330,10 +504,10 @@
       flex-direction: column;
       gap: 10px;
       text-align: right;
-      background: #0f172a;
+      background: var(--bg);
       border-radius: 16px;
       padding: 18px 20px;
-      margin-bottom: 32px;
+      margin-bottom: 30px;
     }
 
     .feature-entry {
@@ -341,12 +515,12 @@
       align-items: center;
       gap: 10px;
       font-size: 13px;
-      color: #e2e8f0;
+      color: var(--text);
     }
 
     .btn-launch {
-      background: #10b981;
-      color: #0b0f19;
+      background: var(--success);
+      color: #ffffff;
       font-size: 16px;
       font-weight: 800;
       padding: 15px 44px;
@@ -360,8 +534,7 @@
     }
 
     .btn-launch:hover {
-      background: #059669;
-      color: #ffffff;
+      opacity: 0.92;
       transform: scale(1.02);
     }
 
@@ -370,8 +543,8 @@
       padding: 14px;
       text-align: center;
       font-size: 12px;
-      color: #475569;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      border-top: 1px solid var(--card-border);
     }
   </style>
 </head>
@@ -392,7 +565,14 @@
         <div class="brand-sub">تجهيز بيئة الموبايل بضغطة زر واحدة للطلاب والمبتدئين</div>
       </div>
     </div>
-    <div class="agent-pill">🤖 وضع الأتمتة الذكي مفعّل</div>
+    <div class="header-actions">
+      <!-- Dark / Light Theme Toggle -->
+      <button id="btn-theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()">
+        <span id="theme-icon">☀️</span>
+        <span id="theme-label">الوضع النهاري</span>
+      </button>
+      <div class="agent-pill">🤖 وضع الأتمتة مفعّل</div>
+    </div>
   </header>
 
   <!-- Main Body Content -->
@@ -401,30 +581,103 @@
     <section id="step-1" class="step-view active">
       <h1 class="hero-title">أهلاً بك في عالم صناعة التطبيقات 🚀</h1>
       <p class="hero-desc">
-        اختر الطريقة التي تفضلها لاختبار تطبيقاتك على اللابتوب، ونحن سنتكفل بكل الضبط والمسارات والتراخيص تلقائياً في الخلفية.
+        اختر الطريقة التي تفضلها لاختبار تطبيقاتك على اللابتوب، وسنتكفل بضبط كل شيء تلقائياً في الخلفية.
       </p>
 
-      <div class="choice-grid">
-        <!-- Option 1: Real Phone -->
-        <div class="choice-card selected" id="card-usb" onclick="selectChoice('usb')">
-          <div class="card-badge">الأسرع والأخف ⚡</div>
-          <div class="card-icon">📱</div>
-          <div class="card-title">عندي هاتف أندرويد بالواير</div>
-          <div class="card-desc">
-            تربط هاتفك الحقيقي باللابتوب عبر كيبل USB.<br>
-            حجم خفيف جداً، سرعة فائقة، ولا يستهلك الرام!
+      <!-- 1-Click Laptop Check Banner -->
+      <div class="laptop-check-banner" id="banner-check">
+        <div class="check-info">
+          <div class="check-info-icon">🔍</div>
+          <div>
+            <div class="check-info-title">محتار شنو تختار؟ دع التطبيق يفحص لابتوبك وينصحك بالأفضل</div>
+            <div class="check-info-sub">فحص فوري في ثانيتين يحدد قدرة معالجك والرام وميزة المحاكاة (Virtualization)</div>
           </div>
         </div>
+        <button id="btn-check-laptop" class="btn-check" onclick="checkLaptopSpecs()">
+          <span>افحص لابتوبي الآن ⚡</span>
+        </button>
+      </div>
 
-        <!-- Option 2: Emulator -->
-        <div class="choice-card" id="card-emu" onclick="selectChoice('emu')">
-          <div class="card-badge">لابتوب قوي 🖥️</div>
-          <div class="card-icon">💻</div>
-          <div class="card-title">أريد شاشة محاكي على اللابتوب</div>
-          <div class="card-desc">
-            يفتح شاشة هاتف افتراضية داخل ويندوز.<br>
-            مناسب إذا كان جهازك بمواصفات جيدة ومعالج يدعم المحاكاة.
+      <!-- Diagnostic Result Box -->
+      <div class="diag-result-card" id="diag-result-box">
+        <div class="diag-header">
+          <span style="font-weight: 700; font-size: 13px;">📊 تقرير فحص مواصفات لابتوبك:</span>
+          <span id="diag-badge" style="font-size: 11px; font-weight: 700; color: var(--accent);">تم الفحص بنجاح</span>
+        </div>
+        <div class="diag-specs-grid">
+          <div class="spec-item">
+            <div class="spec-val" id="spec-ram">-- GB</div>
+            <div class="spec-lbl">الذاكرة العشوائية (RAM)</div>
           </div>
+          <div class="spec-item">
+            <div class="spec-val" id="spec-disk">-- GB</div>
+            <div class="spec-lbl">المساحة الفارغة (Drive C)</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-val" id="spec-vt">--</div>
+            <div class="spec-lbl">المحاكاة بالمعالج (VT)</div>
+          </div>
+        </div>
+        <div class="rec-box" id="rec-box-text">
+          <span>💡</span>
+          <span id="rec-msg">جاري تحليل التوافق...</span>
+        </div>
+      </div>
+
+      <!-- The Two Options Grid -->
+      <div class="choice-grid">
+        <!-- Option 1: Real Phone (USB) -->
+        <div class="choice-card selected" id="card-usb" onclick="selectChoice('usb')">
+          <div class="card-top">
+            <div class="card-icon">📱</div>
+            <div class="card-badge gold" id="badge-usb">ينصح به لـ 90% من الطلاب ⭐</div>
+          </div>
+          <div class="card-title">عندي هاتف أندرويد بالواير (USB)</div>
+          <ul class="card-bullets">
+            <li>
+              <span class="icon">⚡</span>
+              <span><strong>الأسرع والأخف:</strong> تحميل 250MB فقط ويعمل فوراً!</span>
+            </li>
+            <li>
+              <span class="icon">❄️</span>
+              <span><strong>صفر تعب للابتوب:</strong> لا يستهلك الرام أو المعالج نهائياً.</span>
+            </li>
+            <li>
+              <span class="icon">📱</span>
+              <span><strong>لمس واقعي:</strong> ترى التطبيق وتجربه على شاشة حقيقية بيدك.</span>
+            </li>
+            <li>
+              <span class="icon">🔌</span>
+              <span><strong>المتطلبات:</strong> كيبل شحن USB عادي وتفعيل وضع المطور بالهاتف.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Option 2: Emulator (Virtual Device) -->
+        <div class="choice-card" id="card-emu" onclick="selectChoice('emu')">
+          <div class="card-top">
+            <div class="card-icon">💻</div>
+            <div class="card-badge" id="badge-emu">يحتاج لابتوب قوي 🖥️</div>
+          </div>
+          <div class="card-title">أريد شاشة محاكي على اللابتوب</div>
+          <ul class="card-bullets">
+            <li>
+              <span class="icon">📦</span>
+              <span><strong>حجم كبير:</strong> يحتاج تنزيل حزمة محاكي بحجم 3.8GB.</span>
+            </li>
+            <li>
+              <span class="icon">⚠️</span>
+              <span><strong>شرط المعالج:</strong> يتطلب تفعيل ميزة Virtualization بالـ BIOS.</span>
+            </li>
+            <li>
+              <span class="icon">🧠</span>
+              <span><strong>استهلاك الرام:</strong> يحتاج من 4GB إلى 6GB رام أثناء تشغيله.</span>
+            </li>
+            <li>
+              <span class="icon">🪄</span>
+              <span><strong>الميزة:</strong> مناسب إذا لم تكن تملك هاتف أندرويد وتريد شاشة وهمية.</span>
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -432,19 +685,22 @@
         <span>ابدأ التجهيز التلقائي الآن</span>
         <span>⚡</span>
       </button>
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">
+        نحن نتكفل بكل شيء في الخلفية تلقائياً دون إزعاجك بأي شاشات معقدة
+      </div>
     </section>
 
     <!-- STEP 2: SILENT SETUP PROGRESS -->
     <section id="step-2" class="step-view">
       <div class="progress-container">
-        <div class="progress-badge" id="setup-step-badge">الخطوة 1 من 3</div>
-        <div class="progress-title" id="setup-step-title">جاري التجهيز الذكي...</div>
+        <div class="progress-badge" id="setup-step-badge">الخطوة 2 من 3</div>
+        <div class="progress-title" id="setup-step-title">جاري التجهيز الذكي الصامت...</div>
         <div class="progress-sub" id="setup-step-desc">نحن نهيئ المسارات والأدوات نيابة عنك، استرخِ لدقائق قليلة ☕</div>
 
         <div class="track">
           <div class="fill" id="progress-fill"></div>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">
           <span id="speed-indicator">السرعة: 5.4 MB/s</span>
           <span id="percent-indicator">0%</span>
         </div>
@@ -452,7 +708,7 @@
         <div class="steps-checklist">
           <div class="step-item" id="chk-env">
             <span class="step-icon">⏳</span>
-            <span>فحص اللابتوب وتهيئة مسارات ويندوز الطويلة ومساحة القرص</span>
+            <span>فحص اللابتوب وتهيئة مسارات ويندوز ومساحة القرص</span>
           </div>
           <div class="step-item" id="chk-dl">
             <span class="step-icon">⏳</span>
@@ -504,6 +760,23 @@
 
   <script>
     let selectedMode = 'usb';
+    let currentTheme = 'dark';
+
+    // Theme toggle
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      
+      const icon = document.getElementById('theme-icon');
+      const label = document.getElementById('theme-label');
+      if (currentTheme === 'light') {
+        icon.innerText = '🌙';
+        label.innerText = 'الوضع الليلي';
+      } else {
+        icon.innerText = '☀️';
+        label.innerText = 'الوضع النهاري';
+      }
+    }
 
     function selectChoice(mode) {
       selectedMode = mode;
@@ -516,12 +789,63 @@
       document.getElementById(`step-${stepNum}`).classList.add('active');
     }
 
+    // 1-Click Laptop Specs & Compatibility Check
+    async function checkLaptopSpecs() {
+      const banner = document.getElementById('banner-check');
+      const btn = document.getElementById('btn-check-laptop');
+      btn.innerText = 'جاري الفحص... ⏳';
+
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.check_laptop_compatibility();
+          displaySpecsResult(res);
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        // Mock fallback for browser dev view
+        displaySpecsResult({
+          ram_gb: 11.7,
+          free_disk_gb: 43.8,
+          vt_enabled: false,
+          recommended_mode: 'usb',
+          reason: 'ميزة المحاكاة (Virtualization) غير مفعلة في معالجك بالـ BIOS. خيار (هاتف USB) هو الأسرع والجاهز فوراً بدون أي أخطاء!'
+        });
+      }
+    }
+
+    function displaySpecsResult(data) {
+      const box = document.getElementById('diag-result-box');
+      box.style.display = 'block';
+
+      document.getElementById('spec-ram').innerText = (data.ram_gb || '--') + ' GB';
+      document.getElementById('spec-disk').innerText = (data.free_disk_gb || '--') + ' GB';
+      
+      const vtEl = document.getElementById('spec-vt');
+      if (data.vt_enabled) {
+        vtEl.innerText = 'مفعلة ✅';
+        vtEl.style.color = 'var(--success)';
+      } else {
+        vtEl.innerText = 'غير مفعلة ⚠️';
+        vtEl.style.color = 'var(--danger)';
+      }
+
+      document.getElementById('rec-msg').innerText = data.reason || 'ننصحك باختيار هاتف USB.';
+
+      // Automatically select recommended mode
+      if (data.recommended_mode) {
+        selectChoice(data.recommended_mode);
+      }
+
+      // Hide the initial banner smoothly
+      document.getElementById('banner-check').style.display = 'none';
+    }
+
     function startSetup() {
       showStep(2);
       if (window.pywebview && window.pywebview.api) {
         window.pywebview.api.start_onboarding(selectedMode);
       } else {
-        // Fallback animation simulation if viewed in dev
         simulateProgress();
       }
     }

@@ -20,8 +20,60 @@ class OnboardingApi:
             "current_step": 1,
             "selected_mode": "usb",
             "progress_percent": 0,
-            "is_complete": False
+            "is_complete": False,
+            "theme": "dark"
         }
+
+    def check_laptop_compatibility(self):
+        try:
+            import psutil
+            import shutil
+
+            ram_gb = round(psutil.virtual_memory().total / (1024**3), 1)
+            total, used, free = shutil.disk_usage('C:\\')
+            free_gb = round(free / (1024**3), 1)
+            cpu_cores = psutil.cpu_count(logical=False) or psutil.cpu_count() or 2
+
+            # Check virtualization
+            vt_enabled = False
+            try:
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = 0
+                res = subprocess.run(
+                    ['powershell', '-Command', '(Get-CimInstance Win32_Processor).VirtualizationFirmwareEnabled'],
+                    capture_output=True, text=True, startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW, timeout=3
+                )
+                if 'True' in res.stdout:
+                    vt_enabled = True
+            except Exception:
+                pass
+
+            if not vt_enabled:
+                rec_mode = "usb"
+                reason = "ميزة المحاكاة (Virtualization) غير مفعلة في إعدادات معالجك (BIOS). خيار (هاتف USB) هو الأنسب والجاهز للعمل معك فوراً وبدون أي تعقيد!"
+            elif ram_gb < 8:
+                rec_mode = "usb"
+                reason = f"الرام المتاح ({ram_gb}GB) خفيف، وخيار هاتف USB سيبقي لابتوبك سريعاً وبارداً جداً!"
+            else:
+                rec_mode = "usb" # Still recommend USB as gold standard
+                reason = f"لابتوبك بمواصفات جيدة ({ram_gb}GB رام). ننصحك بهاتف USB كخيار أسرع وأوفر للمساحة، لكن المحاكي ممكن أيضاً."
+
+            return {
+                "success": True,
+                "ram_gb": ram_gb,
+                "free_disk_gb": free_gb,
+                "cpu_cores": cpu_cores,
+                "vt_enabled": vt_enabled,
+                "recommended_mode": rec_mode,
+                "reason": reason
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "recommended_mode": "usb",
+                "reason": f"تعذر استكمال الفحص التلقائي ({e})، ننصحك بخيار هاتف USB."
+            }
 
     def start_onboarding(self, mode="usb"):
         self.state["selected_mode"] = mode
@@ -134,6 +186,8 @@ def start_harness(api, window_holder):
                     cur_step = api.state.get("current_step", 1)
                     if cur_step == 1:
                         elements = [
+                            {"id": "btn-theme-toggle", "label": "تبديل الوضع النهاري/الليلي ☀️"},
+                            {"id": "btn-check-laptop", "label": "فحص توافق اللابتوب والمحاكي 🔍"},
                             {"id": "card-usb", "label": "عندي هاتف أندرويد بالواير (USB)"},
                             {"id": "card-emu", "label": "أريد شاشة محاكي على اللابتوب"},
                             {"id": "btn-start-setup", "label": "ابدأ التجهيز التلقائي الآن ⚡"}
@@ -151,10 +205,10 @@ def start_harness(api, window_holder):
                 elif cmd == "tap" and len(parts) > 1:
                     target = parts[1]
                     win = window_holder.get("window")
-                    if target in ["btn-start-setup", "card-usb", "card-emu"]:
+                    if target in ["btn-start-setup", "card-usb", "card-emu", "btn-check-laptop", "btn-theme-toggle"]:
                         if win:
                             win.evaluate_js(f"document.getElementById('{target}').click();")
-                        else:
+                        elif target == "btn-start-setup":
                             api.start_onboarding("usb")
                         conn.sendall(json.dumps({"success": True, "target": target, "time_ms": 1.2}).encode("utf-8"))
                     elif target == "btn-open-vscode":
