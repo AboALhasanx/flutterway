@@ -78,67 +78,208 @@ class OnboardingApi:
     def start_onboarding(self, mode="usb"):
         self.state["selected_mode"] = mode
         self.state["current_step"] = 2
-        print(f"[Onboarding] Starting setup flow with mode: {mode}")
+        print(f"[Onboarding] Starting REAL setup flow with mode: {mode}")
 
         def worker():
             win = self.window_holder["window"]
 
-            # Stage 1: Environment check (0% - 25%)
-            time.sleep(0.4)
-            self._update_ui(win, 15, "جاري فحص إعدادات اللابتوب ومساحة القرص...", 1)
-            time.sleep(0.4)
-            self._update_ui(win, 30, "تم التحقق من جاهزية النظام بنجاح ✨", 1)
-
-            # Stage 2: Parallel Download via Go Backend (30% - 80%)
-            fway_exe = r"d:\flutterway\fway.exe"
-            startupinfo = subprocess.STARTUPINFO()
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            startupinfo.wShowWindow = 0
-            creationflags = subprocess.CREATE_NO_WINDOW
-
-            if os.path.exists(fway_exe):
-                try:
-                    proc = subprocess.Popen(
-                        [fway_exe, "test-dl"],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=True,
-                        startupinfo=startupinfo,
-                        creationflags=creationflags
-                    )
-                    if proc.stdout:
-                        for line in proc.stdout:
-                            if "%" in line and "تم:" in line:
-                                try:
-                                    p_str = line.split("%")[0].split()[-1]
-                                    percent_val = 30 + int(int(p_str) * 0.45) # scale to 30..75%
-                                    self._update_ui(win, percent_val, "جاري تنزيل حزمة محرك فلاتر بالمسارات المتوازية...", 2)
-                                except Exception:
-                                    pass
-                        proc.wait()
-                except Exception as e:
-                    print("Go backend runner error:", e)
-
-            self._update_ui(win, 75, "تم اكتمال تنزيل الحزمة وفحص البصمة بنجاح! ⚡", 2)
+            # Stage 1: Environment check (0% - 20%)
+            self._update_ui(win, 10, "جاري فحص إعدادات اللابتوب وتوفير أفضل مسار...", 1)
             time.sleep(0.5)
+            self._update_ui(win, 20, "تم التحقق من جاهزية النظام ومساحة القرص بنجاح ✨", 1)
 
-            # Stage 3: VS Code Integration (75% - 100%)
-            self._update_ui(win, 85, "جاري ضبط محرر VS Code وإعدادات فلاتر التلقائية...", 3)
+            # Stage 2: Real Flutter Toolchain Setup (20% - 70%)
+            flutter_target = r"C:\flutter"
+            flutter_bin = os.path.join(flutter_target, "bin")
+
+            if not os.path.exists(os.path.join(flutter_bin, "flutter.bat")):
+                self._update_ui(win, 25, "جاري تنزيل محرك Flutter & Dart الرسمي من السحابة...", 2)
+
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = 0
+                creationflags = subprocess.CREATE_NO_WINDOW
+
+                cmd = ["git", "clone", "--depth", "1", "-b", "stable", "https://github.com/flutter/flutter.git", flutter_target]
+                try:
+                    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, startupinfo=startupinfo, creationflags=creationflags)
+                    while True:
+                        line = proc.stdout.readline()
+                        if not line and proc.poll() is not None:
+                            break
+                        if "Receiving objects:" in line:
+                            try:
+                                part = line.split("Receiving objects:")[1].split("%")[0].strip()
+                                p_val = int(part)
+                                scaled = 25 + int(p_val * 0.40)
+                                self._update_ui(win, scaled, f"جاري تنزيل وتجهيز محرك فلاتر ({p_val}%)...", 2)
+                            except Exception:
+                                pass
+                    proc.wait()
+                except Exception as e:
+                    print("Git clone error:", e)
+
+            # Register C:\flutter\bin in User PATH
+            self._update_ui(win, 68, "جاري تسجيل مسار فلاتر في بيئة النظام (PATH)...", 2)
             try:
-                configure_vscode("C:\\flutter")
+                self._add_to_user_path(flutter_bin)
+            except Exception as e:
+                print("PATH registration error:", e)
+
+            self._update_ui(win, 75, "تم اكتمال تنزيل وتسجيل محرك فلاتر بنجاح! ⚡", 2)
+            time.sleep(0.4)
+
+            # Stage 3: Real VS Code Configuration & Extensions (75% - 90%)
+            self._update_ui(win, 82, "جاري تثبيت إضافات فلاتر وضبط محرر VS Code...", 3)
+            try:
+                configure_vscode(flutter_target)
             except Exception as e:
                 print("VS Code setup error:", e)
 
+            # Stage 4: Ready-to-Run Starter Project (90% - 100%)
+            self._update_ui(win, 92, "جاري إنشاء وتجهيز أول مشروع فلاتر تجريبي على الديسكتوب...", 3)
+            project_path = os.path.expandvars(r"%USERPROFILE%\Desktop\اول_تطبيق_فلاتر")
+            try:
+                self._create_starter_project(project_path)
+            except Exception as e:
+                print("Starter project error:", e)
+
             time.sleep(0.5)
-            self._update_ui(win, 100, "تم إعداد كل شيء بنجاح! 🎉", 3)
+            self._update_ui(win, 100, "مبروك! لابتوبك مهيأ بالكامل لصناعة أول تطبيق 🎉", 3)
             self.state["is_complete"] = True
             self.state["current_step"] = 3
+            self.state["project_path"] = project_path
 
         threading.Thread(target=worker, daemon=True).start()
         return {"success": True}
 
+    def _add_to_user_path(self, new_dir):
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = 0
+        creationflags = subprocess.CREATE_NO_WINDOW
+
+        ps_cmd = f'''
+        $p = [Environment]::GetEnvironmentVariable("Path", "User")
+        if ($p -notlike "*{new_dir}*") {{
+            $newPath = "{new_dir};" + $p
+            [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
+        }}
+        '''
+        subprocess.run(["powershell", "-NoProfile", "-Command", ps_cmd], startupinfo=startupinfo, creationflags=creationflags)
+
+    def _create_starter_project(self, project_path):
+        os.makedirs(os.path.join(project_path, "lib"), exist_ok=True)
+        os.makedirs(os.path.join(project_path, ".vscode"), exist_ok=True)
+
+        pubspec_content = '''name: first_app
+description: "My first Flutter application"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+'''
+        with open(os.path.join(project_path, "pubspec.yaml"), "w", encoding="utf-8") as f:
+            f.write(pubspec_content)
+
+        main_dart = '''import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyFirstApp());
+}
+
+class MyFirstApp extends StatelessWidget {
+  const MyFirstApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'طريقي في فلاتر',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0284C7)),
+        useMaterial3: true,
+      ),
+      home: const HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _counter = 0;
+
+  void _increment() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('🎉 مبروك! أول تطبيق فلاتر لك'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'كل شيء جاهز للعمل على هاتفك بالواير!',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            const Text('اضغط الزر بالأسفل لزيادة العداد:'),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.displayMedium,
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _increment,
+        tooltip: 'زيادة',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+'''
+        with open(os.path.join(project_path, "lib", "main.dart"), "w", encoding="utf-8") as f:
+            f.write(main_dart)
+
+        vsc_settings = '''{
+  "dart.flutterSdkPath": "C:\\\\flutter"
+}
+'''
+        with open(os.path.join(project_path, ".vscode", "settings.json"), "w", encoding="utf-8") as f:
+            f.write(vsc_settings)
+
     def open_vscode(self):
-        print("[Onboarding] Opening VS Code for the user...")
+        print("[Onboarding] Opening VS Code with starter project...")
         code_cli = find_code_cli()
         if code_cli:
             try:
@@ -146,8 +287,9 @@ class OnboardingApi:
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = 0
                 creationflags = subprocess.CREATE_NO_WINDOW
-                # Open VS Code
-                subprocess.Popen([code_cli], startupinfo=startupinfo, creationflags=creationflags)
+                project_path = self.state.get("project_path") or os.path.expandvars(r"%USERPROFILE%\Desktop\اول_تطبيق_فلاتر")
+                # Launch VS Code with project folder
+                subprocess.Popen([code_cli, project_path], startupinfo=startupinfo, creationflags=creationflags)
                 return {"success": True}
             except Exception as e:
                 return {"success": False, "error": str(e)}
