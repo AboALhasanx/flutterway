@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlutterWay — طريق فلاتر</title>
+  <title>FlutterWay — طريق فلاتر للمبتدئين</title>
   <style>
     :root {
       --bg: #0b0f19;
@@ -13,11 +13,14 @@
       --accent: #38bdf8;
       --accent-hover: #0284c7;
       --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.1);
       --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.1);
       --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.1);
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --highlight: rgba(56, 189, 248, 0.1);
+      --highlight: rgba(56, 189, 248, 0.08);
       --rec-card-bg: #0c1a2e;
     }
 
@@ -29,11 +32,14 @@
       --accent: #0284c7;
       --accent-hover: #0369a1;
       --success: #059669;
+      --success-bg: rgba(5, 150, 105, 0.08);
       --warning: #d97706;
+      --warning-bg: rgba(217, 119, 6, 0.08);
       --danger: #dc2626;
+      --danger-bg: rgba(220, 38, 38, 0.08);
       --text: #0f172a;
       --text-muted: #64748b;
-      --highlight: rgba(2, 132, 199, 0.08);
+      --highlight: rgba(2, 132, 199, 0.06);
       --rec-card-bg: #f0f9ff;
     }
 
@@ -49,7 +55,7 @@
     body {
       background-color: var(--bg);
       color: var(--text);
-      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Tahoma, Arial, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -57,7 +63,21 @@
       line-height: 1.6;
     }
 
-    /* Custom Header */
+    /* SVG Icon Helper */
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+    }
+
+    /* Header */
     header {
       display: flex;
       justify-content: space-between;
@@ -65,7 +85,6 @@
       padding: 14px 28px;
       border-bottom: 1px solid var(--card-border);
       background: var(--card-bg);
-      backdrop-filter: blur(12px);
     }
 
     .brand {
@@ -75,19 +94,21 @@
     }
 
     .logo-box {
-      width: 40px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       border-radius: 10px;
-      background: var(--card-border);
+      background: var(--highlight);
+      border: 1px solid var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .brand-title {
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 700;
       color: var(--text);
+      letter-spacing: -0.2px;
     }
 
     .brand-sub {
@@ -112,22 +133,12 @@
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .theme-toggle-btn:hover {
       background: var(--card-hover);
       border-color: var(--accent);
-    }
-
-    .agent-pill {
-      font-size: 11px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      background: var(--highlight);
-      color: var(--accent);
-      border: 1px solid var(--accent);
-      font-weight: 600;
     }
 
     /* Main Container */
@@ -137,7 +148,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 24px 24px;
+      padding: 24px;
       max-width: 900px;
       margin: 0 auto;
       width: 100%;
@@ -146,7 +157,7 @@
     .step-view {
       display: none;
       width: 100%;
-      animation: fadeIn 0.35s ease;
+      animation: fadeIn 0.3s ease;
     }
 
     .step-view.active {
@@ -156,13 +167,27 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Step 1: Welcome & Choices */
+    /* Step Badge */
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: var(--highlight);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
     .hero-title {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 800;
       color: var(--text);
       text-align: center;
@@ -173,8 +198,8 @@
       font-size: 14px;
       color: var(--text-muted);
       text-align: center;
-      max-width: 600px;
-      margin-bottom: 20px;
+      max-width: 620px;
+      margin-bottom: 22px;
     }
 
     /* Laptop Check Banner */
@@ -182,9 +207,9 @@
       width: 100%;
       background: var(--highlight);
       border: 1px dashed var(--accent);
-      border-radius: 16px;
-      padding: 14px 20px;
-      margin-bottom: 24px;
+      border-radius: 14px;
+      padding: 12px 18px;
+      margin-bottom: 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -199,7 +224,15 @@
     }
 
     .check-info-icon {
-      font-size: 24px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .check-info-title {
@@ -209,7 +242,7 @@
     }
 
     .check-info-sub {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-muted);
     }
 
@@ -217,11 +250,14 @@
       background: var(--accent);
       color: #ffffff;
       border: none;
-      border-radius: 10px;
-      padding: 8px 18px;
+      border-radius: 8px;
+      padding: 7px 16px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       white-space: nowrap;
     }
 
@@ -229,16 +265,16 @@
       background: var(--accent-hover);
     }
 
-    /* Diagnostic Result Box (Hidden until clicked) */
+    /* Diagnostic Result Box */
     .diag-result-card {
       display: none;
       width: 100%;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 16px 20px;
-      margin-bottom: 24px;
-      animation: fadeIn 0.3s ease;
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      animation: fadeIn 0.25s ease;
     }
 
     .diag-header {
@@ -259,12 +295,12 @@
       background: var(--bg);
       border: 1px solid var(--card-border);
       padding: 8px 12px;
-      border-radius: 10px;
+      border-radius: 8px;
       text-align: center;
     }
 
     .spec-val {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--accent);
     }
@@ -278,33 +314,32 @@
       background: var(--highlight);
       border: 1px solid var(--accent);
       padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 13px;
+      border-radius: 8px;
+      font-size: 12px;
       color: var(--text);
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    /* Choice Cards Grid */
+    /* Choice Cards */
     .choice-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 18px;
       width: 100%;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .choice-card {
       background: var(--card-bg);
       border: 2px solid var(--card-border);
-      border-radius: 20px;
-      padding: 24px 22px;
+      border-radius: 16px;
+      padding: 20px;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.2s ease;
       display: flex;
       flex-direction: column;
-      position: relative;
     }
 
     .choice-card:hover {
@@ -315,39 +350,49 @@
     .choice-card.selected {
       border-color: var(--accent);
       background: var(--rec-card-bg);
-      box-shadow: 0 0 0 2px var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
     }
 
     .card-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
+    }
+
+    .card-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--highlight);
+      border: 1px solid var(--card-border);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .card-badge {
       font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
+      padding: 3px 10px;
       border-radius: 12px;
-      background: var(--highlight);
-      color: var(--accent);
+      background: var(--card-hover);
+      color: var(--text-muted);
+      font-weight: 600;
     }
 
     .card-badge.gold {
       background: rgba(245, 158, 11, 0.15);
       color: var(--warning);
-    }
-
-    .card-icon {
-      font-size: 32px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
     .card-title {
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 700;
-      margin-bottom: 12px;
       color: var(--text);
+      margin-bottom: 12px;
+      text-align: right;
     }
 
     .card-bullets {
@@ -355,9 +400,9 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      font-size: 12.5px;
+      text-align: right;
+      font-size: 12px;
       color: var(--text-muted);
-      line-height: 1.5;
     }
 
     .card-bullets li {
@@ -366,98 +411,129 @@
       gap: 8px;
     }
 
-    .card-bullets li span.icon {
-      font-size: 14px;
-      flex-shrink: 0;
+    .bullet-icon {
+      width: 14px;
+      height: 14px;
+      margin-top: 3px;
+      color: var(--accent);
     }
 
+    /* Buttons */
     .btn-primary {
       background: var(--accent);
       color: #ffffff;
       font-size: 15px;
       font-weight: 700;
-      padding: 13px 40px;
-      border-radius: 14px;
+      padding: 12px 36px;
+      border-radius: 10px;
       border: none;
       cursor: pointer;
-      transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      transition: all 0.2s ease;
     }
 
     .btn-primary:hover {
       background: var(--accent-hover);
-      transform: scale(1.02);
+      transform: translateY(-1px);
     }
 
-    /* Step 2: Progress Screen */
-    .progress-container {
-      width: 100%;
-      max-width: 580px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 36px 30px;
-      text-align: center;
-    }
-
-    .progress-badge {
-      display: inline-block;
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
       font-size: 13px;
       font-weight: 600;
-      color: var(--accent);
-      background: var(--highlight);
-      padding: 6px 16px;
-      border-radius: 20px;
-      margin-bottom: 18px;
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .progress-title {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 8px;
+    .btn-secondary:hover {
+      background: var(--card-hover);
       color: var(--text);
     }
 
-    .progress-sub {
-      font-size: 14px;
-      color: var(--text-muted);
-      margin-bottom: 28px;
+    /* Step 2: Setup Progress & Rotating Tips */
+    .progress-container {
+      width: 100%;
+      max-width: 600px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      text-align: center;
     }
 
     .track {
-      background: var(--card-border);
-      height: 12px;
-      border-radius: 6px;
+      width: 100%;
+      height: 8px;
+      background: var(--bg);
+      border-radius: 8px;
       overflow: hidden;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
+      border: 1px solid var(--card-border);
     }
 
     .fill {
       height: 100%;
       width: 0%;
       background: linear-gradient(90deg, var(--accent), var(--success));
+      border-radius: 8px;
+      transition: width 0.3s ease-out;
+    }
+
+    .tips-carousel-box {
+      background: var(--highlight);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin: 18px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: right;
+      min-height: 54px;
+    }
+
+    .tip-icon-box {
+      width: 28px;
+      height: 28px;
       border-radius: 6px;
-      transition: width 0.3s ease;
+      background: var(--card-bg);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tip-content {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.5;
+      animation: fadeIn 0.4s ease;
     }
 
     .steps-checklist {
-      margin-top: 24px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
       text-align: right;
+      margin-top: 14px;
     }
 
     .step-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-size: 13px;
+      gap: 10px;
+      font-size: 12px;
       color: var(--text-muted);
-      padding: 10px 14px;
-      border-radius: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
       background: var(--bg);
     }
 
@@ -465,84 +541,182 @@
       color: var(--text);
     }
 
-    .step-item.done .step-icon {
+    .step-item.done .step-chk-icon {
       color: var(--success);
     }
 
-    /* Step 3: Finished Celebration */
-    .finished-card {
+    /* Step 3: Phone Connect & Live Test */
+    .device-box {
       width: 100%;
-      max-width: 580px;
+      max-width: 640px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 40px 32px;
+      border-radius: 20px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
     }
 
-    .finished-icon {
-      font-size: 56px;
+    .pulse-icon-box {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: var(--highlight);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      animation: gentlePulse 2s infinite ease-in-out;
+    }
+
+    @keyframes gentlePulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.85; }
+    }
+
+    .device-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
       margin-bottom: 16px;
     }
 
-    .finished-title {
-      font-size: 24px;
-      font-weight: 800;
+    .device-status-badge.waiting {
+      background: var(--highlight);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+
+    .device-status-badge.unauthorized {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+    }
+
+    .device-status-badge.ready {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+
+    /* Instructions Accordion */
+    .guide-box {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 16px 0;
+      text-align: right;
+    }
+
+    .guide-title {
+      font-size: 13px;
+      font-weight: 700;
       color: var(--text);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .finished-desc {
-      font-size: 14px;
-      color: var(--text-muted);
-      margin-bottom: 30px;
-      line-height: 1.6;
-    }
-
-    .feature-list {
+    .guide-steps {
+      list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      text-align: right;
-      background: var(--bg);
-      border-radius: 16px;
-      padding: 18px 20px;
-      margin-bottom: 30px;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
     }
 
-    .feature-entry {
+    .guide-steps li {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: var(--text);
+      align-items: flex-start;
+      gap: 8px;
     }
 
-    .btn-launch {
-      background: var(--success);
-      color: #ffffff;
-      font-size: 16px;
-      font-weight: 800;
-      padding: 15px 44px;
-      border-radius: 14px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
+    .step-num {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--card-border);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 700;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
     }
 
-    .btn-launch:hover {
-      opacity: 0.92;
-      transform: scale(1.02);
+    /* Step 4: Finished & VS Code Cheatsheet */
+    .cheatsheet-card {
+      width: 100%;
+      max-width: 620px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      text-align: center;
+    }
+
+    .cheat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 20px 0 26px 0;
+      text-align: right;
+    }
+
+    .cheat-item {
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .cheat-icon-box {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--highlight);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .cheat-item-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .cheat-item-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
     }
 
     /* Footer */
     footer {
-      padding: 14px;
+      padding: 12px;
       text-align: center;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-muted);
       border-top: 1px solid var(--card-border);
     }
@@ -554,7 +728,8 @@
   <header>
     <div class="brand">
       <div class="logo-box">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <!-- SVG Flutter Logo -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <path d="M14.5 4H18.5L9.5 13L5.5 13L14.5 4Z" fill="#38BDF8"/>
           <path d="M13.5 13.5L18.5 18.5L14.5 18.5L9.5 13.5L13.5 13.5Z" fill="#0284C7"/>
           <path d="M11.5 11.5L15.5 15.5L13 18L9 14L11.5 11.5Z" fill="#00B0FF"/>
@@ -562,16 +737,28 @@
       </div>
       <div>
         <div class="brand-title">FlutterWay — طريق فلاتر</div>
-        <div class="brand-sub">تجهيز بيئة الموبايل بضغطة زر واحدة للطلاب والمبتدئين</div>
+        <div class="brand-sub">بيئة تطوير تطبيقات الموبايل للطلاب والمبتدئين</div>
       </div>
     </div>
     <div class="header-actions">
       <!-- Dark / Light Theme Toggle -->
       <button id="btn-theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()">
-        <span id="theme-icon">☀️</span>
+        <span class="icon" id="theme-icon" style="width: 14px; height: 14px;">
+          <!-- SVG Sun -->
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </span>
         <span id="theme-label">الوضع النهاري</span>
       </button>
-      <div class="agent-pill">🤖 وضع الأتمتة مفعّل</div>
     </div>
   </header>
 
@@ -579,7 +766,13 @@
   <main>
     <!-- STEP 1: WELCOME & SELECTION -->
     <section id="step-1" class="step-view active">
-      <h1 class="hero-title">أهلاً بك في عالم صناعة التطبيقات 🚀</h1>
+      <div class="step-badge">
+        <span class="icon" style="width: 12px; height: 12px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </span>
+        <span>الخطوة 1 من 4</span>
+      </div>
+      <h1 class="hero-title">أهلاً بك في عالم صناعة التطبيقات</h1>
       <p class="hero-desc">
         اختر الطريقة التي تفضلها لاختبار تطبيقاتك على اللابتوب، وسنتكفل بضبط كل شيء تلقائياً في الخلفية.
       </p>
@@ -587,21 +780,28 @@
       <!-- 1-Click Laptop Check Banner -->
       <div class="laptop-check-banner" id="banner-check">
         <div class="check-info">
-          <div class="check-info-icon">🔍</div>
+          <div class="check-info-icon">
+            <span class="icon" style="width: 16px; height: 16px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+          </div>
           <div>
             <div class="check-info-title">محتار شنو تختار؟ دع التطبيق يفحص لابتوبك وينصحك بالأفضل</div>
             <div class="check-info-sub">فحص فوري في ثانيتين يحدد قدرة معالجك والرام وميزة المحاكاة (Virtualization)</div>
           </div>
         </div>
         <button id="btn-check-laptop" class="btn-check" onclick="checkLaptopSpecs()">
-          <span>افحص لابتوبي الآن ⚡</span>
+          <span class="icon" style="width: 14px; height: 14px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+          </span>
+          <span>افحص لابتوبي الآن</span>
         </button>
       </div>
 
       <!-- Diagnostic Result Box -->
       <div class="diag-result-card" id="diag-result-box">
         <div class="diag-header">
-          <span style="font-weight: 700; font-size: 13px;">📊 تقرير فحص مواصفات لابتوبك:</span>
+          <span style="font-weight: 700; font-size: 13px;">تقرير فحص مواصفات لابتوبك:</span>
           <span id="diag-badge" style="font-size: 11px; font-weight: 700; color: var(--accent);">تم الفحص بنجاح</span>
         </div>
         <div class="diag-specs-grid">
@@ -619,7 +819,9 @@
           </div>
         </div>
         <div class="rec-box" id="rec-box-text">
-          <span>💡</span>
+          <span class="icon" style="width: 16px; height: 16px; color: var(--accent);">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </span>
           <span id="rec-msg">جاري تحليل التوافق...</span>
         </div>
       </div>
@@ -629,26 +831,38 @@
         <!-- Option 1: Real Phone (USB) -->
         <div class="choice-card selected" id="card-usb" onclick="selectChoice('usb')">
           <div class="card-top">
-            <div class="card-icon">📱</div>
-            <div class="card-badge gold" id="badge-usb">ينصح به لـ 90% من الطلاب ⭐</div>
+            <div class="card-icon-box">
+              <span class="icon" style="width: 20px; height: 20px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              </span>
+            </div>
+            <div class="card-badge gold" id="badge-usb">الخيار الموصى به لـ 90% من الطلاب</div>
           </div>
-          <div class="card-title">عندي هاتف أندرويد بالواير (USB)</div>
+          <div class="card-title">هاتف أندرويد عبر كيبل USB</div>
           <ul class="card-bullets">
             <li>
-              <span class="icon">⚡</span>
-              <span><strong>الأسرع والأخف:</strong> تحميل 250MB فقط ويعمل فوراً!</span>
+              <span class="bullet-icon icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span><strong>الأسرع والأخف:</strong> تحميل 250MB فقط ويعمل فوراً</span>
             </li>
             <li>
-              <span class="icon">❄️</span>
-              <span><strong>صفر تعب للابتوب:</strong> لا يستهلك الرام أو المعالج نهائياً.</span>
+              <span class="bullet-icon icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span><strong>صفر تعب للابتوب:</strong> لا يستهلك الرام أو المعالج نهائياً</span>
             </li>
             <li>
-              <span class="icon">📱</span>
-              <span><strong>لمس واقعي:</strong> ترى التطبيق وتجربه على شاشة حقيقية بيدك.</span>
+              <span class="bullet-icon icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span><strong>تجربة واقعية:</strong> ترى التطبيق وتلمسه بيدك على هاتفك الحقيقي</span>
             </li>
             <li>
-              <span class="icon">🔌</span>
-              <span><strong>المتطلبات:</strong> كيبل شحن USB عادي وتفعيل وضع المطور بالهاتف.</span>
+              <span class="bullet-icon icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span><strong>المتطلبات:</strong> كيبل شحن USB عادي وتفعيل خيارات المطور</span>
             </li>
           </ul>
         </div>
@@ -656,98 +870,257 @@
         <!-- Option 2: Emulator (Virtual Device) -->
         <div class="choice-card" id="card-emu" onclick="selectChoice('emu')">
           <div class="card-top">
-            <div class="card-icon">💻</div>
-            <div class="card-badge" id="badge-emu">يحتاج لابتوب قوي 🖥️</div>
+            <div class="card-icon-box">
+              <span class="icon" style="width: 20px; height: 20px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </span>
+            </div>
+            <div class="card-badge" id="badge-emu">يحتاج لابتوب قوي</div>
           </div>
-          <div class="card-title">أريد شاشة محاكي على اللابتوب</div>
+          <div class="card-title">محاكي افتراضي على اللابتوب</div>
           <ul class="card-bullets">
             <li>
-              <span class="icon">📦</span>
-              <span><strong>حجم كبير:</strong> يحتاج تنزيل حزمة محاكي بحجم 3.8GB.</span>
+              <span class="bullet-icon icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span><strong>شاشة داخل اللابتوب:</strong> يفتح نافذة هاتف وهمي على ويندوز</span>
             </li>
             <li>
-              <span class="icon">⚠️</span>
-              <span><strong>شرط المعالج:</strong> يتطلب تفعيل ميزة Virtualization بالـ BIOS.</span>
+              <span class="bullet-icon icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span><strong>استهلاك عالي:</strong> يحتاج 4GB رام إضافية ومعالجاً قوياً</span>
             </li>
             <li>
-              <span class="icon">🧠</span>
-              <span><strong>استهلاك الرام:</strong> يحتاج من 4GB إلى 6GB رام أثناء تشغيله.</span>
+              <span class="bullet-icon icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span><strong>حجم التحميل:</strong> يحتاج تنزيل نظام أندرويد بحجم 3.8GB</span>
             </li>
             <li>
-              <span class="icon">🪄</span>
-              <span><strong>الميزة:</strong> مناسب إذا لم تكن تملك هاتف أندرويد وتريد شاشة وهمية.</span>
+              <span class="bullet-icon icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span><strong>المتطلبات:</strong> تفعيل ميزة Virtualization من إعدادات BIOS</span>
             </li>
           </ul>
         </div>
       </div>
 
       <button id="btn-start-setup" class="btn-primary" onclick="startSetup()">
-        <span>ابدأ التجهيز التلقائي الآن</span>
-        <span>⚡</span>
+        <span>متابعة التجهيز التلقائي</span>
+        <span class="icon" style="width: 16px; height: 16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </span>
       </button>
-      <div style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">
-        نحن نتكفل بكل شيء في الخلفية تلقائياً دون إزعاجك بأي شاشات معقدة
+      <div style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
+        سنتكفل بضبط المسارات والبيئة تلقائياً في الخلفية بدون أي نوافذ مزعجة
       </div>
     </section>
 
-    <!-- STEP 2: SILENT SETUP PROGRESS -->
+    <!-- STEP 2: SILENT SETUP PROGRESS & DYNAMIC TIPS -->
     <section id="step-2" class="step-view">
       <div class="progress-container">
-        <div class="progress-badge" id="setup-step-badge">الخطوة 2 من 3</div>
-        <div class="progress-title" id="setup-step-title">جاري التجهيز الذكي الصامت...</div>
-        <div class="progress-sub" id="setup-step-desc">نحن نهيئ المسارات والأدوات نيابة عنك، استرخِ لدقائق قليلة ☕</div>
+        <div class="step-badge" id="setup-step-badge">الخطوة 2 من 4</div>
+        <div class="hero-title" id="setup-step-title" style="font-size: 20px;">جاري التجهيز الذكي الصامت...</div>
+        <div class="hero-desc" id="setup-step-desc" style="font-size: 13px; margin-bottom: 18px;">
+          نحن نهيئ المسارات والأدوات نيابة عنك في الخلفية، استرخِ قليلاً
+        </div>
 
         <div class="track">
           <div class="fill" id="progress-fill"></div>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">
-          <span id="speed-indicator">السرعة: 5.4 MB/s</span>
-          <span id="percent-indicator">0%</span>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+          <span id="speed-indicator">السرعة: 5.8 MB/s</span>
+          <span id="percent-indicator" style="font-weight: 700; color: var(--accent);">0%</span>
         </div>
 
+        <!-- Rotating Developer Tips Box -->
+        <div class="tips-carousel-box">
+          <div class="tip-icon-box">
+            <span class="icon" style="width: 16px; height: 16px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </span>
+          </div>
+          <div class="tip-content" id="tip-text">
+            <strong>نصيحة ذهبية:</strong> ميزة Hot Reload في فلاتر تتيح لك رؤية أي تعديل بالكود على هاتفك في أقل من ثانية واحدة!
+          </div>
+        </div>
+
+        <!-- Step Checklist -->
         <div class="steps-checklist">
           <div class="step-item" id="chk-env">
-            <span class="step-icon">⏳</span>
+            <span class="step-chk-icon icon" style="width: 14px; height: 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            </span>
             <span>فحص اللابتوب وتهيئة مسارات ويندوز ومساحة القرص</span>
           </div>
           <div class="step-item" id="chk-dl">
-            <span class="step-icon">⏳</span>
-            <span>تنزيل وتجهيز محرك Flutter & Dart (بالتحميل الموازي السريع)</span>
+            <span class="step-chk-icon icon" style="width: 14px; height: 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            </span>
+            <span>تنزيل وتجهيز محرك Flutter & Dart الرسمي</span>
           </div>
           <div class="step-item" id="chk-vsc">
-            <span class="step-icon">⏳</span>
-            <span>ربط وتجهيز محرر VS Code وتفعيل إضافات فلاتر والحفظ التلقائي</span>
+            <span class="step-chk-icon icon" style="width: 14px; height: 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            </span>
+            <span>تثبيت إضافات فلاتر لمحرر VS Code وضبط الحفظ التلقائي</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- STEP 3: ALL DONE CELEBRATION -->
+    <!-- STEP 3: PHONE CONNECT & TEST RUN -->
     <section id="step-3" class="step-view">
-      <div class="finished-card">
-        <div class="finished-icon">🎉</div>
-        <div class="finished-title">مبروك يا بطل! لابتوبك جاهز بالكامل</div>
-        <div class="finished-desc">
-          تم ضبط كل شيء بنجاح. يمكنك الآن كتابة أول سطر كود وبناء تطبيقك المفضل دون أي تعقيد!
+      <div class="device-box">
+        <div class="step-badge">الخطوة 3 من 4</div>
+        <div class="hero-title" style="font-size: 20px;">ربط الهاتف واختبار التشغيل الفعلي</div>
+        <p class="hero-desc" style="font-size: 13px; margin-bottom: 16px;">
+          دعنا نتأكد معاً أن فلاتر تعمل 100% على هاتفك قبل الانتقال لكتابة الكود!
+        </p>
+
+        <!-- Dynamic Pulse Device Box -->
+        <div class="pulse-icon-box" id="device-pulse-box">
+          <span class="icon" style="width: 30px; height: 30px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </span>
         </div>
 
-        <div class="feature-list">
-          <div class="feature-entry">
-            <span>✅</span>
-            <span>محرك فلاتر مثبت وجاهز للاستخدام في أي مسار</span>
+        <div id="device-status-badge" class="device-status-badge waiting">
+          <span class="icon" style="width: 12px; height: 12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+          </span>
+          <span id="device-status-text">بانتظار ربط هاتفك باللابتوب عبر كيبل USB...</span>
+        </div>
+
+        <!-- 3-Step Troubleshooting Guide -->
+        <div class="guide-box" id="device-guide-box">
+          <div class="guide-title">
+            <span class="icon" style="width: 14px; height: 14px; color: var(--accent);">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </span>
+            <span>دليل تفعيل الهاتف وتصحيح USB (3 خطوات سريعة):</span>
           </div>
-          <div class="feature-entry">
-            <span>✅</span>
-            <span>محرر VS Code مربوط ومجهز بإضافات Dart & Flutter الرسمية</span>
+          <ul class="guide-steps">
+            <li>
+              <span class="step-num">1</span>
+              <span>اذهب إلى <strong>الضبط ➔ حول الهاتف ➔ اضغط 7 مرات متتالية على رقم الإصدار (Build Number)</strong> حتى تظهر عبارة "أنت مطوّر برامج".</span>
+            </li>
+            <li>
+              <span class="step-num">2</span>
+              <span>ارجع للقائمة الرئيسية وادخل إلى <strong>خيارات المطور ➔ فعّل خيار تصحيح أخطاء USB (USB Debugging)</strong>.</span>
+            </li>
+            <li>
+              <span class="step-num">3</span>
+              <span>انظر لشاشة هاتفك الآن؛ ستظهر نافذة تطلب السماح، اختر <strong>السماح دائماً (Allow)</strong>.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Phone Action Buttons -->
+        <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center;">
+          <button id="btn-refresh-phone" class="btn-secondary" onclick="pollDevices(true)">
+            <span class="icon" style="width: 13px; height: 13px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </span>
+            <span>إعادة فحص الهاتف</span>
+          </button>
+          <button id="btn-fix-adb" class="btn-secondary" onclick="fixAdbConnection()">
+            <span class="icon" style="width: 13px; height: 13px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </span>
+            <span>حل مشاكل الاتصال</span>
+          </button>
+        </div>
+
+        <!-- Big Launch Test Button (Enabled when phone detected or for simulated test) -->
+        <button id="btn-run-test" class="btn-primary" style="width: 100%; justify-content: center; margin-bottom: 12px;" onclick="runTestOnPhone()">
+          <span class="icon" style="width: 16px; height: 16px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </span>
+          <span id="btn-run-test-label">شغّل أول تطبيق تجريبي على هاتفي للتأكد</span>
+        </button>
+
+        <button id="btn-skip-to-vscode" class="btn-secondary" style="border: none; font-size: 11px;" onclick="showStep(4)">
+          <span>تخطي هذه الخطوة والذهاب مباشرة لـ VS Code</span>
+          <span class="icon" style="width: 12px; height: 12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 4: ALL DONE & VS CODE CHEATSHEET -->
+    <section id="step-4" class="step-view">
+      <div class="cheatsheet-card">
+        <div class="step-badge" style="background: var(--success-bg); color: var(--success); border-color: var(--success);">
+          <span class="icon" style="width: 12px; height: 12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <span>جاهز 100% للبرمجة</span>
+        </div>
+        <div class="hero-title" style="font-size: 22px;">لابتوبك وهاتفك جاهزان بالكامل</div>
+        <div class="hero-desc" style="font-size: 13px; margin-bottom: 20px;">
+          تم تثبيت فلاتر وضبط المحرر وإنشاء مشروعك الأول. إليك كيف تبدأ العمل في VS Code:
+        </div>
+
+        <!-- Visual 4-Point Cheatsheet -->
+        <div class="cheat-grid">
+          <div class="cheat-item">
+            <div class="cheat-icon-box">
+              <span class="icon" style="width: 14px; height: 14px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              </span>
+            </div>
+            <div>
+              <div class="cheat-item-title">1. مشروعك مفتوح وجاهز</div>
+              <div class="cheat-item-desc">ستجد مجلد (اول_تطبيق_فلاتر) مفتوحاً في VS Code وتكدر تبدأ مباشرة.</div>
+            </div>
           </div>
-          <div class="feature-entry">
-            <span>✅</span>
-            <span>بيئة الويندوز مضبوطة لمنع أي تعارض بالمسارات أو الأذونات</span>
+
+          <div class="cheat-item">
+            <div class="cheat-icon-box">
+              <span class="icon" style="width: 14px; height: 14px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              </span>
+            </div>
+            <div>
+              <div class="cheat-item-title">2. أبقِ هاتفك متصلاً بالكيبل</div>
+              <div class="cheat-item-desc">تأكد من بقاء الكيبل موصولاً حتى يتم إرسال التطبيق لشاشة هاتفك فوراً.</div>
+            </div>
+          </div>
+
+          <div class="cheat-item">
+            <div class="cheat-icon-box">
+              <span class="icon" style="width: 14px; height: 14px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </span>
+            </div>
+            <div>
+              <div class="cheat-item-title">3. زر التشغيل السحري F5</div>
+              <div class="cheat-item-desc">اضغط F5 في الكيبورد لتشغيل وبناء التطبيق وإرساله لشاشة الهاتف.</div>
+            </div>
+          </div>
+
+          <div class="cheat-item">
+            <div class="cheat-icon-box">
+              <span class="icon" style="width: 14px; height: 14px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </span>
+            </div>
+            <div>
+              <div class="cheat-item-title">4. التحديث الفوري Hot Reload</div>
+              <div class="cheat-item-desc">عدّل أي نص في ملف (lib/main.dart) واضغط Ctrl+S؛ يتغير الهاتف بثانية!</div>
+            </div>
           </div>
         </div>
 
-        <button id="btn-open-vscode" class="btn-launch" onclick="openVSCode()">
-          <span>🚀 افتح VS Code وابدأ أول تطبيق الآن</span>
+        <button id="btn-open-vscode" class="btn-primary" style="background: var(--success); padding: 14px 44px; font-size: 15px;" onclick="openVSCode()">
+          <span class="icon" style="width: 16px; height: 16px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </span>
+          <span>افتح VS Code وابدأ البرمجة الآن</span>
         </button>
       </div>
     </section>
@@ -755,12 +1128,27 @@
 
   <!-- Footer -->
   <footer>
-    FlutterWay — تطبيق سطح مكتب أصلي لتيسير انطلاقة المطورين | مفتوح المصدر برخصة MIT
+    FlutterWay — تطبيق سطح مكتب أصلي لتيسير انطلاقة مطوري الموبايل | مفتوح المصدر برخصة MIT
   </footer>
 
   <script>
     let selectedMode = 'usb';
     let currentTheme = 'dark';
+    let currentProgress = 0;
+    let targetProgress = 0;
+    let progressTimer = null;
+    let devicePollInterval = null;
+    let detectedDevices = [];
+
+    // Rotating tips
+    const tipsList = [
+      "ميزة Hot Reload في فلاتر تتيح لك رؤية أي تعديل تكتبه بالكود على هاتفك في أقل من ثانية واحدة!",
+      "كبرى التطبيقات العالمية مثل Google Pay و BMW و Alibaba مبنية بالكامل باستخدام فلاتر.",
+      "لغة دارت (Dart) سهلة وممتعة، وإذا كنت تعرف القليل من جافا أو C++ ستتعلمها خلال أيام قليلة!",
+      "إعداد فلاتر يدوياً يحتاج ضبط أكثر من 7 متغيرات بالويندوز، فلاتر-واي أنجزها لك آلياً الآن.",
+      "أول مشروع تم إنشاؤه على الديسكتوب باسم (اول_تطبيق_فلاتر) وسنقوم بتجربته معاً فوراً!"
+    ];
+    let currentTipIndex = 0;
 
     // Theme toggle
     function toggleTheme() {
@@ -770,10 +1158,10 @@
       const icon = document.getElementById('theme-icon');
       const label = document.getElementById('theme-label');
       if (currentTheme === 'light') {
-        icon.innerText = '🌙';
+        icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
         label.innerText = 'الوضع الليلي';
       } else {
-        icon.innerText = '☀️';
+        icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
         label.innerText = 'الوضع النهاري';
       }
     }
@@ -786,14 +1174,20 @@
 
     function showStep(stepNum) {
       document.querySelectorAll('.step-view').forEach(el => el.classList.remove('active'));
-      document.getElementById(`step-${stepNum}`).classList.add('active');
+      const target = document.getElementById(`step-${stepNum}`);
+      if (target) target.classList.add('active');
+
+      if (stepNum === 3) {
+        startDevicePolling();
+      } else {
+        stopDevicePolling();
+      }
     }
 
-    // 1-Click Laptop Specs & Compatibility Check
+    // 1-Click Laptop Specs Check
     async function checkLaptopSpecs() {
-      const banner = document.getElementById('banner-check');
       const btn = document.getElementById('btn-check-laptop');
-      btn.innerText = 'جاري الفحص... ⏳';
+      btn.innerHTML = `<span>جاري الفحص...</span>`;
 
       if (window.pywebview && window.pywebview.api) {
         try {
@@ -803,7 +1197,6 @@
           console.error(e);
         }
       } else {
-        // Mock fallback for browser dev view
         displaySpecsResult({
           ram_gb: 11.7,
           free_disk_gb: 43.8,
@@ -823,75 +1216,223 @@
       
       const vtEl = document.getElementById('spec-vt');
       if (data.vt_enabled) {
-        vtEl.innerText = 'مفعلة ✅';
+        vtEl.innerText = 'مفعلة';
         vtEl.style.color = 'var(--success)';
       } else {
-        vtEl.innerText = 'غير مفعلة ⚠️';
+        vtEl.innerText = 'غير مفعلة';
         vtEl.style.color = 'var(--danger)';
       }
 
       document.getElementById('rec-msg').innerText = data.reason || 'ننصحك باختيار هاتف USB.';
 
-      // Automatically select recommended mode
       if (data.recommended_mode) {
         selectChoice(data.recommended_mode);
       }
 
-      // Hide the initial banner smoothly
       document.getElementById('banner-check').style.display = 'none';
     }
 
+    // Smooth Asymptotic Progress Ticker
     function startSetup() {
       showStep(2);
+      startAsymptoticTicker();
+      startRotatingTips();
+
       if (window.pywebview && window.pywebview.api) {
         window.pywebview.api.start_onboarding(selectedMode);
       } else {
-        simulateProgress();
+        simulateProgressDev();
       }
+    }
+
+    function startAsymptoticTicker() {
+      if (progressTimer) clearInterval(progressTimer);
+      progressTimer = setInterval(() => {
+        if (currentProgress < targetProgress) {
+          currentProgress += 1;
+        } else if (currentProgress < 96 && targetProgress >= currentProgress) {
+          // Asymptotic micro-ticker: advance gently so it never appears frozen
+          currentProgress += 0.2;
+        }
+        applyProgressUI(Math.min(99, Math.round(currentProgress)));
+      }, 400);
+    }
+
+    function applyProgressUI(p) {
+      const fill = document.getElementById('progress-fill');
+      const percentLbl = document.getElementById('percent-indicator');
+      if (fill) fill.style.width = p + '%';
+      if (percentLbl) percentLbl.innerText = p + '%';
     }
 
     function updateProgress(percent, statusText, chkStep) {
-      const fill = document.getElementById('progress-fill');
-      const percentLbl = document.getElementById('percent-indicator');
+      targetProgress = percent;
       const titleLbl = document.getElementById('setup-step-title');
-      
-      fill.style.width = percent + '%';
-      percentLbl.innerText = percent + '%';
-      if (statusText) titleLbl.innerText = statusText;
+      if (statusText && titleLbl) titleLbl.innerText = statusText;
 
-      if (chkStep >= 1) markStepDone('chk-env');
-      if (chkStep >= 2) markStepDone('chk-dl');
-      if (chkStep >= 3) markStepDone('chk-vsc');
+      // Update checklists
+      if (chkStep >= 1) markChecklist('chk-env');
+      if (chkStep >= 2) markChecklist('chk-dl');
+      if (chkStep >= 3) markChecklist('chk-vsc');
 
       if (percent >= 100) {
+        currentProgress = 100;
+        applyProgressUI(100);
+        if (progressTimer) clearInterval(progressTimer);
+      }
+    }
+
+    function markChecklist(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add('done');
+        const icon = el.querySelector('.step-chk-icon');
+        if (icon) {
+          icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+        }
+      }
+    }
+
+    function startRotatingTips() {
+      setInterval(() => {
+        currentTipIndex = (currentTipIndex + 1) % tipsList.length;
+        const tipEl = document.getElementById('tip-text');
+        if (tipEl) {
+          tipEl.style.opacity = '0';
+          setTimeout(() => {
+            tipEl.innerHTML = `<strong>نصيحة للمطورين:</strong> ${tipsList[currentTipIndex]}`;
+            tipEl.style.opacity = '1';
+          }, 250);
+        }
+      }, 4500);
+    }
+
+    // Step 3: Device Polling & USB Debugging
+    function startDevicePolling() {
+      pollDevices();
+      if (!devicePollInterval) {
+        devicePollInterval = setInterval(pollDevices, 2500);
+      }
+    }
+
+    function stopDevicePolling() {
+      if (devicePollInterval) {
+        clearInterval(devicePollInterval);
+        devicePollInterval = null;
+      }
+    }
+
+    async function pollDevices(manual=false) {
+      if (manual) {
+        const btn = document.getElementById('btn-refresh-phone');
+        if (btn) btn.innerHTML = `<span>جاري الفحص...</span>`;
+      }
+
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.check_connected_devices();
+          handleDeviceResponse(res);
+        } catch (e) {
+          console.error("Device poll error:", e);
+        }
+      }
+
+      if (manual) {
         setTimeout(() => {
-          showStep(3);
-        }, 800);
+          const btn = document.getElementById('btn-refresh-phone');
+          if (btn) btn.innerHTML = `<span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><span>إعادة فحص الهاتف</span>`;
+        }, 500);
       }
     }
 
-    function markStepDone(elemId) {
-      const it = document.getElementById(elemId);
-      if (it) {
-        it.classList.add('done');
-        it.querySelector('.step-icon').innerText = '✅';
+    function handleDeviceResponse(res) {
+      const badge = document.getElementById('device-status-badge');
+      const text = document.getElementById('device-status-text');
+      const guideBox = document.getElementById('device-guide-box');
+      const runBtn = document.getElementById('btn-run-test');
+      const runBtnLabel = document.getElementById('btn-run-test-label');
+
+      if (!res.devices || res.devices.length === 0) {
+        badge.className = 'device-status-badge waiting';
+        text.innerText = 'بانتظار ربط هاتفك باللابتوب عبر كيبل USB...';
+        guideBox.style.display = 'block';
+        runBtnLabel.innerText = 'شغّل أول تطبيق تجريبي على هاتفي للتأكد';
+        detectedDevices = [];
+      } else {
+        detectedDevices = res.devices;
+        const dev = res.devices[0];
+        if (dev.status === 'unauthorized') {
+          badge.className = 'device-status-badge unauthorized';
+          text.innerText = `تم العثور على ${dev.model}! انظر لشاشة هاتفك واضغط "سماح" (Allow)`;
+          guideBox.style.display = 'block';
+        } else if (dev.status === 'device') {
+          badge.className = 'device-status-badge ready';
+          text.innerText = `تم التعرف بنجاح على: ${dev.model} (متصل وجاهز للعمل)`;
+          guideBox.style.display = 'none';
+          runBtnLabel.innerText = `شغّل التطبيق فوراً على ${dev.model}`;
+        }
       }
     }
 
+    async function fixAdbConnection() {
+      const btn = document.getElementById('btn-fix-adb');
+      btn.innerHTML = `<span>جاري إعادة تشغيل الخادم...</span>`;
+      if (window.pywebview && window.pywebview.api) {
+        await window.pywebview.api.restart_adb();
+      }
+      setTimeout(() => {
+        btn.innerHTML = `<span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>تم إعادة التشغيل بنجاح</span>`;
+        pollDevices();
+      }, 1200);
+    }
+
+    async function runTestOnPhone() {
+      const btn = document.getElementById('btn-run-test');
+      const label = document.getElementById('btn-run-test-label');
+      label.innerText = 'جاري التحقق والتجميع والتشغيل على الهاتف...';
+      btn.style.opacity = '0.85';
+
+      let serial = detectedDevices.length > 0 ? detectedDevices[0].serial : null;
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.run_test_app(serial);
+          console.log("Run test result:", res);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      setTimeout(() => {
+        showStep(4);
+      }, 1500);
+    }
+
+    // Step 4: Open VS Code
     function openVSCode() {
+      const btn = document.getElementById('btn-open-vscode');
+      btn.innerHTML = `<span>جاري فتح VS Code...</span>`;
       if (window.pywebview && window.pywebview.api) {
         window.pywebview.api.open_vscode();
       }
     }
 
-    function simulateProgress() {
+    // Agent Harness Trigger
+    function triggerAgentTap(targetId) {
+      const el = document.getElementById(targetId);
+      if (el) el.click();
+    }
+
+    // Dev Fallback Simulation
+    function simulateProgressDev() {
       let p = 0;
       const interval = setInterval(() => {
-        p += 5;
-        let step = p > 70 ? 3 : (p > 35 ? 2 : 1);
-        updateProgress(p, p > 70 ? 'جاري ضبط VS Code...' : 'جاري تنزيل الأدوات...', step);
-        if (p >= 100) clearInterval(interval);
-      }, 150);
+        p += 15;
+        updateProgress(p, `جاري محاكاة التجهيز (${p}%)...`, p > 30 ? (p > 70 ? 3 : 2) : 1);
+        if (p >= 100) {
+          clearInterval(interval);
+          setTimeout(() => showStep(3), 600);
+        }
+      }, 800);
     }
   </script>
 </body>
