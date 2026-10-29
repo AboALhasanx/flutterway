@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlutterWay 🚀 — رفيقك اللطيف لتجهيز فلاتر</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --secondary: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top App Header */
+    header {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 4px 20px rgba(56, 189, 248, 0.35);
+    }
+
+    .brand-title h1 {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(to left, #38bdf8, #a5b4fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .status-pill {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--success);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    /* Friendly Hero Welcome */
+    .hero {
+      text-align: center;
+      padding: 24px 20px;
+      background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.2), transparent 70%);
+      border-radius: 24px;
+    }
+
+    .hero h2 {
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    /* Cards Grid (Kid-Friendly Big Choices) */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .choice-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 2px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .choice-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.2);
+    }
+
+    .choice-card.highlight {
+      border-color: #38bdf8;
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(14, 165, 233, 0.15));
+    }
+
+    .card-badge-top {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    .card-icon {
+      font-size: 40px;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .card-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .card-btn {
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      color: #fff;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .card-btn:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    }
+
+    /* Diagnostics Section */
+    .section-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 28px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .refresh-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .refresh-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Items List */
+    .diag-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .diag-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: all 0.2s;
+    }
+
+    .diag-item:hover {
+      background: rgba(15, 23, 42, 0.85);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .diag-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .diag-status-icon {
+      font-size: 24px;
+      min-width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .diag-text h4 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .diag-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .badge-pass { background: rgba(52, 211, 153, 0.2); color: #34d399; }
+    .badge-warn { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+    .badge-info { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+
+    .diag-text p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .fix-btn {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .fix-btn:hover {
+      filter: brightness(1.15);
+      transform: scale(1.03);
+    }
+
+    /* Turbo Downloader Progress Box */
+    .download-box {
+      display: none;
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+      border: 2px solid var(--primary);
+      border-radius: 24px;
+      padding: 28px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dl-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .dl-header h3 {
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .progress-bar-container {
+      background: rgba(15, 23, 42, 0.8);
+      height: 18px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      height: 100%;
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+    }
+
+    .dl-stats {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Streams Indicator */
+    .streams-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stream-pill {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 8px;
+      padding: 6px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header>
+    <div class="brand">
+      <div class="logo-badge">💙</div>
+      <div class="brand-title">
+        <h1>طريق فلاتر — FlutterWay</h1>
+        <p>الرفيق الذكي للطلاب والمبتدئين على Windows</p>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="pulse"></div>
+      <span id="header-status">النظام جاهز ونشط</span>
+    </div>
+  </header>
+
+  <!-- Main View -->
+  <main>
+    <!-- Welcome Hero -->
+    <div class="hero">
+      <h2>أهلاً بيك يا بطل في عالم تطوير الموبايل! 🚀</h2>
+      <p>اختر الطريقة التي تفضلها بكل بساطة بدون ما تدور وتتعب، واحنا راح نتكفل بكل التفاصيل وضبط الإعدادات تلقائياً!</p>
+    </div>
+
+    <!-- Download Progress Box (Hidden initially) -->
+    <div class="download-box" id="dl-box">
+      <div class="dl-header">
+        <h3>⚡ جاري التحميل المجزأ الصاروخي (4 مسارات متوازية)...</h3>
+        <span id="dl-percent" style="font-size: 18px; font-weight: 900; color: #38bdf8;">0%</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="dl-fill"></div>
+      </div>
+      <div class="dl-stats">
+        <span id="dl-size">الحجم: 0 MB / 0 MB</span>
+        <span id="dl-speed">السرعة: 0.00 MB/s</span>
+      </div>
+      <div class="streams-grid">
+        <div class="stream-pill">المسار 1: نشط ⚡</div>
+        <div class="stream-pill">المسار 2: نشط ⚡</div>
+        <div class="stream-pill">المسار 3: نشط ⚡</div>
+        <div class="stream-pill">المسار 4: نشط ⚡</div>
+      </div>
+    </div>
+
+    <!-- 4 Big Playful Choices -->
+    <div class="cards-grid">
+      <!-- Card 1 -->
+      <div class="choice-card highlight" onclick="startSetup('usb_only')">
+        <span class="card-badge-top">الأسرع والأوفر ⚡</span>
+        <div>
+          <div class="card-icon">📱</div>
+          <div class="card-title">عندي موبايل بالواير</div>
+          <div class="card-desc">أربط هاتفك الأندرويد الحقيقي بالحاسبة. ينزل 200MB فقط ويشتغل فوراً بدون ما يتعب رام اللابتوب!</div>
+        </div>
+        <button class="card-btn">انطلق بهذا الخيار 🚀</button>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="choice-card" onclick="startSetup('virtual_device')">
+        <span class="card-badge-top" style="background: rgba(251,191,36,0.2); color:#fbbf24;">يحتاج لابتوب قوي 🖥️</span>
+        <div>
+          <div class="card-icon">💻</div>
+          <div class="card-title">محاكي شاشة عالحاسبة</div>
+          <div class="card-desc">يفتح شاشة هاتف وهمية داخل ويندوز. يحتاج معالج يدعم المحاكاة وإنترنت قوي لتنزيل 3.8GB.</div>
+        </div>
+        <button class="card-btn" style="background: linear-gradient(135deg, #6366f1, #a855f7);">تجهيز المحاكي 🪄</button>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="choice-card" onclick="startSetup('offline_bundle')">
+        <span class="card-badge-top" style="background: rgba(52,211,153,0.2); color:#34d399;">بدون نت نهائياً 📁</span>
+        <div>
+          <div class="card-icon">🚀</div>
+          <div class="card-title">تثبيت فوري من فلاشة</div>
+          <div class="card-desc">إذا نسخت مجلد التثبيت من فلاشة زميلك، اضغط هنا لتجهيز البيئة في 90 ثانية بدون أي إنترنت!</div>
+        </div>
+        <button class="card-btn" style="background: linear-gradient(135deg, #10b981, #059669);">تثبيت من الفلاشة ⚡</button>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="choice-card" onclick="fetchDoctorReport()">
+        <span class="card-badge-top" style="background: rgba(244,114,182,0.2); color:#f472b6;">طبيب فلاتر 🩺</span>
+        <div>
+          <div class="card-icon">🩺</div>
+          <div class="card-title">فحص وتصليح المشاكل</div>
+          <div class="card-desc">يفحص حاسبتك من الألف للياء (المسارات، الرام، الجافا، ومنافذ الموبايل) ويصلح العقد بضغطة زر.</div>
+        </div>
+        <button class="card-btn" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);">افحص لابتوبي الآن 🩺</button>
+      </div>
+    </div>
+
+    <!-- Doctor Live Diagnostics Section -->
+    <div class="section-box">
+      <div class="section-header">
+        <div class="section-title">
+          <span>🩺</span>
+          <span>لوحة الفحص الذكي للبيئة ولابتوبك</span>
+        </div>
+        <button class="refresh-btn" onclick="fetchDoctorReport()">
+          <span>🔄</span>
+          <span>إعادة الفحص الآن</span>
+        </button>
+      </div>
+
+      <div class="diag-list" id="diag-container">
+        <div style="text-align:center; padding: 30px; color: var(--text-muted);">
+          ⏳ جاري استدعاء فاحص النظام الذكي...
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    طريق فلاتر (FlutterWay) — تم تصميمه بكل حب لدعم الطلاب العرب ومبرمجي المستقبل 💙 | رخصة MIT المفتوحة
+  </footer>
+
+  <script>
+    // Fetch live doctor report on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchDoctorReport();
+    });
+
+    async function fetchDoctorReport() {
+      const container = document.getElementById('diag-container');
+      container.innerHTML = '<div style="text-align:center; padding: 25px; color: var(--text-muted);">⏳ جاري فحص النظام ومنافذ USB والمسارات...</div>';
+
+      try {
+        const res = await fetch('/api/doctor');
+        const data = await res.json();
+        renderDiagnostics(data.items);
+      } catch (err) {
+        container.innerHTML = '<div style="text-align:center; padding: 25px; color: var(--danger);">⚠️ تعذر الاتصال بمحرك الفحص المحلي!</div>';
+      }
+    }
+
+    function renderDiagnostics(items) {
+      const container = document.getElementById('diag-container');
+      if (!items || items.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding: 20px;">ماكو أي بيانات حالياً.</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'diag-item';
+
+        let badgeClass = 'badge-pass';
+        let icon = '✅';
+        if (item.status === 'WARN') {
+          badgeClass = 'badge-warn';
+          icon = '⚠️';
+        } else if (item.status === 'FAIL') {
+          badgeClass = 'badge-warn';
+          icon = '❌';
+        } else if (item.status === 'INFO') {
+          badgeClass = 'badge-info';
+          icon = 'ℹ️';
+        }
+
+        let fixBtnHtml = '';
+        if (item.auto_fixable) {
+          fixBtnHtml = `<button class="fix-btn" onclick="runFix('${item.fix_command}')">🪄 إصلاح تلقائي</button>`;
+        }
+
+        div.innerHTML = `
+          <div class="diag-content">
+            <div class="diag-status-icon">${icon}</div>
+            <div class="diag-text">
+              <h4>
+                <span>${item.title}</span>
+                <span class="diag-badge ${badgeClass}">${item.badge}</span>
+              </h4>
+              <p>${item.explanation}</p>
+            </div>
+          </div>
+          ${fixBtnHtml}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function runFix(fixCommand) {
+      alert('🪄 جاري تشغيل الإصلاح التلقائي: ' + fixCommand);
+      try {
+        const res = await fetch('/api/fix', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: fixCommand })
+        });
+        const result = await res.json();
+        alert(result.message || 'تم الإصلاح بنجاح! 🎉');
+        fetchDoctorReport();
+      } catch (e) {
+        alert('حدث خطأ أثناء الإصلاح: ' + e);
+      }
+    }
+
+    async function startSetup(profile) {
+      const dlBox = document.getElementById('dl-box');
+      dlBox.style.display = 'block';
+      window.scrollTo({ top: dlBox.offsetTop - 80, behavior: 'smooth' });
+
+      const fill = document.getElementById('dl-fill');
+      const percentText = document.getElementById('dl-percent');
+      const sizeText = document.getElementById('dl-size');
+      const speedText = document.getElementById('dl-speed');
+
+      fill.style.width = '0%';
+      percentText.innerText = '0%';
+      sizeText.innerText = 'جاري الاتصال والتحميل المجزأ...';
+
+      // EventSource for real-time IDM-style progress
+      const evtSource = new EventSource(`/api/download-stream?profile=${profile}`);
+      evtSource.onmessage = function(event) {
+        const p = JSON.parse(event.data);
+        fill.style.width = p.Percent + '%';
+        percentText.innerText = p.Percent + '%';
+        sizeText.innerText = `تم: ${(p.DownloadedBytes / (1024*1024)).toFixed(1)} MB / ${(p.TotalBytes / (1024*1024)).toFixed(1)} MB`;
+        speedText.innerText = `السرعة: ${p.SpeedMBps.toFixed(2)} MB/s`;
+
+        if (p.Percent >= 100) {
+          evtSource.close();
+          setTimeout(() => {
+            alert('🎉 مبروك يا بطل! تم التحميل والتحقق من التجزئة بنجاح 100%!');
+            fetchDoctorReport();
+          }, 500);
+        }
+      };
+      evtSource.onerror = function() {
+        evtSource.close();
+      };
+    }
+  </script>
+</body>
+</html>

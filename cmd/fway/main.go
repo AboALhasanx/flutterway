@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/AboALhasanx/flutterway/pkg/doctor"
 	"github.com/AboALhasanx/flutterway/pkg/downloader"
+	"github.com/AboALhasanx/flutterway/pkg/gui"
 	"github.com/AboALhasanx/flutterway/pkg/manifest"
 )
 
@@ -25,22 +28,65 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) == 0 {
-		runInteractiveMenu()
+		// By default when double-clicked or run without args, launch the GUI!
+		runGUI()
 		return
 	}
 
 	switch args[0] {
+	case "gui":
+		runGUI()
+	case "cli":
+		runInteractiveMenu()
 	case "doctor":
 		runDoctor()
 	case "test-dl":
 		runDownloadTest()
 	case "version":
-		fmt.Printf("FlutterWay CLI (fway) v1.0.0-prototype | Windows x64\n")
+		fmt.Printf("FlutterWay CLI & GUI (fway) v1.0.0 | Windows x64\n")
 	case "help", "--help", "-h":
 		printHelp()
 	default:
 		fmt.Printf("أمر غير معروف: %s. استخدم 'fway help' لمعرفة الأوامر.\n", args[0])
 	}
+}
+
+func runGUI() {
+	printBanner()
+	fmt.Println(ColorGreen + ColorBold + "  🖥️ جاري إطلاق الواجهة الرسومية التفاعلية لـ FlutterWay..." + ColorReset)
+
+	server, err := gui.StartServer()
+	if err != nil {
+		fmt.Printf(ColorRed+"  فشل تشغيل خادم الواجهة: %v\n"+ColorReset, err)
+		runInteractiveMenu()
+		return
+	}
+
+	appURL := fmt.Sprintf("http://127.0.0.1:%d", server.Port)
+	fmt.Printf("  🌐 الواجهة تعمل محلياً على الرابط: %s%s%s\n", ColorCyan, appURL, ColorReset)
+
+	cmd, err := gui.LaunchWindow(appURL)
+	if err != nil {
+		fmt.Printf(ColorYellow+"  تعذر فتح النافذة تلقائياً. بإمكانك فتح الرابط في المتصفح: %s\n"+ColorReset, appURL)
+	} else {
+		fmt.Println(ColorGreen + "  ✨ تم فتح نافذة البرنامج بنجاح! تفضل بالاطلاع عليها على شاشتك الآن." + ColorReset)
+	}
+
+	fmt.Println(ColorCyan + "  💡 لإيقاف البرنامج، اضغط Ctrl + C في هذه النافذة." + ColorReset)
+
+	// Wait for exit signal
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	if cmd != nil && cmd.Process != nil {
+		go func() {
+			_ = cmd.Wait()
+			os.Exit(0)
+		}()
+	}
+
+	<-sigChan
+	fmt.Println("\n  مع السلامة! 👋")
 }
 
 func printBanner() {
@@ -61,7 +107,8 @@ func runInteractiveMenu() {
 	fmt.Println("  " + ColorYellow + "[2] 💻 أريد شاشة موبايل وهمية عالحاسبة" + ColorReset + " (يحتاج لابتوب قوي وإنترنت عالي! ينزل 3.8GB 🖥️)")
 	fmt.Println("  " + ColorCyan + "[3] 🚀 عندي فلاشة USB بيها الملفات من صديقي" + ColorReset + " (تثبيت فوري بدون إنترنت بدقيقة واحدة! 🪄)")
 	fmt.Println("  " + ColorGreen + "[4] 🩺 فحص صحة الحاسبة وتصليح المشاكل" + ColorReset + " (طبيب فلاتر الذكي لفحص بيئتك وحل العقد! 🩺)")
-	fmt.Println("  " + ColorRed + "[5] 🚪 خروج مع ابتسامة 😊" + ColorReset)
+	fmt.Println("  " + ColorCyan + "[5] 🖥️ فتح الواجهة الرسومية البصرية (GUI Window)" + ColorReset)
+	fmt.Println("  " + ColorRed + "[6] 🚪 خروج مع ابتسامة 😊" + ColorReset)
 	fmt.Println()
 
 	fmt.Print("  👉 اكتب رقم الخيار ثم اضغط Enter: ")
@@ -73,7 +120,6 @@ func runInteractiveMenu() {
 	case "1":
 		fmt.Println()
 		fmt.Println(ColorGreen + "  🌟 اختيار ذكي جداً! الربط بالواير يوفر عليك ساعات تحميل وما يستهلك رام جهازك أبداً!" + ColorReset)
-		fmt.Println("  جاري فحص اتصال الهاتف وتشغيل الفاحص...")
 		runDoctor()
 	case "2":
 		fmt.Println()
@@ -85,6 +131,8 @@ func runInteractiveMenu() {
 	case "4":
 		runDoctor()
 	case "5":
+		runGUI()
+	case "6":
 		fmt.Println(ColorGreen + "  مع السلامة وبالتوفيق في رحلتك البرمجية الجميلة! 💙👋" + ColorReset)
 	default:
 		fmt.Println(ColorRed + "  اختيار غير موجود! راح نشغل فاحص الطبيب لمساعدتك:" + ColorReset)
@@ -170,7 +218,9 @@ func runDownloadTest() {
 func printHelp() {
 	printBanner()
 	fmt.Println("  الاستخدام:")
-	fmt.Println("    fway             تشغيل القائمة التفاعلية اللطيفة للمبتدئين")
+	fmt.Println("    fway             تشغيل واجهة التطبيق الرسومية المرئية (GUI)")
+	fmt.Println("    fway gui         فتح نافذة التطبيق البصرية كبرنامج سطح مكتب")
+	fmt.Println("    fway cli         تشغيل القائمة التفاعلية في التيرمنال")
 	fmt.Println("    fway doctor      فحص لابتوبك ومسار بناء الموبايل وتشخيص الأخطاء")
 	fmt.Println("    fway test-dl     تجربة محرك التحميل المتعدد المجزأ ومطابقة الهاش")
 	fmt.Println("    fway version     عرض إصدار الأداة")
