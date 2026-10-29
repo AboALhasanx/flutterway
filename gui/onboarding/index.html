@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlutterWay — رفيقك لتجهيز فلاتر</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --success: #10b981;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Custom Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #334155;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .agent-pill {
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: #1e1b4b;
+      color: #a5b4fc;
+      border: 1px solid #312e81;
+      font-weight: 600;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 32px 24px;
+      max-width: 860px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .step-view {
+      display: none;
+      width: 100%;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .step-view.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Step 1: Welcome & Setup Choice */
+    .hero-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+      text-align: center;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-desc {
+      font-size: 15px;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 580px;
+      margin-bottom: 36px;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      width: 100%;
+      margin-bottom: 32px;
+    }
+
+    .choice-card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px 20px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .choice-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px -10px rgba(56, 189, 248, 0.15);
+    }
+
+    .choice-card.selected {
+      border-color: var(--accent);
+      background: #0c1a2e;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+    }
+
+    .card-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+    }
+
+    .card-icon {
+      font-size: 40px;
+      margin-bottom: 16px;
+      margin-top: 10px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0b0f19;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px 38px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      color: #ffffff;
+      transform: scale(1.02);
+    }
+
+    /* Step 2: Progress Screen */
+    .progress-container {
+      width: 100%;
+      max-width: 580px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 36px 30px;
+      text-align: center;
+    }
+
+    .progress-badge {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+    }
+
+    .progress-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .progress-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    .track {
+      background: #1f2937;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #10b981);
+      border-radius: 6px;
+      transition: width 0.3s ease;
+    }
+
+    .steps-checklist {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: right;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: #0f172a;
+    }
+
+    .step-item.done {
+      color: #f8fafc;
+    }
+
+    .step-item.done .step-icon {
+      color: var(--success);
+    }
+
+    /* Step 3: Finished Celebration */
+    .finished-card {
+      width: 100%;
+      max-width: 580px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 40px 32px;
+      text-align: center;
+    }
+
+    .finished-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+
+    .finished-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    .finished-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: right;
+      background: #0f172a;
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 32px;
+    }
+
+    .feature-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #e2e8f0;
+    }
+
+    .btn-launch {
+      background: #10b981;
+      color: #0b0f19;
+      font-size: 16px;
+      font-weight: 800;
+      padding: 15px 44px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-launch:hover {
+      background: #059669;
+      color: #ffffff;
+      transform: scale(1.02);
+    }
+
+    /* Footer */
+    footer {
+      padding: 14px;
+      text-align: center;
+      font-size: 12px;
+      color: #475569;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="logo-box">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M14.5 4H18.5L9.5 13L5.5 13L14.5 4Z" fill="#38BDF8"/>
+          <path d="M13.5 13.5L18.5 18.5L14.5 18.5L9.5 13.5L13.5 13.5Z" fill="#0284C7"/>
+          <path d="M11.5 11.5L15.5 15.5L13 18L9 14L11.5 11.5Z" fill="#00B0FF"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">FlutterWay — طريق فلاتر</div>
+        <div class="brand-sub">تجهيز بيئة الموبايل بضغطة زر واحدة للطلاب والمبتدئين</div>
+      </div>
+    </div>
+    <div class="agent-pill">🤖 وضع الأتمتة الذكي مفعّل</div>
+  </header>
+
+  <!-- Main Body Content -->
+  <main>
+    <!-- STEP 1: WELCOME & SELECTION -->
+    <section id="step-1" class="step-view active">
+      <h1 class="hero-title">أهلاً بك في عالم صناعة التطبيقات 🚀</h1>
+      <p class="hero-desc">
+        اختر الطريقة التي تفضلها لاختبار تطبيقاتك على اللابتوب، ونحن سنتكفل بكل الضبط والمسارات والتراخيص تلقائياً في الخلفية.
+      </p>
+
+      <div class="choice-grid">
+        <!-- Option 1: Real Phone -->
+        <div class="choice-card selected" id="card-usb" onclick="selectChoice('usb')">
+          <div class="card-badge">الأسرع والأخف ⚡</div>
+          <div class="card-icon">📱</div>
+          <div class="card-title">عندي هاتف أندرويد بالواير</div>
+          <div class="card-desc">
+            تربط هاتفك الحقيقي باللابتوب عبر كيبل USB.<br>
+            حجم خفيف جداً، سرعة فائقة، ولا يستهلك الرام!
+          </div>
+        </div>
+
+        <!-- Option 2: Emulator -->
+        <div class="choice-card" id="card-emu" onclick="selectChoice('emu')">
+          <div class="card-badge">لابتوب قوي 🖥️</div>
+          <div class="card-icon">💻</div>
+          <div class="card-title">أريد شاشة محاكي على اللابتوب</div>
+          <div class="card-desc">
+            يفتح شاشة هاتف افتراضية داخل ويندوز.<br>
+            مناسب إذا كان جهازك بمواصفات جيدة ومعالج يدعم المحاكاة.
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-start-setup" class="btn-primary" onclick="startSetup()">
+        <span>ابدأ التجهيز التلقائي الآن</span>
+        <span>⚡</span>
+      </button>
+    </section>
+
+    <!-- STEP 2: SILENT SETUP PROGRESS -->
+    <section id="step-2" class="step-view">
+      <div class="progress-container">
+        <div class="progress-badge" id="setup-step-badge">الخطوة 1 من 3</div>
+        <div class="progress-title" id="setup-step-title">جاري التجهيز الذكي...</div>
+        <div class="progress-sub" id="setup-step-desc">نحن نهيئ المسارات والأدوات نيابة عنك، استرخِ لدقائق قليلة ☕</div>
+
+        <div class="track">
+          <div class="fill" id="progress-fill"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 20px;">
+          <span id="speed-indicator">السرعة: 5.4 MB/s</span>
+          <span id="percent-indicator">0%</span>
+        </div>
+
+        <div class="steps-checklist">
+          <div class="step-item" id="chk-env">
+            <span class="step-icon">⏳</span>
+            <span>فحص اللابتوب وتهيئة مسارات ويندوز الطويلة ومساحة القرص</span>
+          </div>
+          <div class="step-item" id="chk-dl">
+            <span class="step-icon">⏳</span>
+            <span>تنزيل وتجهيز محرك Flutter & Dart (بالتحميل الموازي السريع)</span>
+          </div>
+          <div class="step-item" id="chk-vsc">
+            <span class="step-icon">⏳</span>
+            <span>ربط وتجهيز محرر VS Code وتفعيل إضافات فلاتر والحفظ التلقائي</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: ALL DONE CELEBRATION -->
+    <section id="step-3" class="step-view">
+      <div class="finished-card">
+        <div class="finished-icon">🎉</div>
+        <div class="finished-title">مبروك يا بطل! لابتوبك جاهز بالكامل</div>
+        <div class="finished-desc">
+          تم ضبط كل شيء بنجاح. يمكنك الآن كتابة أول سطر كود وبناء تطبيقك المفضل دون أي تعقيد!
+        </div>
+
+        <div class="feature-list">
+          <div class="feature-entry">
+            <span>✅</span>
+            <span>محرك فلاتر مثبت وجاهز للاستخدام في أي مسار</span>
+          </div>
+          <div class="feature-entry">
+            <span>✅</span>
+            <span>محرر VS Code مربوط ومجهز بإضافات Dart & Flutter الرسمية</span>
+          </div>
+          <div class="feature-entry">
+            <span>✅</span>
+            <span>بيئة الويندوز مضبوطة لمنع أي تعارض بالمسارات أو الأذونات</span>
+          </div>
+        </div>
+
+        <button id="btn-open-vscode" class="btn-launch" onclick="openVSCode()">
+          <span>🚀 افتح VS Code وابدأ أول تطبيق الآن</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    FlutterWay — تطبيق سطح مكتب أصلي لتيسير انطلاقة المطورين | مفتوح المصدر برخصة MIT
+  </footer>
+
+  <script>
+    let selectedMode = 'usb';
+
+    function selectChoice(mode) {
+      selectedMode = mode;
+      document.getElementById('card-usb').classList.toggle('selected', mode === 'usb');
+      document.getElementById('card-emu').classList.toggle('selected', mode === 'emu');
+    }
+
+    function showStep(stepNum) {
+      document.querySelectorAll('.step-view').forEach(el => el.classList.remove('active'));
+      document.getElementById(`step-${stepNum}`).classList.add('active');
+    }
+
+    function startSetup() {
+      showStep(2);
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.start_onboarding(selectedMode);
+      } else {
+        // Fallback animation simulation if viewed in dev
+        simulateProgress();
+      }
+    }
+
+    function updateProgress(percent, statusText, chkStep) {
+      const fill = document.getElementById('progress-fill');
+      const percentLbl = document.getElementById('percent-indicator');
+      const titleLbl = document.getElementById('setup-step-title');
+      
+      fill.style.width = percent + '%';
+      percentLbl.innerText = percent + '%';
+      if (statusText) titleLbl.innerText = statusText;
+
+      if (chkStep >= 1) markStepDone('chk-env');
+      if (chkStep >= 2) markStepDone('chk-dl');
+      if (chkStep >= 3) markStepDone('chk-vsc');
+
+      if (percent >= 100) {
+        setTimeout(() => {
+          showStep(3);
+        }, 800);
+      }
+    }
+
+    function markStepDone(elemId) {
+      const it = document.getElementById(elemId);
+      if (it) {
+        it.classList.add('done');
+        it.querySelector('.step-icon').innerText = '✅';
+      }
+    }
+
+    function openVSCode() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.open_vscode();
+      }
+    }
+
+    function simulateProgress() {
+      let p = 0;
+      const interval = setInterval(() => {
+        p += 5;
+        let step = p > 70 ? 3 : (p > 35 ? 2 : 1);
+        updateProgress(p, p > 70 ? 'جاري ضبط VS Code...' : 'جاري تنزيل الأدوات...', step);
+        if (p >= 100) clearInterval(interval);
+      }, 150);
+    }
+  </script>
+</body>
+</html>
