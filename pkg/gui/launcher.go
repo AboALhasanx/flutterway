@@ -7,26 +7,28 @@ import (
 	"path/filepath"
 )
 
-// LaunchWindow opens the visual app window.
+// LaunchWindow opens the visual app window reliably on the user's desktop.
 func LaunchWindow(url string) (*exec.Cmd, error) {
+	// First: Try opening dedicated app-mode window
 	browserPath := findChromiumBrowser()
 
 	if browserPath != "" {
-		tempProfile := filepath.Join(os.TempDir(), "flutterway-gui-profile")
+		// Launch without conflicting profile lock, dedicated app window
 		appArg := fmt.Sprintf("--app=%s", url)
 		winSize := "--window-size=1120,760"
-		userDir := fmt.Sprintf("--user-data-dir=%s", tempProfile)
 
-		cmd := exec.Command(browserPath, appArg, winSize, userDir)
+		cmd := exec.Command(browserPath, appArg, winSize)
 		if err := cmd.Start(); err == nil {
 			return cmd, nil
 		}
 	}
 
-	// Fallback to default system browser
-	cmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+	// Reliable Windows Shell Launcher: Always brings the window to the foreground!
+	cmd := exec.Command("cmd", "/c", "start", "", url)
 	if err := cmd.Start(); err != nil {
-		return nil, fmt.Errorf("failed to open browser: %w", err)
+		// Ultimate fallback
+		fallbackCmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+		return fallbackCmd, fallbackCmd.Start()
 	}
 
 	return cmd, nil
@@ -38,9 +40,7 @@ func findChromiumBrowser() string {
 	progFiles86 := os.Getenv("ProgramFiles(x86)")
 
 	candidates := []string{
-		// Thorium
-		filepath.Join(localAppData, `Thorium\Application\thorium.exe`),
-		// Microsoft Edge
+		// Microsoft Edge (Standard on Windows)
 		filepath.Join(progFiles86, `Microsoft\Edge\Application\msedge.exe`),
 		filepath.Join(progFiles, `Microsoft\Edge\Application\msedge.exe`),
 		filepath.Join(localAppData, `Microsoft\Edge\Application\msedge.exe`),
@@ -48,9 +48,10 @@ func findChromiumBrowser() string {
 		filepath.Join(progFiles, `Google\Chrome\Application\chrome.exe`),
 		filepath.Join(progFiles86, `Google\Chrome\Application\chrome.exe`),
 		filepath.Join(localAppData, `Google\Chrome\Application\chrome.exe`),
+		// Thorium
+		filepath.Join(localAppData, `Thorium\Application\thorium.exe`),
 		// Brave
 		filepath.Join(progFiles, `BraveSoftware\Brave-Browser\Application\brave.exe`),
-		filepath.Join(localAppData, `BraveSoftware\Brave-Browser\Application\brave.exe`),
 	}
 
 	for _, c := range candidates {

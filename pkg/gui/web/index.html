@@ -440,6 +440,17 @@
       color: #38bdf8;
     }
 
+    /* Agent Test Banner */
+    .agent-pill {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px dashed rgba(99, 102, 241, 0.4);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
     /* Footer */
     footer {
       text-align: center;
@@ -461,9 +472,12 @@
         <p>الرفيق الذكي للطلاب والمبتدئين على Windows</p>
       </div>
     </div>
-    <div class="status-pill">
-      <div class="pulse"></div>
-      <span id="header-status">النظام جاهز ونشط</span>
+    <div style="display:flex; align-items:center; gap: 12px;">
+      <div class="agent-pill">🤖 وضع أتمتة الـ Agent مفعل</div>
+      <div class="status-pill">
+        <div class="pulse"></div>
+        <span id="header-status">النظام جاهز ونشط</span>
+      </div>
     </div>
   </header>
 
@@ -496,10 +510,10 @@
       </div>
     </div>
 
-    <!-- 4 Big Playful Choices -->
+    <!-- 4 Big Playful Choices with Agent IDs -->
     <div class="cards-grid">
       <!-- Card 1 -->
-      <div class="choice-card highlight" onclick="startSetup('usb_only')">
+      <div class="choice-card highlight" id="card-usb-only" data-agent-id="btn-usb-only" onclick="startSetup('usb_only')">
         <span class="card-badge-top">الأسرع والأوفر ⚡</span>
         <div>
           <div class="card-icon">📱</div>
@@ -510,7 +524,7 @@
       </div>
 
       <!-- Card 2 -->
-      <div class="choice-card" onclick="startSetup('virtual_device')">
+      <div class="choice-card" id="card-virtual-device" data-agent-id="btn-virtual-device" onclick="startSetup('virtual_device')">
         <span class="card-badge-top" style="background: rgba(251,191,36,0.2); color:#fbbf24;">يحتاج لابتوب قوي 🖥️</span>
         <div>
           <div class="card-icon">💻</div>
@@ -521,7 +535,7 @@
       </div>
 
       <!-- Card 3 -->
-      <div class="choice-card" onclick="startSetup('offline_bundle')">
+      <div class="choice-card" id="card-offline-bundle" data-agent-id="btn-offline-bundle" onclick="startSetup('offline_bundle')">
         <span class="card-badge-top" style="background: rgba(52,211,153,0.2); color:#34d399;">بدون نت نهائياً 📁</span>
         <div>
           <div class="card-icon">🚀</div>
@@ -532,7 +546,7 @@
       </div>
 
       <!-- Card 4 -->
-      <div class="choice-card" onclick="fetchDoctorReport()">
+      <div class="choice-card" id="card-doctor" data-agent-id="btn-doctor" onclick="fetchDoctorReport()">
         <span class="card-badge-top" style="background: rgba(244,114,182,0.2); color:#f472b6;">طبيب فلاتر 🩺</span>
         <div>
           <div class="card-icon">🩺</div>
@@ -550,7 +564,7 @@
           <span>🩺</span>
           <span>لوحة الفحص الذكي للبيئة ولابتوبك</span>
         </div>
-        <button class="refresh-btn" onclick="fetchDoctorReport()">
+        <button class="refresh-btn" id="btn-refresh-doctor" data-agent-id="btn-refresh-doctor" onclick="fetchDoctorReport()">
           <span>🔄</span>
           <span>إعادة الفحص الآن</span>
         </button>
@@ -570,9 +584,28 @@
   </footer>
 
   <script>
+    // Live Agent Harness State
+    window.FlutterWayAgentState = {
+      isReady: true,
+      lastCheckCount: 0,
+      activeDownloadPercent: 0,
+      activeProfile: null
+    };
+
+    // Agent Action Dispatcher
+    window.AgentTap = function(targetId) {
+      const el = document.querySelector(`[data-agent-id="${targetId}"]`) || document.getElementById(targetId);
+      if (el) {
+        el.click();
+        return { success: true, target: targetId };
+      }
+      return { success: false, error: 'Element not found: ' + targetId };
+    };
+
     // Fetch live doctor report on page load
     document.addEventListener('DOMContentLoaded', () => {
       fetchDoctorReport();
+      startAgentPolling();
     });
 
     async function fetchDoctorReport() {
@@ -582,6 +615,7 @@
       try {
         const res = await fetch('/api/doctor');
         const data = await res.json();
+        window.FlutterWayAgentState.lastCheckCount = data.items ? data.items.length : 0;
         renderDiagnostics(data.items);
       } catch (err) {
         container.innerHTML = '<div style="text-align:center; padding: 25px; color: var(--danger);">⚠️ تعذر الاتصال بمحرك الفحص المحلي!</div>';
@@ -596,9 +630,10 @@
       }
 
       container.innerHTML = '';
-      items.forEach(item => {
+      items.forEach((item, idx) => {
         const div = document.createElement('div');
         div.className = 'diag-item';
+        div.setAttribute('data-agent-item', `diag-item-${idx}`);
 
         let badgeClass = 'badge-pass';
         let icon = '✅';
@@ -615,7 +650,7 @@
 
         let fixBtnHtml = '';
         if (item.auto_fixable) {
-          fixBtnHtml = `<button class="fix-btn" onclick="runFix('${item.fix_command}')">🪄 إصلاح تلقائي</button>`;
+          fixBtnHtml = `<button class="fix-btn" data-agent-id="btn-fix-${item.fix_command}" onclick="runFix('${item.fix_command}')">🪄 إصلاح تلقائي</button>`;
         }
 
         div.innerHTML = `
@@ -636,7 +671,6 @@
     }
 
     async function runFix(fixCommand) {
-      alert('🪄 جاري تشغيل الإصلاح التلقائي: ' + fixCommand);
       try {
         const res = await fetch('/api/fix', {
           method: 'POST',
@@ -644,14 +678,14 @@
           body: JSON.stringify({ command: fixCommand })
         });
         const result = await res.json();
-        alert(result.message || 'تم الإصلاح بنجاح! 🎉');
         fetchDoctorReport();
       } catch (e) {
-        alert('حدث خطأ أثناء الإصلاح: ' + e);
+        console.error(e);
       }
     }
 
     async function startSetup(profile) {
+      window.FlutterWayAgentState.activeProfile = profile;
       const dlBox = document.getElementById('dl-box');
       dlBox.style.display = 'block';
       window.scrollTo({ top: dlBox.offsetTop - 80, behavior: 'smooth' });
@@ -669,6 +703,7 @@
       const evtSource = new EventSource(`/api/download-stream?profile=${profile}`);
       evtSource.onmessage = function(event) {
         const p = JSON.parse(event.data);
+        window.FlutterWayAgentState.activeDownloadPercent = p.Percent;
         fill.style.width = p.Percent + '%';
         percentText.innerText = p.Percent + '%';
         sizeText.innerText = `تم: ${(p.DownloadedBytes / (1024*1024)).toFixed(1)} MB / ${(p.TotalBytes / (1024*1024)).toFixed(1)} MB`;
@@ -676,15 +711,27 @@
 
         if (p.Percent >= 100) {
           evtSource.close();
-          setTimeout(() => {
-            alert('🎉 مبروك يا بطل! تم التحميل والتحقق من التجزئة بنجاح 100%!');
-            fetchDoctorReport();
-          }, 500);
+          fetchDoctorReport();
         }
       };
       evtSource.onerror = function() {
         evtSource.close();
       };
+    }
+
+    // Long poll for agent harness actions
+    function startAgentPolling() {
+      setInterval(async () => {
+        try {
+          const res = await fetch('/api/harness/pending-action');
+          if (res.status === 200) {
+            const data = await res.json();
+            if (data && data.target) {
+              window.AgentTap(data.target);
+            }
+          }
+        } catch (e) {}
+      }, 300);
     }
   </script>
 </body>

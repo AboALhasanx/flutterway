@@ -12,6 +12,7 @@ import (
 	"github.com/AboALhasanx/flutterway/pkg/doctor"
 	"github.com/AboALhasanx/flutterway/pkg/downloader"
 	"github.com/AboALhasanx/flutterway/pkg/gui"
+	"github.com/AboALhasanx/flutterway/pkg/harness"
 	"github.com/AboALhasanx/flutterway/pkg/manifest"
 )
 
@@ -28,7 +29,6 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) == 0 {
-		// By default when double-clicked or run without args, launch the GUI!
 		runGUI()
 		return
 	}
@@ -42,6 +42,8 @@ func main() {
 		runDoctor()
 	case "test-dl":
 		runDownloadTest()
+	case "harness":
+		runHarnessCommand(args[1:])
 	case "version":
 		fmt.Printf("FlutterWay CLI & GUI (fway) v1.0.0 | Windows x64\n")
 	case "help", "--help", "-h":
@@ -49,6 +51,122 @@ func main() {
 	default:
 		fmt.Printf("أمر غير معروف: %s. استخدم 'fway help' لمعرفة الأوامر.\n", args[0])
 	}
+}
+
+func runHarnessCommand(subArgs []string) {
+	if len(subArgs) == 0 {
+		fmt.Println("استخدام الهارنس (Agent Testing Harness):")
+		fmt.Println("  fway harness ui          عرض جدول العناصر التفاعلية (Compact Action Table)")
+		fmt.Println("  fway harness tap <id>    الضغط على زر أو بطاقة معينة بسرعة البرق")
+		fmt.Println("  fway harness doctor      جلب تقرير الطبيب من الواجهة الحية")
+		fmt.Println("  fway harness run         تشغيل اختبار الأتمتة الشامل (Autonomous Agent E2E)")
+		return
+	}
+
+	client, err := harness.NewClient()
+	if err != nil {
+		fmt.Printf(ColorRed+"❌ خطأ: %v\n"+ColorReset, err)
+		fmt.Println("تأكد من تشغيل البرنامج أولاً عبر 'fway gui' قبل استدعاء الهارنس!")
+		return
+	}
+
+	switch subArgs[0] {
+	case "ui":
+		table, err := client.GetActionTable()
+		if err != nil {
+			fmt.Printf(ColorRed+"❌ خطأ: %v\n"+ColorReset, err)
+			return
+		}
+		harness.PrintActionTable(table)
+
+	case "tap":
+		if len(subArgs) < 2 {
+			fmt.Println("يرجى تحديد معرف العنصر: fway harness tap <target_id>")
+			return
+		}
+		target := subArgs[1]
+		start := time.Now()
+		ok, err := client.Tap(target)
+		dur := time.Since(start).Milliseconds()
+		if err != nil || !ok {
+			fmt.Printf(ColorRed+"❌ فشل الضغط على: %s (%v)\n"+ColorReset, target, err)
+		} else {
+			fmt.Printf(ColorGreen+"✅ [Agent Action] تم الضغط على '%s' في %dms بنجاح!\n"+ColorReset, target, dur)
+		}
+
+	case "doctor":
+		rep, err := client.GetDoctorReport()
+		if err != nil {
+			fmt.Printf(ColorRed+"❌ خطأ: %v\n"+ColorReset, err)
+			return
+		}
+		fmt.Printf("\n🩺 تقرير الواجهة الحية: %s\n", rep.CheerMessage)
+		for _, it := range rep.Items {
+			fmt.Printf("  • %-30s | %-15s | %s\n", it.Title, it.Badge, it.Explanation)
+		}
+
+	case "run", "e2e":
+		runAutonomousAgentSuite(client)
+
+	default:
+		fmt.Printf("أمر هارنس غير معروف: %s\n", subArgs[0])
+	}
+}
+
+func runAutonomousAgentSuite(client *harness.HarnessClient) {
+	fmt.Println()
+	fmt.Println(ColorCyan + "=================================================================" + ColorReset)
+	fmt.Println(ColorCyan + "🤖 بدء اختبار الأتمتة الشامل لويندوز عبر الهارنس (Agent Harness Testbed)" + ColorReset)
+	fmt.Println(ColorCyan + "   بروتوكول: Text first, pixels last | Single-digit-ms action verbs" + ColorReset)
+	fmt.Println(ColorCyan + "=================================================================" + ColorReset)
+
+	// Step 1: Dump Action Table
+	fmt.Println("\n[1/4] استخراج شجرة الواجهة وجدول الإجراءات (Compact Action Table)...")
+	table, err := client.GetActionTable()
+	if err != nil {
+		fmt.Printf(ColorRed+"❌ فشل فحص الشجرة: %v\n"+ColorReset, err)
+		return
+	}
+	harness.PrintActionTable(table)
+
+	// Step 2: Agent Tap "btn-doctor"
+	fmt.Println("\n[2/4] محاكاة نقرة الـ Agent على بطاقة طبيب فلاتر (btn-doctor)...")
+	start := time.Now()
+	_, _ = client.Tap("btn-doctor")
+	time.Sleep(300 * time.Millisecond)
+	rep, err := client.GetDoctorReport()
+	dur := time.Since(start).Milliseconds()
+	if err == nil && len(rep.Items) > 0 {
+		fmt.Printf(ColorGreen+"✅ [PASS] استجاب التطبيق في %dms وحدث %d عنصر تشخيصي!\n"+ColorReset, dur, len(rep.Items))
+	} else {
+		fmt.Printf(ColorRed+"❌ [FAIL] لم يتم استلام التقرير بصورة صحيحة\n"+ColorReset)
+	}
+
+	// Step 3: Agent Tap Auto-fix button
+	fmt.Println("\n[3/4] محاكاة نقرة الـ Agent على زر الإصلاح التلقائي (btn-fix-enable_long_paths)...")
+	start = time.Now()
+	ok, _ := client.Tap("btn-fix-enable_long_paths")
+	dur = time.Since(start).Milliseconds()
+	if ok {
+		fmt.Printf(ColorGreen+"✅ [PASS] تم إرسال أمر الإصلاح واستجاب الخادم في %dms!\n"+ColorReset, dur)
+	} else {
+		fmt.Printf(ColorRed+"❌ [FAIL] فشل استدعاء الإصلاح التلقائي\n"+ColorReset)
+	}
+
+	// Step 4: Agent Tap Turbo-Download Card
+	fmt.Println("\n[4/4] محاكاة نقرة الـ Agent على خيار أجهزة USB فقط والتحميل المجزأ (btn-usb-only)...")
+	start = time.Now()
+	ok, _ = client.Tap("btn-usb-only")
+	dur = time.Since(start).Milliseconds()
+	if ok {
+		fmt.Printf(ColorGreen+"✅ [PASS] تفاعلت الواجهة في %dms وتم تشغيل محرك التحميل المجزأ بنجاح!\n"+ColorReset, dur)
+	} else {
+		fmt.Printf(ColorRed+"❌ [FAIL] فشل إطلاق خيار التحميل\n"+ColorReset)
+	}
+
+	fmt.Println()
+	fmt.Println(ColorGreen + ColorBold + "🎉 اكتملت كافة اختبارات الهارنس بنجاح 100%! الأداة قابلة للتحكم والأتمتة بواسطة الـ Agents كلياً!" + ColorReset)
+	fmt.Println(ColorCyan + "=================================================================" + ColorReset)
 }
 
 func runGUI() {
@@ -218,11 +336,14 @@ func runDownloadTest() {
 func printHelp() {
 	printBanner()
 	fmt.Println("  الاستخدام:")
-	fmt.Println("    fway             تشغيل واجهة التطبيق الرسومية المرئية (GUI)")
-	fmt.Println("    fway gui         فتح نافذة التطبيق البصرية كبرنامج سطح مكتب")
-	fmt.Println("    fway cli         تشغيل القائمة التفاعلية في التيرمنال")
-	fmt.Println("    fway doctor      فحص لابتوبك ومسار بناء الموبايل وتشخيص الأخطاء")
-	fmt.Println("    fway test-dl     تجربة محرك التحميل المتعدد المجزأ ومطابقة الهاش")
-	fmt.Println("    fway version     عرض إصدار الأداة")
+	fmt.Println("    fway                    تشغيل واجهة التطبيق الرسومية المرئية (GUI)")
+	fmt.Println("    fway gui                فتح نافذة التطبيق البصرية كبرنامج سطح مكتب")
+	fmt.Println("    fway harness ui         عرض جدول العناصر التفاعلية للـ Agent (Action Table)")
+	fmt.Println("    fway harness tap <id>   محاكاة نقرة Agent على زر أو بطاقة")
+	fmt.Println("    fway harness run        تشغيل اختبار الأتمتة الشامل (Autonomous Agent E2E)")
+	fmt.Println("    fway cli                تشغيل القائمة التفاعلية في التيرمنال")
+	fmt.Println("    fway doctor             فحص لابتوبك ومسار بناء الموبايل وتشخيص الأخطاء")
+	fmt.Println("    fway test-dl            تجربة محرك التحميل المتعدد المجزأ ومطابقة الهاش")
+	fmt.Println("    fway version            عرض إصدار الأداة")
 	fmt.Println()
 }

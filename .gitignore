@@ -41,3 +41,6 @@ bin/
 *.zip
 *.tar.gz
 bundle/
+
+*.spec
+__pycache__/

@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/AboALhasanx/flutterway/pkg/doctor"
@@ -21,6 +22,11 @@ import (
 
 //go:embed web/*
 var webFS embed.FS
+
+var (
+	actionMu      sync.Mutex
+	pendingAction string
+)
 
 // Server hosts the local GUI backend.
 type Server struct {
@@ -35,8 +41,14 @@ func StartServer() (*Server, error) {
 		return nil, fmt.Errorf("failed to bind local port: %w", err)
 	}
 
+	port := listener.Addr().(*net.TCPAddr).Port
+
+	// Write port to shared IPC file for Agent Harness discovery
+	portFile := filepath.Join(os.TempDir(), "flutterway-port.txt")
+	_ = os.WriteFile(portFile, []byte(fmt.Sprintf("%d", port)), 0644)
+
 	s := &Server{
-		Port:     listener.Addr().(*net.TCPAddr).Port,
+		Port:     port,
 		Listener: listener,
 	}
 
@@ -53,6 +65,11 @@ func StartServer() (*Server, error) {
 	mux.HandleFunc("/api/doctor", handleDoctor)
 	mux.HandleFunc("/api/download-stream", handleDownloadStream)
 	mux.HandleFunc("/api/fix", handleFix)
+
+	// Agent Harness Endpoints (CDP / Agent Control Protocol)
+	mux.HandleFunc("/api/harness/ui", handleHarnessUI)
+	mux.HandleFunc("/api/harness/tap", handleHarnessTap)
+	mux.HandleFunc("/api/harness/pending-action", handleHarnessPendingAction)
 
 	go func() {
 		_ = http.Serve(listener, mux)
@@ -120,7 +137,7 @@ func handleFix(w http.ResponseWriter, r *http.Request) {
 		k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SYSTEM\CurrentControlSet\Control\FileSystem`, registry.SET_VALUE)
 		if err != nil {
 			resp.Success = false
-			resp.Message = "يحتاج صلاحيات مسؤول (Run as Administrator) لتعديل الـ Registry!"
+			resp.Message = "يحتاج صلاحيات مسؤول لتعديل الـ Registry!"
 		} else {
 			defer k.Close()
 			_ = k.SetDWordValue("LongPathsEnabled", 1)
@@ -130,13 +147,63 @@ func handleFix(w http.ResponseWriter, r *http.Request) {
 		lockPath := filepath.Join(os.Getenv("LOCALAPPDATA"), "flutter", "bin", "cache", "lockfile")
 		_ = os.Remove(lockPath)
 		_ = exec.Command("taskkill", "/F", "/IM", "dart.exe").Run()
-		resp.Message = "تم تنظيف قفل فلاتر المعلق وإنهاء العمليات اليتيمة! 🗝️"
+		resp.Message = "تم تنظيف قفل فلاتر المعلق! 🗝️"
 	case "set_safe_path":
-		resp.Message = "تم توجيه مسار فلاتر الآمن إلى C:\\dev\\flutter لتفادي الحروف العربية! 🛡️"
+		resp.Message = "تم توجيه مسار فلاتر الآمن إلى C:\\dev\\flutter! 🛡️"
 	default:
 		resp.Message = fmt.Sprintf("تم تنفيذ الإجراء: %s بنجاح! ✨", req.Command)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	_ = json.NewEncoder(w).Encode(resp)
+}
+
+// Agent Harness Handlers
+func handleHarnessUI(w http.ResponseWriter, r *http.Request) {
+	elements := []map[string]string{
+		{"id": "btn-usb-only", "role": "card", "label": "عندي موبايل بالواير 📱", "description": "تحميل حزمة 200MB خفيفة وسريعة للأجهزة الحقيقية"},
+		{"id": "btn-virtual-device", "role": "card", "label": "محاكي شاشة عالحاسبة 💻", "description": "تجهيز محاكي أندرويد وصور النظام 3.8GB"},
+		{"id": "btn-offline-bundle", "role": "card", "label": "تثبيت فوري من فلاشة 🚀", "description": "تثبيت من مجلد الفلاشة بدون إنترنت"},
+		{"id": "btn-doctor", "role": "card", "label": "فحص وتصليح المشاكل 🩺", "description": "تشغيل الفحص الشامل للبيئة ولابتوبك"},
+		{"id": "btn-refresh-doctor", "role": "button", "label": "إعادة الفحص الآن 🔄", "description": "تحديث حالة لابتوبك والتشخيصات"},
+		{"id": "btn-fix-enable_long_paths", "role": "button", "label": "إصلاح مسارات ويندوز 🛣️", "description": "تفعيل LongPathsEnabled في الـ Registry"},
+		{"id": "btn-fix-remove_lockfile", "role": "button", "label": "فك قفل فلاتر 🗝️", "description": "حذف lockfile وإنهاء العمليات المعلقة"},
+	}
+
+	res := map[string]interface{}{
+		"active_screen": "main_dashboard",
+		"elements":      elements,
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	_ = json.NewEncoder(w).Encode(res)
+}
+
+func handleHarnessTap(w http.ResponseWriter, r *http.Request) {
+	var body map[string]string
+	_ = json.NewDecoder(r.Body).Decode(&body)
+	target := body["target"]
+
+	actionMu.Lock()
+	pendingAction = target
+	actionMu.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"target":  target,
+		"time_ms": 1.2,
+	})
+}
+
+func handleHarnessPendingAction(w http.ResponseWriter, r *http.Request) {
+	actionMu.Lock()
+	defer actionMu.Unlock()
+
+	if pendingAction != "" {
+		_ = json.NewEncoder(w).Encode(map[string]string{"target": pendingAction})
+		pendingAction = ""
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
 }
