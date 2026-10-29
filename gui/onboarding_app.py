@@ -8,7 +8,10 @@ import subprocess
 import webview
 
 # Import our robust VS Code integration
-from gui.vscode_integration import get_vscode_status, configure_vscode, find_code_cli
+try:
+    from gui.vscode_integration import get_vscode_status, configure_vscode, find_code_cli
+except ImportError:
+    from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
 
 class OnboardingApi:
     def __init__(self, window_holder):
@@ -169,11 +172,22 @@ def start_harness(api, window_holder):
 
     threading.Thread(target=server, daemon=True).start()
 
-def main():
-    html_path = os.path.join(os.path.dirname(__file__), "onboarding", "index.html")
-    if not os.path.exists(html_path):
-        html_path = r"d:\flutterway\gui\onboarding\index.html"
+def get_html_path():
+    if getattr(sys, 'frozen', False):
+        base = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
+        p1 = os.path.join(base, "onboarding", "index.html")
+        if os.path.exists(p1):
+            return p1
+        p2 = os.path.join(os.path.dirname(sys.executable), "onboarding", "index.html")
+        if os.path.exists(p2):
+            return p2
+    cand = os.path.abspath(os.path.join(os.path.dirname(__file__), "onboarding", "index.html"))
+    if os.path.exists(cand):
+        return cand
+    return r"d:\flutterway\gui\onboarding\index.html"
 
+def main():
+    html_path = get_html_path()
     window_holder = {"window": None}
     api = OnboardingApi(window_holder)
 
