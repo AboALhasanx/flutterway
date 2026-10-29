@@ -17,8 +17,34 @@ class FlutterWayNativeApp(ctk.CTk):
         super().__init__()
 
         self.title("FlutterWay 🚀 — رفيقك اللطيف لتجهيز فلاتر (Native App)")
-        self.geometry("1060x780")
-        self.minsize(920, 680)
+        self.geometry("1060x860")
+        self.minsize(920, 720)
+
+        # Assets directory resolver
+        if getattr(sys, 'frozen', False):
+            base_dir = os.path.dirname(sys.executable)
+            if os.path.exists(os.path.join(base_dir, "assets")):
+                self.assets_dir = os.path.join(base_dir, "assets")
+            elif os.path.exists(os.path.join(base_dir, "..", "assets")):
+                self.assets_dir = os.path.abspath(os.path.join(base_dir, "..", "assets"))
+            else:
+                self.assets_dir = r"d:\flutterway\assets"
+        else:
+            self.assets_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets"))
+
+        # Set Window Icon if exists
+        ico_file = os.path.join(self.assets_dir, "icon.ico")
+        if os.path.exists(ico_file):
+            try:
+                self.iconbitmap(ico_file)
+            except Exception as e:
+                pass
+
+        # Ensure window is brought to front on user screen
+        self.lift()
+        self.attributes('-topmost', True)
+        self.after(500, lambda: self.attributes('-topmost', False))
+        self.focus_force()
 
         # Agent Harness registry
         self.agent_elements = {}
@@ -41,7 +67,17 @@ class FlutterWayNativeApp(ctk.CTk):
         header.pack(fill="x", side="top")
         header.pack_propagate(False)
 
-        logo_badge = ctk.CTkLabel(header, text="💙", font=ctk.CTkFont(size=28), width=48, height=48, fg_color="#38bdf8", corner_radius=14)
+        icon_png_path = os.path.join(self.assets_dir, "icon.png")
+        if os.path.exists(icon_png_path):
+            try:
+                from PIL import Image
+                pil_icon = Image.open(icon_png_path)
+                logo_img = ctk.CTkImage(light_image=pil_icon, dark_image=pil_icon, size=(48, 48))
+                logo_badge = ctk.CTkLabel(header, image=logo_img, text="", width=48, height=48, corner_radius=14)
+            except Exception:
+                logo_badge = ctk.CTkLabel(header, text="💙", font=ctk.CTkFont(size=28), width=48, height=48, fg_color="#38bdf8", corner_radius=14)
+        else:
+            logo_badge = ctk.CTkLabel(header, text="💙", font=ctk.CTkFont(size=28), width=48, height=48, fg_color="#38bdf8", corner_radius=14)
         logo_badge.pack(side="right", padx=(10, 24), pady=12)
 
         title_frame = ctk.CTkFrame(header, fg_color="transparent")
@@ -62,13 +98,13 @@ class FlutterWayNativeApp(ctk.CTk):
         self.main_scroll.pack(fill="both", expand=True, padx=24, pady=16)
 
         # Welcome Hero Card
-        hero = ctk.CTkFrame(self.main_scroll, fg_color="#1e1b4b", corner_radius=20, border_width=1, border_color="#4338ca")
-        hero.pack(fill="x", pady=(0, 20), ipady=12)
+        hero = ctk.CTkFrame(self.main_scroll, fg_color="#1e1b4b", corner_radius=16, border_width=1, border_color="#312e81")
+        hero.pack(fill="x", pady=(0, 16), ipady=8)
 
-        hero_title = ctk.CTkLabel(hero, text="أهلاً بيك يا بطل في عالم صناعة تطبيقات الموبايل! 🚀", font=ctk.CTkFont(size=22, weight="bold"), text_color="#f8fafc")
-        hero_title.pack(pady=(12, 4))
+        hero_title = ctk.CTkLabel(hero, text="طريق فلاتر — FlutterWay 🚀", font=ctk.CTkFont(family="Segoe UI", size=20, weight="bold"), text_color="#f8fafc")
+        hero_title.pack(pady=(12, 2))
 
-        hero_desc = ctk.CTkLabel(hero, text="اختر الطريقة اللي تناسبك بضغطة زر واحدة، واحنا راح نتكفل بكل تعقيدات ويندوز والمسارات والتراخيص تلقائياً ✨", font=ctk.CTkFont(size=14), text_color="#cbd5e1")
+        hero_desc = ctk.CTkLabel(hero, text="تجهيز بيئة تطوير تطبيقات فلاتر وأندرويد بأبسط طريقة وبدون أي تعقيد ✨", font=ctk.CTkFont(size=13), text_color="#94a3b8")
         hero_desc.pack(pady=(0, 10))
 
         # 3. Four Big Playful Cards Grid
