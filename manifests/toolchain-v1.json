@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "release_date": "2026-10-29",
+  "min_fway_engine": "1.0.0",
+  "flutter": {
+    "recommended_channel": "stable",
+    "channels": {
+      "stable": {
+        "version": "3.29.3",
+        "url": "https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.29.3-stable.zip",
+        "mirror_url": "https://storage.flutter-io.cn/flutter_infra_release/releases/stable/windows/flutter_windows_3.29.3-stable.zip",
+        "sha256": "d816ea187f75beb6198cf00fa23af5057b1abae84e1b8c66e2c3b889a7f342f1",
+        "min_jdk": 17,
+        "max_jdk": 21,
+        "recommended_android_api": 35,
+        "recommended_build_tools": "35.0.0"
+      }
+    }
+  },
+  "jdk": {
+    "provider": "Microsoft OpenJDK",
+    "version": "17.0.12",
+    "url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.12-windows-x64.zip",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "system_var": "JAVA_HOME"
+  },
+  "android": {
+    "cmdline_tools": {
+      "version": "11076708",
+      "url": "https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip",
+      "mirror_url": "https://mirrors.cloud.tencent.com/AndroidSDK/commandlinetools-win-11076708_latest.zip",
+      "sha256": "2d2d50b71f30e59aa3ac8278777ff688a3ba3a694846497910344f6f89064789",
+      "target_subfolder": "cmdline-tools/latest"
+    },
+    "profiles": {
+      "usb_only": {
+        "description": "Lightweight profile for testing on physical Android devices via USB (No emulator required)",
+        "packages": [
+          "platform-tools",
+          "platforms;android-35",
+          "build-tools;35.0.0"
+        ],
+        "estimated_download_mb": 220
+      },
+      "virtual_device": {
+        "description": "Full profile including Android Emulator and hardware-accelerated system images",
+        "packages": [
+          "platform-tools",
+          "platforms;android-35",
+          "build-tools;35.0.0",
+          "emulator",
+          "system-images;android-34;google_apis;x86_64"
+        ],
+        "estimated_download_mb": 3800
+      }
+    }
+  },
+  "gradle": {
+    "global_tuning": {
+      "daemon": true,
+      "parallel": true,
+      "caching": true,
+      "jvmargs_low_ram": "-Xmx2048m -XX:MaxMetaspaceSize=512m -XX:+UseParallelGC",
+      "jvmargs_high_ram": "-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+UseG1GC",
+      "windows_root_ca_fix": true
+    }
+  },
+  "doctor_rules": [
+    {
+      "id": "RULE_ARABIC_USER_PATH",
+      "category": "OS_SYSTEM",
+      "severity": "CRITICAL",
+      "pattern": "contains_non_ascii_in_home_path",
+      "title_ar": "مسار اسم المستخدم يحتوي على حروف غير لاتينية أو مسافات",
+      "title_en": "User profile path contains non-ASCII characters or spaces",
+      "description_ar": "أدوات أندرويد و Gradle تفشل عند قراءة الحروف العربية في مسار المستخدم.",
+      "auto_fixable": true,
+      "fix_action": "REDIRECT_SDK_TO_C_DEV"
+    },
+    {
+      "id": "RULE_MAX_PATH_LIMIT",
+      "category": "OS_SYSTEM",
+      "severity": "HIGH",
+      "pattern": "registry_long_paths_disabled",
+      "title_ar": "قيد مسارات ويندوز 260 محرف مفعل",
+      "title_en": "Windows MAX_PATH 260 character limitation is enabled",
+      "description_ar": "يسبب فشل استخراج حزم Gradle الطويلة.",
+      "auto_fixable": true,
+      "fix_action": "ENABLE_REGISTRY_LONG_PATHS"
+    },
+    {
+      "id": "RULE_BLUESTACKS_ADB_CONFLICT",
+      "category": "ADB_DEVICE",
+      "severity": "CRITICAL",
+      "pattern": "port_5037_held_by_non_sdk_adb",
+      "title_ar": "تضارب خادم ADB مع محاكي ألعاب (BlueStacks / Nox)",
+      "title_en": "Port 5037 ADB server conflict with emulator (BlueStacks/Nox)",
+      "description_ar": "محاكي الألعاب يشغل نسخة قديمة من ADB تمنع فلاتر من رصد هاتفك.",
+      "auto_fixable": true,
+      "fix_action": "TERMINATE_ROGUE_ADB_AND_SYNC"
+    },
+    {
+      "id": "RULE_STARTUP_LOCKFILE",
+      "category": "FLUTTER_SDK",
+      "severity": "MEDIUM",
+      "pattern": "lockfile_exists_without_dart_process",
+      "title_ar": "تجمد قفل بدء تشغيل فلاتر (Startup lockfile)",
+      "title_en": "Stale startup lockfile blocking flutter commands",
+      "description_ar": "ملف lockfile قديم يعلق أوامر فلاتر في الخلفية.",
+      "auto_fixable": true,
+      "fix_action": "REMOVE_STALE_LOCKFILE"
+    },
+    {
+      "id": "RULE_GIT_DUBIOUS_OWNERSHIP",
+      "category": "GIT_TOOLCHAIN",
+      "severity": "HIGH",
+      "pattern": "git_fatal_dubious_ownership",
+      "title_ar": "خطأ ملكية Git المشبوهة لمجلد Flutter",
+      "title_en": "Git detected dubious ownership in repository",
+      "description_ar": "يحدث عند تثبيت فلاتر كمسؤول واستخدامه كمستخدم عادي.",
+      "auto_fixable": true,
+      "fix_action": "ADD_SAFE_DIRECTORY"
+    },
+    {
+      "id": "RULE_PKIX_SSL_INTERCEPTION",
+      "category": "GRADLE_NETWORK",
+      "severity": "HIGH",
+      "pattern": "pkix_path_building_failed",
+      "title_ar": "خطأ شهادات SSL في شبكات الكليات والمؤسسات",
+      "title_en": "PKIX SSL certificate path building failed",
+      "description_ar": "اعتراض اتصال HTTPS بواسطة جدار الحماية الجامعي.",
+      "auto_fixable": true,
+      "fix_action": "FORCE_WINDOWS_ROOT_CA_IN_GRADLE"
+    }
+  ]
+}
