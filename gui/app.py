@@ -11,7 +11,16 @@ import customtkinter as ctk
 import arabic_reshaper
 from bidi.algorithm import get_display
 
-from gui.vscode_integration import get_vscode_status, configure_vscode
+try:
+    from gui.vscode_integration import get_vscode_status, configure_vscode
+except ImportError:
+    try:
+        from vscode_integration import get_vscode_status, configure_vscode
+    except ImportError:
+        # Fallback when packaged in PyInstaller root
+        import vscode_integration
+        get_vscode_status = vscode_integration.get_vscode_status
+        configure_vscode = vscode_integration.configure_vscode
 
 # Helper for proper Arabic RTL reshaping and word order in Tkinter
 def ar(text):

@@ -42,19 +42,35 @@ def get_vscode_status(flutter_target_dir="C:\\flutter"):
             "reason": "لم يتم العثور على محرر VS Code"
         }
 
-    # Check installed extensions silently
+    # Check installed extensions (Instant check via .vscode/extensions folder)
     has_flutter = False
     has_dart = False
-    try:
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        startupinfo.wShowWindow = 0
-        res = subprocess.run([code_cli, "--list-extensions"], capture_output=True, text=True, startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW)
-        exts = res.stdout.lower()
-        has_flutter = "dart-code.flutter" in exts
-        has_dart = "dart-code.dart-code" in exts
-    except Exception:
-        pass
+    ext_dir = os.path.expandvars(r"%USERPROFILE%\.vscode\extensions")
+    if os.path.exists(ext_dir):
+        try:
+            for item in os.listdir(ext_dir):
+                item_lower = item.lower()
+                if "dart-code.flutter" in item_lower:
+                    has_flutter = True
+                if "dart-code.dart-code" in item_lower:
+                    has_dart = True
+        except Exception:
+            pass
+
+    # Fallback to CLI if needed
+    if not (has_flutter and has_dart):
+        try:
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = 0
+            res = subprocess.run([code_cli, "--list-extensions"], capture_output=True, text=True, startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW, timeout=5)
+            exts = res.stdout.lower()
+            if not has_flutter:
+                has_flutter = "dart-code.flutter" in exts
+            if not has_dart:
+                has_dart = "dart-code.dart-code" in exts
+        except Exception:
+            pass
 
     # Check settings.json
     settings_path = os.path.expandvars(r"%APPDATA%\Code\User\settings.json")
@@ -82,21 +98,28 @@ def get_vscode_status(flutter_target_dir="C:\\flutter"):
     }
 
 def configure_vscode(flutter_target_dir="C:\\flutter"):
-    code_cli = find_code_cli()
+    status = get_vscode_status(flutter_target_dir)
+    code_cli = status.get("code_path")
     if not code_cli:
         return {"success": False, "error": "VS Code غير مثبت على الجهاز"}
 
-    # Install extensions silently
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     startupinfo.wShowWindow = 0
     creationflags = subprocess.CREATE_NO_WINDOW
 
-    try:
-        subprocess.run([code_cli, "--install-extension", "dart-code.flutter", "--force"], capture_output=True, startupinfo=startupinfo, creationflags=creationflags)
-        subprocess.run([code_cli, "--install-extension", "dart-code.dart-code", "--force"], capture_output=True, startupinfo=startupinfo, creationflags=creationflags)
-    except Exception as e:
-        return {"success": False, "error": f"فشل تثبيت الإضافات: {e}"}
+    # Only install extensions if they are genuinely missing
+    if not status["has_flutter_ext"]:
+        try:
+            subprocess.run([code_cli, "--install-extension", "dart-code.flutter"], capture_output=True, startupinfo=startupinfo, creationflags=creationflags, timeout=30)
+        except Exception:
+            pass
+
+    if not status["has_dart_ext"]:
+        try:
+            subprocess.run([code_cli, "--install-extension", "dart-code.dart-code"], capture_output=True, startupinfo=startupinfo, creationflags=creationflags, timeout=30)
+        except Exception:
+            pass
 
     # Update settings.json safely
     settings_dir = os.path.expandvars(r"%APPDATA%\Code\User")
