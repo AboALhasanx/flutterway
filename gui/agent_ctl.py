@@ -69,8 +69,18 @@ def main():
         st = send_harness_cmd("state")
         print(f"✅ UI reacted! Live Checks Count: {st.get('checks_count')}")
 
-        # 3. Tap USB Card (triggering download)
-        print("\n[3/3] Simulating Native Tap on USB Phone Card (btn-usb-only)...")
+        # 3. Tap VS Code Fix button if present
+        print("\n[3/4] Testing VS Code One-Click Integration...")
+        ids = [el["id"] for el in elems]
+        if "btn-fix-configure_vscode" in ids:
+            res_vsc = send_harness_cmd("tap btn-fix-configure_vscode")
+            time.sleep(1.0)
+            print("✅ Successfully triggered VS Code 1-Click Setup via Harness!")
+        else:
+            print("ℹ️ VS Code already fully configured or not requesting fix.")
+
+        # 4. Tap USB Card (triggering download)
+        print("\n[4/4] Simulating Native Tap on USB Phone Card (btn-usb-only)...")
         res = send_harness_cmd("tap btn-usb-only")
         time.sleep(0.5)
         print("✅ Download progress bar animated natively on screen!")
