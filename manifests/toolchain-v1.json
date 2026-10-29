@@ -30,7 +30,7 @@
       "version": "11076708",
       "url": "https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip",
       "mirror_url": "https://mirrors.cloud.tencent.com/AndroidSDK/commandlinetools-win-11076708_latest.zip",
-      "sha256": "2d2d50b71f30e59aa3ac8278777ff688a3ba3a694846497910344f6f89064789",
+      "sha256": "4d6931209eebb1bfb7c7e8b240a6a3cb3ab24479ea294f3539429574b1eec862",
       "target_subfolder": "cmdline-tools/latest"
     },
     "profiles": {

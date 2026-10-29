@@ -36,6 +36,8 @@ temp/
 dist/
 build/
 bin/
+# Toolchain and local tools
+.tools/
 *.zip
 *.tar.gz
 bundle/
