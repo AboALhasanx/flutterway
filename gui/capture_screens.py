@@ -55,13 +55,25 @@ def capture():
         page.evaluate("""
         handleDeviceResponse({
             success: true,
-            devices: [{ serial: 'AJ5EJK5913W00158', status: 'device', model: 'Huawei MatePad (JMS-W09)', is_ready: true }]
+            devices: [{ serial: '166667061Y030799', status: 'device', model: 'Infinix X6878', is_ready: true }]
         });
         """)
         page.wait_for_timeout(300)
         p5 = os.path.join(artifact_dir, "step3_device_detected.png")
         page.screenshot(path=p5)
         print("Captured:", p5)
+
+        # Step 3 with celebration benchmark card
+        page.evaluate("""
+        document.getElementById('device-guide-box').style.display = 'none';
+        document.getElementById('btn-run-test').style.display = 'none';
+        document.getElementById('benchmark-card').style.display = 'block';
+        document.getElementById('benchmark-head-text').innerText = 'التطبيق يعمل الآن بنجاح على هاتف Infinix X6878!';
+        """)
+        page.wait_for_timeout(300)
+        p5_bench = os.path.join(artifact_dir, "step3_benchmark_celebration.png")
+        page.screenshot(path=p5_bench)
+        print("Captured:", p5_bench)
 
         # 5. Step 4 Cheatsheet & VS Code
         page.evaluate("showStep(4);")
