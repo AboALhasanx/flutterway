@@ -75,6 +75,28 @@ def test_setup_guard_and_error_details(browser) -> None:
     page.close()
 
 
+def test_build_progress_mapping(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("""() => {
+        switchMainView('wizard'); showStep(3); resetBuildUi();
+        appendLiveBuildLog('> Task :app:compileFlutterBuildDebug');
+    }""")
+    page.wait_for_timeout(350)
+    first = page.evaluate("parseInt(document.getElementById('build-progress-pct').innerText)")
+    label = page.locator("#build-progress-label").inner_text()
+    check("build-progress: moves from Gradle task", first > 0, f"pct={first}")
+    check("build-progress: estimated label", "تقديري" in label, label)
+    page.evaluate("appendLiveBuildLog('[ADB] Installing on device...')")
+    page.wait_for_timeout(450)
+    second = page.evaluate("parseInt(document.getElementById('build-progress-pct').innerText)")
+    check("build-progress: install milestone", second > first, f"first={first} second={second}")
+    page.evaluate("finishRealBuild({success:true, installed_ok:true, device_name:'Phone', build_time:'1s', apk_size:'71 MB'})")
+    page.wait_for_timeout(650)
+    final = page.evaluate("parseInt(document.getElementById('build-progress-pct').innerText)")
+    check("build-progress: completes at 100", final == 100, f"final={final}")
+    page.close()
+
+
 def test_driver_alert_truth(browser) -> None:
     page = new_page(browser)
     page.evaluate("switchMainView('wizard'); showStep(3);")
@@ -266,6 +288,7 @@ def main() -> int:
             test_driver_alert_truth,
             test_setup_guard_and_error_details,
             test_progress_smooth_and_rotating,
+            test_build_progress_mapping,
             test_build_success_loop,
             test_build_double_start,
             test_build_retry_resets,

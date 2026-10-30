@@ -1046,6 +1046,51 @@
       border-right: 3px solid var(--accent);
     }
 
+    .build-progress-block {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .build-progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .build-progress-meta #build-progress-pct {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .build-progress-track {
+      width: 100%;
+      height: 8px;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .build-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent) 0%, #29b6f6 100%);
+      transition: width 0.12s linear;
+    }
+
+    .build-progress-fill.error {
+      background: var(--danger);
+    }
+
+    .build-progress-meta.error #build-progress-label,
+    .build-progress-meta.error #build-progress-pct {
+      color: var(--danger);
+    }
+
     .build-steps-list {
       display: flex;
       flex-direction: column;
@@ -2840,6 +2885,16 @@
               🚀 نجهّز مشروعك للبناء... أول مرة قد تأخذ دقيقة.
             </div>
 
+            <div class="build-progress-block">
+              <div class="build-progress-meta">
+                <span id="build-progress-label">تقدّم Gradle — تقديري</span>
+                <span id="build-progress-pct">0%</span>
+              </div>
+              <div class="build-progress-track" id="build-progress-bar" role="progressbar" aria-labelledby="build-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div id="build-progress-fill" class="build-progress-fill"></div>
+              </div>
+            </div>
+
             <div class="build-steps-list">
               <div id="bstep-1" class="build-step-row active">
                 <div class="bstep-icon"><span class="icon" style="width: 8px; height: 8px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
@@ -3136,6 +3191,11 @@
     let hrLastContent = '';
     let hrRunning = false;
     let buildState = 'idle';
+    let buildProgressTarget = 0;
+    let buildProgressShown = 0;
+    let buildProgressCeiling = 0;
+    let buildProgressLastAt = 0;
+    let buildProgressTimer = null;
     let setupUiRunning = false;
     window.appInit = null;
 
@@ -4580,7 +4640,122 @@
       }
     }
 
+    const BUILD_PROGRESS_RULES = [
+      ['starting a gradle daemon', 6],
+      ['resolving dependencies', 10],
+      ['configure project', 14],
+      [':gradle:compilekotlin', 18],
+      [':gradle:jar', 24],
+      [':app:compileflutterbuilddebug', 30],
+      [':app:mergedebugassets', 42],
+      [':app:mergedebugresources', 46],
+      [':app:processdebugresources', 52],
+      [':app:compiledebugkotlin', 56],
+      [':app:compiledebugjavawithjavac', 62],
+      [':app:mergeextdexdebug', 68],
+      [':app:mergedebugnativelibs', 72],
+      [':app:packagedebug', 78],
+      [':app:assembledebug', 82],
+      ['built build', 88],
+      ['build succeeded', 88],
+      ['optimizing apk', 91],
+      ['[apk]', 91],
+      ['installing on device', 95],
+      ['[adb]', 95],
+    ];
+
+    function buildPhaseLabel(value) {
+      if (value < 12) return 'تجهيز Gradle';
+      if (value < 30) return 'تهيئة مكتبات المشروع';
+      if (value < 50) return 'ترجمة Flutter';
+      if (value < 65) return 'بناء Kotlin/Java';
+      if (value < 80) return 'تغليف التطبيق';
+      if (value < 90) return 'اكتمال البناء';
+      if (value < 95) return 'تصغير APK';
+      return 'تثبيت على الهاتف';
+    }
+
+    function paintBuildProgress() {
+      const fill = document.getElementById('build-progress-fill');
+      const pct = document.getElementById('build-progress-pct');
+      const bar = document.getElementById('build-progress-bar');
+      const value = Math.max(0, Math.min(100, buildProgressShown));
+      if (fill) fill.style.width = `${value}%`;
+      if (pct) pct.innerText = `${Math.floor(value)}%`;
+      if (bar) bar.setAttribute('aria-valuenow', String(Math.round(buildProgressTarget)));
+    }
+
+    function buildProgressTick() {
+      const diff = buildProgressTarget - buildProgressShown;
+      if (diff > 0.05) {
+        buildProgressShown = Math.min(buildProgressTarget, buildProgressShown + Math.max(0.25, diff * 0.35));
+      } else if (Date.now() - buildProgressLastAt > 12000 && buildProgressTarget < 96) {
+        buildProgressTarget = Math.min(buildProgressCeiling, buildProgressTarget + 0.05);
+      }
+      paintBuildProgress();
+    }
+
+    function ensureBuildProgressTimer() {
+      if (!buildProgressTimer) buildProgressTimer = setInterval(buildProgressTick, 100);
+    }
+
+    function setBuildProgressTarget(value, label) {
+      const numeric = Math.max(0, Math.min(100, Number(value) || 0));
+      buildProgressTarget = Math.max(buildProgressTarget, numeric);
+      buildProgressCeiling = Math.min(96, buildProgressTarget + 10);
+      buildProgressLastAt = Date.now();
+      const labelEl = document.getElementById('build-progress-label');
+      if (labelEl) labelEl.innerText = `${label || buildPhaseLabel(buildProgressTarget)} — تقديري`;
+      const meta = document.querySelector('.build-progress-meta');
+      if (meta) meta.classList.remove('error');
+      const fill = document.getElementById('build-progress-fill');
+      if (fill) fill.classList.remove('error');
+      ensureBuildProgressTimer();
+      paintBuildProgress();
+    }
+
+    function resetBuildProgress() {
+      buildProgressTarget = 0;
+      buildProgressShown = 0;
+      buildProgressCeiling = 0;
+      buildProgressLastAt = Date.now();
+      const labelEl = document.getElementById('build-progress-label');
+      if (labelEl) labelEl.innerText = 'تقدّم Gradle — تقديري';
+      const meta = document.querySelector('.build-progress-meta');
+      if (meta) meta.classList.remove('error');
+      const fill = document.getElementById('build-progress-fill');
+      if (fill) {
+        fill.classList.remove('error');
+        fill.style.width = '0%';
+      }
+      const pct = document.getElementById('build-progress-pct');
+      if (pct) pct.innerText = '0%';
+      const bar = document.getElementById('build-progress-bar');
+      if (bar) bar.setAttribute('aria-valuenow', '0');
+      if (buildProgressTimer) { clearInterval(buildProgressTimer); buildProgressTimer = null; }
+    }
+
+    function failBuildProgress() {
+      const meta = document.querySelector('.build-progress-meta');
+      if (meta) meta.classList.add('error');
+      const fill = document.getElementById('build-progress-fill');
+      if (fill) fill.classList.add('error');
+      const labelEl = document.getElementById('build-progress-label');
+      if (labelEl) labelEl.innerText = 'فشل البناء — راجع التفاصيل';
+    }
+
+    function inferBuildProgress(line) {
+      const text = String(line || '').toLowerCase();
+      if (!text) return;
+      let best = 0;
+      for (const [needle, value] of BUILD_PROGRESS_RULES) {
+        if (text.includes(needle) && value > best) best = value;
+      }
+      if (best > buildProgressTarget) setBuildProgressTarget(best, buildPhaseLabel(best));
+    }
+
     function resetBuildUi() {
+      resetBuildProgress();
       const btn = document.getElementById('btn-run-test');
       if (btn) setActionLabel(btn, 'ابدأ بناء وتجربة التطبيق الآن');
       setBuildCta('hidden');
@@ -4607,6 +4782,7 @@
       buildState = 'failed';
       setBuildStep(1, 'error');
       appendLiveBuildLog(`[ERROR] ${message}`);
+      failBuildProgress();
       const task = document.getElementById('build-task-active');
       if (task) task.innerText = 'Build Failed';
       const details = document.getElementById('build-log-details');
@@ -4672,6 +4848,7 @@
     }
 
     function appendLiveBuildLog(line) {
+      inferBuildProgress(line);
       const container = document.getElementById('build-terminal-lines');
       const taskActive = document.getElementById('build-task-active');
       if (!container) return;
@@ -4711,6 +4888,7 @@
       if (!ok) {
         buildState = 'failed';
         setBuildStep(3, 'error');
+        failBuildProgress();
         if (taskActive) taskActive.innerText = 'Build Failed';
         const reason = (res && (res.message || res.error)) || 'فشل البناء أو تثبيت التطبيق على الهاتف. راجع سجل الأخطاء أعلاه.';
         appendLiveBuildLog(`[ERROR] ${reason}`);
@@ -4726,6 +4904,9 @@
       buildState = 'success';
       setBuildStep(3, 'done');
       setBuildCta('hidden');
+      setBuildProgressTarget(100, 'اكتمل البناء');
+      buildProgressShown = 100;
+      paintBuildProgress();
       const firstHint = document.getElementById('first-build-hint');
       if (firstHint) firstHint.style.display = 'none';
       if (taskActive) taskActive.innerText = 'Build Succeeded';
