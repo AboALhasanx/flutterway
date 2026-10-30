@@ -8,11 +8,13 @@ import subprocess
 import webview
 import winreg
 
-# Import our robust VS Code integration
+# Import our robust VS Code integration and Companion service
 try:
     from gui.vscode_integration import get_vscode_status, configure_vscode, find_code_cli
+    from gui import companion_service
 except ImportError:
     from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
+    import companion_service
 
 def set_user_env(name, value):
     """Sets a User environment variable permanently in the Windows Registry."""
@@ -529,6 +531,89 @@ class OnboardingApi:
             js = f"updateProgress({percent}, '{escaped_text}', {chk_step});"
             win.evaluate_js(js)
 
+    # --- Student Course Companion Dashboard API ---
+    def get_initial_app_state(self):
+        try:
+            report = companion_service.get_smart_doctor_report()
+            has_setup = report.get("is_all_healthy", False)
+            return {
+                "initial_mode": "companion" if has_setup else "wizard",
+                "has_setup": has_setup,
+                "theme": self.state.get("theme", "dark"),
+                "doctor_report": report,
+                "recent_projects": companion_service.load_recent_projects()
+            }
+        except Exception as e:
+            return {
+                "initial_mode": "wizard",
+                "has_setup": False,
+                "theme": "dark",
+                "error": str(e)
+            }
+
+    def get_smart_doctor_report(self):
+        return companion_service.get_smart_doctor_report()
+
+    def heal_doctor_item(self, fix_id):
+        return companion_service.heal_doctor_item(fix_id)
+
+    def heal_all_doctor_items(self):
+        report = companion_service.get_smart_doctor_report()
+        healed_count = 0
+        for item in report.get("items", []):
+            if item.get("status") != "PASS" and item.get("auto_fixable") and item.get("fix_id"):
+                companion_service.heal_doctor_item(item["fix_id"])
+                healed_count += 1
+        updated = companion_service.get_smart_doctor_report()
+        return {"success": True, "healed_count": healed_count, "updated_report": updated}
+
+    def create_lecture_project(self, name, custom_parent_folder=None):
+        res = companion_service.create_lecture_project(name, custom_parent_folder)
+        if res.get("success"):
+            self.state["project_path"] = res["path"]
+        return res
+
+    def get_recent_projects(self):
+        return companion_service.load_recent_projects()
+
+    def clean_project(self, project_path=None):
+        p = project_path or self.state.get("project_path")
+        return companion_service.clean_project_build(p)
+
+    def open_project_in_vscode(self, project_path=None):
+        p = project_path or self.state.get("project_path")
+        code_cli = find_code_cli()
+        if code_cli and p and os.path.exists(p):
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = 0
+            subprocess.Popen([code_cli, p], startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW)
+            return {"success": True}
+        return {"success": False, "error": "المسار غير صالح أو VS Code غير مثبت"}
+
+    def run_project_on_phone(self, project_path=None, serial=None):
+        return self.run_test_app(serial)
+
+    def get_device_studio_data(self, serial=None):
+        return companion_service.get_detailed_device_info(serial)
+
+    def capture_device_screenshot(self, serial=None):
+        return companion_service.capture_device_screenshot_b64(serial)
+
+    def ping_device_screen(self, serial=None):
+        adb = find_adb()
+        cmd = [adb]
+        if serial:
+            cmd.extend(["-s", serial])
+        elif self.state.get("connected_device"):
+            cmd.extend(["-s", self.state["connected_device"]["serial"]])
+        cmd.extend(["shell", "input", "keyevent", "224"])
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = 0
+        subprocess.run(cmd, startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW)
+        return {"success": True, "message": "تم إرسال إشارة تنشيط الشاشة بنجاح!"}
+
 # --- Agent Testing Harness for Modern Onboarding UI ---
 def start_harness(api, window_holder):
     def server():
@@ -585,7 +670,12 @@ def start_harness(api, window_holder):
                     allowed_targets = [
                         "btn-start-setup", "card-usb", "card-emu", "btn-check-laptop",
                         "btn-theme-toggle", "btn-refresh-phone", "btn-fix-adb", "btn-install-drivers",
-                        "btn-run-test", "btn-proceed-to-vscode", "btn-open-vscode", "btn-skip-to-vscode"
+                        "btn-run-test", "btn-proceed-to-vscode", "btn-open-vscode", "btn-skip-to-vscode",
+                        "btn-nav-wizard", "btn-nav-companion",
+                        "btn-tab-doctor", "btn-tab-projects", "btn-tab-rescue", "btn-tab-device", "btn-tab-cheatsheet",
+                        "btn-doctor-heal-all", "btn-create-lecture-proj", "btn-clean-project", "btn-open-proj-vscode",
+                        "btn-rescue-gradle", "btn-rescue-licenses", "btn-rescue-adb", "btn-rescue-longpaths", "btn-rescue-network",
+                        "btn-device-ping", "btn-device-screenshot"
                     ]
                     if target in allowed_targets:
                         if win:

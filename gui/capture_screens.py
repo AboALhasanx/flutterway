@@ -16,11 +16,17 @@ def capture():
         context = browser.new_context(viewport={"width": 980, "height": 780})
         page = context.new_page()
 
-        # 1. Step 1 Dark Mode with Hardware Reality Benchmark
+        # ========================================================
+        # 1. WIZARD VIEWS (STEPS 1 - 4)
+        # ========================================================
         page.goto(html_url)
         page.wait_for_timeout(300)
+        page.evaluate("switchMainView('wizard');")
+        page.wait_for_timeout(200)
+
+        # 1. Step 1 Dark Mode with Hardware Reality Benchmark
         page.click("#btn-check-laptop")
-        page.wait_for_timeout(400)
+        page.wait_for_timeout(300)
         p1 = os.path.join(artifact_dir, "step1_dark.png")
         page.screenshot(path=p1)
         print("Captured:", p1)
@@ -36,7 +42,7 @@ def capture():
         page.click("#btn-theme-toggle")
         page.wait_for_timeout(200)
 
-        # 3. Step 2 Setup in progress (Level 2 with 2D Logo)
+        # 3. Step 2 Setup in progress (Level 2)
         page.evaluate("showStep(2); updateProgress(65, 'جاري تنزيل محرك Flutter & Dart الرسمي من السحابة...', 2);")
         page.wait_for_timeout(300)
         p3 = os.path.join(artifact_dir, "step2_progress.png")
@@ -61,7 +67,6 @@ def capture():
         document.getElementById('btn-run-test').style.display = 'none';
         document.getElementById('device-guide-box').style.display = 'none';
         document.getElementById('device-ctrl-btns').style.display = 'none';
-        document.getElementById('beginner-explainer').style.display = 'none';
         document.getElementById('build-console').style.display = 'block';
         updateBuildTicker(28, '🔨 شغال على نار هادئة: المعالج دا يترجم كود Dart للغة الآلة الثنائية (ARM64) الخاصة بجهازك HONOR JMS-W09.', 2);
         """)
@@ -82,23 +87,87 @@ def capture():
         page.screenshot(path=p5_bench)
         print("Captured:", p5_bench)
 
-        # 5. Step 4 Cheatsheet & VS Code
+        # Step 4 Cheatsheet & VS Code
         page.evaluate("showStep(4);")
         page.wait_for_timeout(300)
         p6 = os.path.join(artifact_dir, "step4_vscode_cheatsheet.png")
         page.screenshot(path=p6)
         print("Captured:", p6)
 
+        # ========================================================
+        # 2. STUDENT COMPANION DASHBOARD VIEWS
+        # ========================================================
+        # Switch to Companion View
+        page.evaluate("switchMainView('companion');")
+        page.wait_for_timeout(400)
+
+        # Companion Tab 1: Smart Doctor
+        page.evaluate("switchCompanionTab('doctor');")
+        page.wait_for_timeout(300)
+        c1 = os.path.join(artifact_dir, "companion_doctor.png")
+        page.screenshot(path=c1)
+        print("Captured:", c1)
+
+        # Companion Tab 2: Lecture Projects Studio
+        page.evaluate("""
+        switchCompanionTab('projects');
+        renderRecentProjects([
+            { name: 'lecture_1_basics', path: 'C:\\\\Users\\\\gokoq\\\\Desktop\\\\FlutterProjects\\\\lecture_1_basics' },
+            { name: 'lecture_2_widgets', path: 'C:\\\\Users\\\\gokoq\\\\Desktop\\\\FlutterProjects\\\\lecture_2_widgets' },
+            { name: 'my_first_app', path: 'C:\\\\Users\\\\gokoq\\\\Desktop\\\\my_first_app' }
+        ]);
+        """)
+        page.wait_for_timeout(300)
+        c2 = os.path.join(artifact_dir, "companion_projects.png")
+        page.screenshot(path=c2)
+        print("Captured:", c2)
+
+        # Companion Tab 3: Emergency Rescue Box
+        page.evaluate("switchCompanionTab('rescue');")
+        page.wait_for_timeout(300)
+        c3 = os.path.join(artifact_dir, "companion_rescue.png")
+        page.screenshot(path=c3)
+        print("Captured:", c3)
+
+        # Companion Tab 4: Connected Device Studio
+        page.evaluate("""
+        switchCompanionTab('device');
+        document.getElementById('dev-val-name').innerText = 'HONOR JMS-W09';
+        document.getElementById('dev-val-android').innerText = 'Android 15 (SDK 35)';
+        document.getElementById('dev-val-battery').innerText = '100%';
+        document.getElementById('dev-val-screen').innerText = '800x1340';
+        document.getElementById('dev-val-abi').innerText = 'arm64-v8a';
+        document.getElementById('dev-val-conn').innerText = 'USB عالي السرعة';
+        """)
+        page.wait_for_timeout(300)
+        c4 = os.path.join(artifact_dir, "companion_device.png")
+        page.screenshot(path=c4)
+        print("Captured:", c4)
+
+        # Companion Tab 5: Student Cheatsheet & Secrets
+        page.evaluate("switchCompanionTab('cheatsheet');")
+        page.wait_for_timeout(300)
+        c5 = os.path.join(artifact_dir, "companion_cheatsheet.png")
+        page.screenshot(path=c5)
+        print("Captured:", c5)
+
         # Copy all screenshots to docs/screenshots in the repository
         docs_dir = r"d:\flutterway\docs\screenshots"
         os.makedirs(docs_dir, exist_ok=True)
         import shutil
-        for f in ["step1_dark.png", "step1_light.png", "step2_progress.png", "step3_device_detected.png", "step3_build_console.png", "step3_benchmark_celebration.png", "step4_vscode_cheatsheet.png"]:
+        all_shots = [
+            "step1_dark.png", "step1_light.png", "step2_progress.png",
+            "step3_device_detected.png", "step3_build_console.png", "step3_benchmark_celebration.png",
+            "step4_vscode_cheatsheet.png",
+            "companion_doctor.png", "companion_projects.png", "companion_rescue.png",
+            "companion_device.png", "companion_cheatsheet.png"
+        ]
+        for f in all_shots:
             src = os.path.join(artifact_dir, f)
             dst = os.path.join(docs_dir, f)
             if os.path.exists(src):
                 shutil.copy2(src, dst)
-        print("Screenshots synced to docs/screenshots/")
+        print("All 12 Screenshots synced to docs/screenshots/")
 
         browser.close()
 

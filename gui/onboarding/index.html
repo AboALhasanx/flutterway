@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlutterWay — بيئة فلاتر للمبتدئين</title>
+  <title>FlutterWay — بيئة فلاتر للمبتدئين ورفيق الطالب</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -71,9 +71,12 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 28px;
+      padding: 14px 28px;
       border-bottom: 1px solid var(--card-border);
       background: var(--card-bg);
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
 
     .brand {
@@ -103,6 +106,42 @@
     .brand-sub {
       font-size: 11px;
       color: var(--text-muted);
+    }
+
+    /* Navigation Switcher Pills */
+    .nav-switcher {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      padding: 4px;
+      border-radius: 30px;
+      gap: 4px;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      color: var(--text);
+    }
+
+    .nav-btn.active {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(84, 197, 248, 0.3);
     }
 
     .header-actions {
@@ -136,12 +175,23 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
       padding: 24px;
-      max-width: 920px;
+      max-width: 960px;
       margin: 0 auto;
       width: 100%;
+    }
+
+    .main-view {
+      width: 100%;
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .main-view.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .step-view {
@@ -197,9 +247,9 @@
     .btn-primary {
       background: var(--accent);
       color: #ffffff;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 800;
-      padding: 12px 36px;
+      padding: 12px 32px;
       border-radius: 12px;
       border: none;
       cursor: pointer;
@@ -309,7 +359,6 @@
       background: var(--accent-hover);
     }
 
-    /* Diagnostic Result Card */
     .diag-result-card {
       display: none;
       width: 100%;
@@ -348,64 +397,84 @@
     .spec-val {
       font-size: 16px;
       font-weight: 800;
-      color: var(--accent);
+      color: var(--text);
     }
 
     .spec-lbl {
       font-size: 11px;
       color: var(--text-muted);
-      margin-top: 2px;
     }
 
-    /* Honest Benchmark Comparison Box */
-    .benchmark-truth-box {
+    /* Honest Side-by-Side Benchmark Cards */
+    .benchmark-comparison-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 16px;
       margin-top: 14px;
-      text-align: right;
+      padding-top: 14px;
+      border-top: 1px dashed var(--card-border);
     }
 
-    .bench-col {
+    .bench-card {
       background: var(--bg);
       border: 1px solid var(--card-border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      font-size: 12px;
-    }
-
-    .bench-col.recommended {
-      border-color: var(--success);
-      background: var(--success-bg);
-    }
-
-    .bench-col-title {
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .bench-list {
-      list-style: none;
+      border-radius: 12px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 10px;
+    }
+
+    .bench-card.rec {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.04);
+    }
+
+    .bench-card.warn {
+      border-color: var(--warning);
+      background: rgba(245, 158, 11, 0.04);
+    }
+
+    .bench-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .bench-title {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .bench-tag {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .bench-stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .bench-stat-val {
+      font-weight: 700;
       color: var(--text);
     }
 
     .bench-verdict {
-      margin-top: 10px;
-      padding-top: 8px;
-      border-top: 1px dashed var(--card-border);
-      font-weight: 700;
       font-size: 11px;
+      font-weight: 700;
+      line-height: 1.4;
+      padding-top: 6px;
+      border-top: 1px solid var(--card-border);
     }
 
-    /* The Options Grid */
-    .choice-grid {
+    /* Cards Grid */
+    .cards-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
@@ -413,603 +482,287 @@
       margin-bottom: 24px;
     }
 
-    .choice-card {
+    .mode-card {
       background: var(--card-bg);
       border: 2px solid var(--card-border);
       border-radius: 16px;
-      padding: 22px;
+      padding: 20px;
       cursor: pointer;
-      transition: all 0.25s ease;
       position: relative;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: right;
     }
 
-    .choice-card:hover {
-      border-color: var(--accent);
-      background: var(--card-hover);
+    .mode-card:hover {
+      border-color: var(--card-hover);
+      transform: translateY(-2px);
     }
 
-    .choice-card.selected {
+    .mode-card.selected {
       border-color: var(--accent);
       background: var(--highlight);
     }
 
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
+    .card-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: var(--success);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 10px;
     }
 
-    .card-icon-box {
-      width: 42px;
-      height: 42px;
+    .card-icon-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
       border-radius: 10px;
-      background: var(--card-bg);
-      color: var(--accent);
+      background: var(--bg);
+      border: 1px solid var(--card-border);
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-
-    .card-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 12px;
-      background: var(--card-hover);
-      color: var(--text-muted);
-    }
-
-    .card-badge.gold {
-      background: rgba(245, 158, 11, 0.15);
-      color: var(--warning);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-    }
-
-    .card-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 12px;
-      text-align: right;
-    }
-
-    .card-bullets {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      text-align: right;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .card-bullets li {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .bullet-icon {
-      width: 14px;
-      height: 14px;
-      margin-top: 3px;
       color: var(--accent);
       flex-shrink: 0;
     }
 
+    .card-title {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
     /* STEP 2: Progress */
-    .progress-container {
+    .progress-box {
       width: 100%;
       max-width: 620px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 32px 28px;
-      text-align: center;
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
     }
 
-    .track {
+    .progress-bar-container {
       width: 100%;
-      height: 8px;
+      height: 10px;
       background: var(--bg);
-      border-radius: 8px;
+      border-radius: 5px;
       overflow: hidden;
-      margin-bottom: 8px;
       border: 1px solid var(--card-border);
     }
 
-    .fill {
+    .progress-bar-fill {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, var(--accent), var(--success));
-      border-radius: 8px;
-      transition: width 0.3s ease-out;
+      background: linear-gradient(90deg, var(--accent) 0%, #29b6f6 100%);
+      transition: width 0.3s ease;
     }
 
-    .tips-carousel-box {
-      background: var(--highlight);
-      border: 1px solid var(--accent);
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin: 18px 0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-align: right;
-      min-height: 54px;
-    }
-
-    .tip-icon-box {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      background: var(--card-bg);
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .tip-content {
-      font-size: 12px;
-      color: var(--text);
-      line-height: 1.5;
-    }
-
-    .steps-checklist {
+    .checklist {
+      width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      text-align: right;
-      margin-top: 14px;
+      gap: 10px;
+      margin-top: 8px;
     }
 
-    .step-item {
+    .chk-item {
       display: flex;
       align-items: center;
       gap: 10px;
       font-size: 12px;
       color: var(--text-muted);
-      padding: 8px 12px;
-      border-radius: 8px;
-      background: var(--bg);
     }
 
-    .step-item.done {
-      color: var(--text);
-    }
-
-    .step-item.done .step-chk-icon {
+    .chk-item.done {
       color: var(--success);
+      font-weight: 700;
     }
 
-    /* STEP 3: Device Box & Gamified Build */
-    .device-box {
+    .chk-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .chk-item.done .chk-icon {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+
+    /* STEP 3: Phone Boss View & Commentary */
+    .device-card {
       width: 100%;
       max-width: 680px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 28px;
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      text-align: center;
+      gap: 16px;
     }
 
-    .pulse-icon-box {
+    .device-radar {
       width: 64px;
       height: 64px;
-      border-radius: 16px;
-      background: var(--highlight);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 14px;
-      animation: gentlePulse 2s infinite ease-in-out;
-    }
-
-    @keyframes gentlePulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.85; }
-    }
-
-    .device-status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 16px;
-    }
-
-    .device-status-badge.waiting {
-      background: var(--highlight);
-      color: var(--accent);
-      border: 1px solid var(--accent);
-    }
-
-    .device-status-badge.unauthorized {
-      background: var(--warning-bg);
-      color: var(--warning);
-      border: 1px solid var(--warning);
-    }
-
-    .device-status-badge.ready {
-      background: var(--success-bg);
-      color: var(--success);
-      border: 1px solid var(--success);
-    }
-
-    /* Missing Driver Alert Box */
-    .driver-alert-box {
-      display: none;
-      width: 100%;
-      background: var(--warning-bg);
-      border: 1px solid var(--warning);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 16px;
-      text-align: right;
-    }
-
-    .driver-alert-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    /* Universal USB Debugging Guide & Search Pill */
-    .guide-box {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 16px;
-      text-align: right;
-    }
-
-    .guide-title {
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .guide-steps {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-    }
-
-    .guide-steps li {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .step-num {
-      width: 18px;
-      height: 18px;
       border-radius: 50%;
-      background: var(--card-border);
-      color: var(--text);
-      font-size: 11px;
-      font-weight: 800;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    /* Universal YouTube Search Pill */
-    .search-helper-box {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .search-helper-box:hover {
-      border-color: var(--accent);
-      background: var(--card-hover);
-    }
-
-    .search-pill-text {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--accent);
-      direction: rtl;
-    }
-
-    .oem-callout {
-      margin-top: 10px;
-      font-size: 11px;
-      color: var(--warning);
-      background: rgba(245, 158, 11, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.2);
-      border-radius: 8px;
-      padding: 8px 12px;
-      line-height: 1.5;
-    }
-
-    /* Beginner Explainer Card */
-    .beginner-explainer-card {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 14px 16px;
-      margin-bottom: 16px;
-      text-align: right;
-    }
-
-    .explainer-header {
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--card-border);
-    }
-
-    .explainer-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .explainer-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 10px 12px;
-      border-radius: 10px;
-    }
-
-    .explainer-icon-box {
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
       background: var(--highlight);
-      color: var(--accent);
+      border: 1px solid var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
-      margin-top: 2px;
+      color: var(--accent);
+      position: relative;
     }
 
-    .explainer-title {
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 2px;
+    .device-radar::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 1px solid var(--accent);
+      animation: pulse 1.8s infinite;
     }
 
-    .explainer-desc {
-      font-size: 11px;
-      color: var(--text-muted);
-      line-height: 1.45;
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.6); opacity: 0; }
     }
 
-    /* Live Build Console Box */
     .build-console-box {
-      display: none;
       width: 100%;
       background: var(--bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 18px;
-      margin-bottom: 16px;
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 16px;
+      display: none;
       text-align: right;
-      animation: fadeIn 0.3s ease;
     }
 
-    .build-console-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--card-border);
-    }
-
-    .build-ticker-badge {
+    .build-timer-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--accent);
       background: var(--highlight);
+      color: var(--accent);
       border: 1px solid var(--accent);
       padding: 3px 10px;
-      border-radius: 20px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .build-commentary {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding: 10px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      border-right: 3px solid var(--accent);
     }
 
     .build-steps-list {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      font-size: 12px;
+      font-size: 11px;
     }
 
     .build-step-row {
       display: flex;
-      align-items: flex-start;
-      gap: 12px;
+      align-items: center;
+      gap: 8px;
       color: var(--text-muted);
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      transition: all 0.25s ease;
     }
 
     .build-step-row.active {
       color: var(--accent);
-      border-color: var(--accent);
-      background: var(--highlight);
+      font-weight: 700;
     }
 
     .build-step-row.done {
-      color: var(--text);
-      border-color: var(--card-border);
-    }
-
-    .build-step-row.done .bstep-icon {
       color: var(--success);
+      font-weight: 700;
     }
 
     .bstep-icon {
-      width: 16px;
-      height: 16px;
-      flex-shrink: 0;
-      margin-top: 3px;
-    }
-
-    .bstep-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      text-align: right;
-    }
-
-    .bstep-title {
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .bstep-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
-
-    .dynamic-commentary-box {
-      margin-top: 12px;
-      background: var(--card-bg);
-      border: 1px dashed var(--accent);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 12px;
-      color: var(--accent);
-      text-align: right;
-      line-height: 1.5;
-      animation: fadeIn 0.3s ease;
-    }
-
-    /* Celebration Card */
-    .benchmark-card {
-      display: none;
-      width: 100%;
-      background: var(--highlight);
-      border: 1px solid var(--success);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 18px;
-      text-align: center;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .benchmark-title {
-      font-size: 16px;
-      font-weight: 900;
-      color: var(--success);
-      margin-bottom: 6px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid var(--card-border);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
     }
 
-    .benchmark-sub {
-      font-size: 12px;
-      color: var(--text);
-      margin-bottom: 14px;
-      line-height: 1.5;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .stat-box {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 10px;
-      border-radius: 10px;
-      text-align: center;
-    }
-
-    .stat-val {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--accent);
-    }
-
-    .stat-lbl {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 2px;
+    .build-step-row.done .bstep-icon {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
     }
 
     /* STEP 4: Cheatsheet */
     .cheatsheet-card {
       width: 100%;
-      max-width: 640px;
+      max-width: 720px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 32px 28px;
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
+      gap: 16px;
     }
 
     .cheat-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 20px 0 26px 0;
+      gap: 14px;
+      width: 100%;
       text-align: right;
     }
 
     .cheat-item {
       background: var(--bg);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 12px 14px;
+      border-radius: 10px;
+      padding: 12px;
       display: flex;
       align-items: flex-start;
       gap: 10px;
@@ -1028,7 +781,7 @@
     }
 
     .cheat-item-title {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 800;
       color: var(--text);
       margin-bottom: 2px;
@@ -1040,38 +793,394 @@
       line-height: 1.4;
     }
 
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 14px 20px;
-      font-size: 11px;
-      color: var(--text-muted);
-      border-top: 1px solid var(--card-border);
-      background: var(--card-bg);
+    /* ========================================================
+       STUDENT COURSE COMPANION DASHBOARD STYLES
+       ======================================================== */
+    .companion-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
-    .icon {
-      display: inline-flex;
+    .companion-subnav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    .comp-tab-btn {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .comp-tab-btn:hover {
+      background: var(--card-hover);
+      color: var(--text);
+    }
+
+    .comp-tab-btn.active {
+      background: var(--card-bg);
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 2px 8px rgba(84, 197, 248, 0.15);
+    }
+
+    .comp-tab-pane {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .comp-tab-pane.active {
+      display: flex;
+    }
+
+    /* Doctor Readiness Card */
+    .doctor-overview-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .doctor-score-badge {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .score-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--success-bg);
+      border: 2px solid var(--success);
+      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      color: var(--success);
+      font-size: 18px;
+      font-weight: 900;
     }
 
-    .icon svg {
+    .score-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .score-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .reassurance-banner {
+      background: rgba(84, 197, 248, 0.06);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Doctor Diagnostic Cards Grid */
+    .doctor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
       width: 100%;
-      height: 100%;
-      stroke: currentColor;
+    }
+
+    .doc-item-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .doc-item-card:hover {
+      border-color: var(--card-hover);
+    }
+
+    .doc-item-card.pass {
+      border-right: 4px solid var(--success);
+    }
+
+    .doc-item-card.warn {
+      border-right: 4px solid var(--warning);
+    }
+
+    .doc-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .doc-item-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .doc-item-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .doc-item-badge.pass {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .doc-item-badge.warn {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    .doc-item-detail {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .doc-item-action {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-item-heal {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-item-heal:hover {
+      background: rgba(245, 158, 11, 0.25);
+    }
+
+    /* Projects Studio Tab */
+    .project-creator-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .proj-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      outline: none;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .proj-input:focus {
+      border-color: var(--accent);
+    }
+
+    .active-project-card {
+      background: var(--card-bg);
+      border: 1px solid var(--accent);
+      border-radius: 14px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .recent-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .recent-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .recent-item:hover {
+      background: var(--card-hover);
+      border-color: var(--accent);
+    }
+
+    /* Rescue Remedies Grid */
+    .rescue-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .rescue-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .rescue-card:hover {
+      border-color: var(--card-hover);
+    }
+
+    .rescue-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rescue-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Device Studio Tab */
+    .device-studio-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .device-spec-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .spec-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .spec-line-val {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .device-preview-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      min-height: 260px;
+    }
+
+    .device-screen-img {
+      max-width: 100%;
+      max-height: 220px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 14px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--card-bg);
+      margin-top: auto;
     }
   </style>
 </head>
-<body>
 
-  <!-- Top App Header -->
+<body>
+  <!-- Header with Brand, Mode Switcher, and Theme Toggle -->
   <header>
     <div class="brand">
       <div class="brand-logo">
-        <!-- 2D Official Flutter Logo -->
-        <svg viewBox="0 0 225 225" width="22" height="22">
-          <polygon points="134,0 204,0 56,148 22,114" fill="#54C5F8"/>
+        <svg viewBox="0 0 256 256" width="22" height="22">
+          <polygon points="134,31 204,31 73,162 3,162" fill="#54C5F8"/>
           <polygon points="134,103 204,103 143,164 73,164" fill="#54C5F8"/>
           <polygon points="73,164 108,129 143,164 108,199" fill="#29B6F6"/>
           <polygon points="143,164 108,199 134,225 204,225" fill="#01579B"/>
@@ -1079,8 +1188,25 @@
       </div>
       <div>
         <div class="brand-title">FlutterWay</div>
-        <div class="brand-sub">بوابة تشغيل وتجهيز فلاتر للمبتدئين بدون تعقيد</div>
+        <div class="brand-sub">بوابة ومساعد فلاتر الأصلي للمبتدئين والجامعات</div>
       </div>
+    </div>
+
+    <!-- Mode Switcher Pills -->
+    <div class="nav-switcher">
+      <button id="btn-nav-companion" class="nav-btn active" onclick="switchMainView('companion')">
+        <span class="icon" style="width: 14px; height: 14px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 3 6 3 6 3s6 0 6-3v-5"/></svg>
+        </span>
+        <span>لوحة رفيق الطالب للمحاضرات</span>
+      </button>
+
+      <button id="btn-nav-wizard" class="nav-btn" onclick="switchMainView('wizard')">
+        <span class="icon" style="width: 14px; height: 14px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        </span>
+        <span>معالج البداية (4 مستويات)</span>
+      </button>
     </div>
 
     <div class="header-actions">
@@ -1093,537 +1219,787 @@
     </div>
   </header>
 
-  <!-- Main Multi-Step Views -->
   <main>
-    <!-- STEP 1: HARDWARE & CANDID BENCHMARK COMPARISON -->
-    <section id="step-1" class="step-view active">
-      <div class="level-badge">
-        <span class="icon" style="width: 12px; height: 12px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-        </span>
-        <span>المستوى 1: فحص العتاد والمقارنة الواقعية</span>
-      </div>
-
-      <div class="hero-title">كيف تريد اختبار تطبيقاتك؟</div>
-      <p class="hero-desc">
-        بدون أي تضخيم أو مبالغة: اختر المسار المناسب للابتوبك لتوفير الجهد والذاكرة والانطلاق بسلاسة.
-      </p>
-
-      <!-- 1-Click Hardware Reality Check Banner -->
-      <div class="specs-banner" id="banner-check">
-        <div class="specs-banner-info">
-          <div class="banner-icon-box">
-            <span class="icon" style="width: 18px; height: 18px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <!-- ========================================================
+         VIEW 1: STUDENT COURSE COMPANION DASHBOARD (DEFAULT ACTIVE)
+         ======================================================== -->
+    <div id="view-companion" class="main-view active">
+      <div class="companion-container">
+        <!-- Sub-Navigation Tabs -->
+        <div class="companion-subnav">
+          <button id="btn-tab-doctor" class="comp-tab-btn active" onclick="switchCompanionTab('doctor')">
+            <span class="icon" style="width: 14px; height: 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
             </span>
-          </div>
-          <div>
-            <div style="font-weight: 800; font-size: 13px;">محتار شنو تختار؟ دع التطبيق يفحص لابتوبك وينصحك بالأفضل</div>
-            <div style="font-size: 11px; color: var(--text-muted);">فحص فوري يحدد قدرة معالجك، الرام، وميزة المحاكاة بالـ BIOS (Virtualization)</div>
-          </div>
-        </div>
-        <button id="btn-check-laptop" class="btn-check" onclick="checkLaptopSpecs()">
-          <span class="icon" style="width: 14px; height: 14px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
-          </span>
-          <span>افحص لابتوبي الآن</span>
-        </button>
-      </div>
+            <span>طبيب فلاتر الذكي</span>
+          </button>
 
-      <!-- Diagnostic & Candid Benchmark Result Box -->
-      <div class="diag-result-card" id="diag-result-box">
-        <div class="diag-header">
-          <span style="font-weight: 800; font-size: 13px;">تقرير فحص مواصفات لابتوبك الصريح:</span>
-          <span id="diag-badge" style="font-size: 11px; font-weight: 800; color: var(--accent);">تم الفحص بنجاح</span>
-        </div>
-        <div class="diag-specs-grid">
-          <div class="spec-item">
-            <div class="spec-val" id="spec-ram">-- GB</div>
-            <div class="spec-lbl">الذاكرة العشوائية (RAM)</div>
-          </div>
-          <div class="spec-item">
-            <div class="spec-val" id="spec-disk">-- GB</div>
-            <div class="spec-lbl">المساحة الفارغة (Drive C)</div>
-          </div>
-          <div class="spec-item">
-            <div class="spec-val" id="spec-vt">--</div>
-            <div class="spec-lbl">المحاكاة بالمعالج (BIOS VT)</div>
-          </div>
+          <button id="btn-tab-projects" class="comp-tab-btn" onclick="switchCompanionTab('projects')">
+            <span class="icon" style="width: 14px; height: 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <span>مشاريع المحاضرات</span>
+          </button>
+
+          <button id="btn-tab-rescue" class="comp-tab-btn" onclick="switchCompanionTab('rescue')">
+            <span class="icon" style="width: 14px; height: 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            </span>
+            <span>صندوق الإنقاذ السريع</span>
+          </button>
+
+          <button id="btn-tab-device" class="comp-tab-btn" onclick="switchCompanionTab('device')">
+            <span class="icon" style="width: 14px; height: 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            </span>
+            <span>استوديو الهاتف المتصل</span>
+          </button>
+
+          <button id="btn-tab-cheatsheet" class="comp-tab-btn" onclick="switchCompanionTab('cheatsheet')">
+            <span class="icon" style="width: 14px; height: 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </span>
+            <span>مفكرة الطالب والمختصرات</span>
+          </button>
         </div>
 
-        <!-- Candid Side-by-Side Reality Benchmark -->
-        <div class="benchmark-truth-box">
-          <div class="bench-col" id="col-emu">
-            <div class="bench-col-title" style="color: var(--danger);">
-              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></span>
-              <span>المحاكي الافتراضي (Emulator)</span>
+        <!-- TAB 1: SMART DOCTOR -->
+        <div id="tab-doctor" class="comp-tab-pane active">
+          <!-- Readiness Overview Card -->
+          <div class="doctor-overview-card">
+            <div class="doctor-score-badge">
+              <div class="score-circle" id="doctor-score-display">100%</div>
+              <div>
+                <div class="score-title">جاهزية البيئة للمحاضرات والأندرويد</div>
+                <div class="score-sub" id="doctor-score-subtitle">كافة أدوات التطوير ومسارات فلاتر وجافا وSDK تعمل بتناغم تام</div>
+              </div>
             </div>
-            <ul class="bench-list">
-              <li>استهلاك الرام: <strong>4.5 إلى 6 GB إضافية</strong></li>
-              <li>ضغط المعالج: <strong>85% إلى 100% مستمر</strong></li>
-              <li>حرارة ومراوح: <strong>صوت عالي وسخونة واضحة</strong></li>
-              <li>شرط BIOS: <strong id="vt-condition-text">معطلة بالـ BIOS (لن يعمل!)</strong></li>
-            </ul>
-            <div class="bench-verdict" style="color: var(--danger);">
-              الحكم الصريح: المحاكي يثقل لابتوبك جداً وقد يجمد الويندوز!
-            </div>
-          </div>
 
-          <div class="bench-col recommended" id="col-usb">
-            <div class="bench-col-title" style="color: var(--success);">
-              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span>هاتف / تابلت USB الحقيقي</span>
-            </div>
-            <ul class="bench-list">
-              <li>استهلاك الرام من لابتوبك: <strong>0 MB (يستخدم رام الهاتف!)</strong></li>
-              <li>ضغط المعالج: <strong>0% أثناء الاستخدام</strong></li>
-              <li>حرارة ومراوح: <strong>حاسبتك باردة وهادئة تماماً</strong></li>
-              <li>السلاسة واللمس: <strong>60 إلى 120 FPS حقيقية باليد</strong></li>
-            </ul>
-            <div class="bench-verdict" style="color: var(--success);">
-              الحكم الصريح: الخيار الذهبي والواقعي لـ 95% من الطلاب!
+            <div style="display: flex; gap: 10px;">
+              <button id="btn-doctor-refresh" class="btn-secondary" onclick="runSmartDoctorScan()">
+                <span class="icon" style="width: 12px; height: 12px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                </span>
+                <span>إعادة الفحص</span>
+              </button>
+
+              <button id="btn-doctor-heal-all" class="btn-primary" onclick="healAllDoctorIssues()">
+                <span class="icon" style="width: 14px; height: 14px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                </span>
+                <span>زر الإصلاح الشامل بنقرة واحدة</span>
+              </button>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- The Two Options Grid -->
-      <div class="choice-grid">
-        <!-- Option 1: Real Phone (USB) -->
-        <div class="choice-card selected" id="card-usb" onclick="selectChoice('usb')">
-          <div class="card-top">
-            <div class="card-icon-box">
-              <span class="icon" style="width: 20px; height: 20px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-              </span>
-            </div>
-            <div class="card-badge gold" id="badge-usb">الخيار الموصى به لـ 95% من الطلاب</div>
-          </div>
-          <div class="card-title">هاتف / تابلت أندرويد عبر كيبل USB</div>
-          <ul class="card-bullets">
-            <li>
-              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>الأسرع والأخف:</strong> تحميل 250MB فقط ويعمل فوراً</span>
-            </li>
-            <li>
-              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>صفر تعب للابتوب:</strong> لا يستهلك الرام أو المعالج نهائياً</span>
-            </li>
-            <li>
-              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>تجربة واقعية:</strong> ترى التطبيق وتلمسه بيدك على شاشة حقيقية</span>
-            </li>
-            <li>
-              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>المتطلبات:</strong> كيبل شحن USB عادي وتفعيل خيارات المطور</span>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Option 2: Emulator (Virtual Device) -->
-        <div class="choice-card" id="card-emu" onclick="selectChoice('emu')">
-          <div class="card-top">
-            <div class="card-icon-box">
-              <span class="icon" style="width: 20px; height: 20px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-              </span>
-            </div>
-            <div class="card-badge" id="badge-emu">يحتاج لابتوب قوي جداً</div>
-          </div>
-          <div class="card-title">محاكي افتراضي على اللابتوب</div>
-          <ul class="card-bullets">
-            <li>
-              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>شاشة داخل اللابتوب:</strong> نافذة هاتف وهمي على ويندوز</span>
-            </li>
-            <li>
-              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>استهلاك عالي:</strong> يحتاج 4-6GB رام إضافية ومعالجاً قوياً</span>
-            </li>
-            <li>
-              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>حجم التحميل:</strong> يحتاج تنزيل صور نظام أندرويد بحجم 3.8GB</span>
-            </li>
-            <li>
-              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>المتطلبات:</strong> تفعيل ميزة Virtualization من إعدادات BIOS</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <button id="btn-start-setup" class="btn-primary" onclick="startSetup()">
-        <span>متابعة التجهيز التلقائي</span>
-        <span class="icon" style="width: 16px; height: 16px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </span>
-      </button>
-      <div style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
-        سنتكفل بضبط المسارات والبيئة تلقائياً في الخلفية بدون أي نوافذ مزعجة
-      </div>
-    </section>
-
-    <!-- STEP 2: SILENT SETUP PROGRESS & DYNAMIC TIPS -->
-    <section id="step-2" class="step-view">
-      <div class="progress-container">
-        <!-- Pure 2D Official Flutter Logo with Download Arrow -->
-        <div style="display: flex; justify-content: center; margin-bottom: 14px;">
-          <svg viewBox="0 0 225 225" width="68" height="68">
-            <polygon points="134,0 204,0 56,148 22,114" fill="#54C5F8"/>
-            <polygon points="134,103 204,103 143,164 73,164" fill="#54C5F8"/>
-            <polygon points="73,164 108,129 143,164 108,199" fill="#29B6F6"/>
-            <polygon points="143,164 108,199 134,225 204,225" fill="#01579B"/>
-            <!-- 2D Download Arrow + Tray -->
-            <g transform="translate(66, 68)">
-              <line x1="24" y1="6" x2="24" y2="32" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round"/>
-              <polyline points="13,22 24,33 35,22" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-              <line x1="10" y1="44" x2="38" y2="44" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
-            </g>
-          </svg>
-        </div>
-
-        <div class="level-badge">المستوى 2: تجهيز ترسانة فلاتر وأندرويد الصامتة</div>
-        <div class="hero-title" id="setup-step-title" style="font-size: 20px;">جاري التجهيز الذكي الصامت...</div>
-        <div class="hero-desc" id="setup-step-desc" style="font-size: 13px; margin-bottom: 18px;">
-          نحن نهيئ المسارات والأدوات نيابة عنك في الخلفية، استرخِ قليلاً
-        </div>
-
-        <div class="track">
-          <div class="fill" id="progress-fill"></div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-          <span id="speed-indicator">السرعة: 5.8 MB/s</span>
-          <span id="percent-indicator" style="font-weight: 700; color: var(--accent);">0%</span>
-        </div>
-
-        <!-- Rotating Developer Tips Box -->
-        <div class="tips-carousel-box">
-          <div class="tip-icon-box">
-            <span class="icon" style="width: 16px; height: 16px;">
+          <!-- Candid Student Reassurance Banner -->
+          <div class="reassurance-banner">
+            <span class="icon" style="width: 20px; height: 20px; color: var(--accent); flex-shrink: 0;">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
             </span>
+            <div>
+              <strong>ملاحظة صريحة للطالب:</strong> تم إعفاؤك تماماً من تنزيل Visual Studio وC++ بحجم 20 جيجا! مسارك مخصص لتطبيقات الموبايل للأندرويد، وبيئتك جاهزة 100% دون أي إجهاد للابتوبك أو قرصك.
+            </div>
           </div>
-          <div class="tip-content" id="tip-text">
-            <strong>نصيحة ذهبية:</strong> ميزة Hot Reload في فلاتر تتيح لك رؤية أي تعديل بالكود على هاتفك في أقل من ثانية واحدة!
+
+          <!-- Diagnostic Cards Grid -->
+          <div class="doctor-grid" id="doctor-cards-grid">
+            <!-- Dynamically populated via JS -->
           </div>
         </div>
 
-        <!-- Step Checklist -->
-        <div class="steps-checklist">
-          <div class="step-item" id="chk-env">
-            <span class="step-chk-icon icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
-            <span>فحص اللابتوب وتهيئة مسارات ويندوز ومساحة القرص</span>
+        <!-- TAB 2: LECTURE PROJECTS STUDIO -->
+        <div id="tab-projects" class="comp-tab-pane">
+          <div class="project-creator-card">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text);">
+              إنشاء مشروع جديد لمحاضرة اليوم أو الواجب الدراسي
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+              يتم إنشاء المشروع بنسخة نظيفة مسبقة التهيئة ومعدلة لتفادي تنزيل الـ NDK (6.7GB) التلقائي، ومزودة بشرح تفصيلي للودجات الأساسية.
+            </div>
+            <div class="form-row">
+              <input type="text" id="input-lecture-name" class="proj-input" placeholder="اسم المشروع بالإنجليزية (مثلاً: lecture_1_basics)">
+              <button id="btn-create-lecture-proj" class="btn-primary" onclick="createNewLectureProject()">
+                <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+                <span>إنشاء وتجهيز المشروع فوراً</span>
+              </button>
+            </div>
           </div>
-          <div class="step-item" id="chk-java">
-            <span class="step-chk-icon icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
-            <span>تهيئة بيئة Java (JDK 21) ومحرك Gradle لبناء تطبيقات الأندرويد</span>
+
+          <!-- Active Project Card -->
+          <div class="active-project-card" id="active-project-card">
+            <div>
+              <div style="font-size: 11px; color: var(--accent); font-weight: 800; margin-bottom: 2px;">المشروع النشط حالياً</div>
+              <div style="font-size: 16px; font-weight: 800; color: var(--text);" id="active-proj-name">my_first_app</div>
+              <div style="font-size: 11px; color: var(--text-muted);" id="active-proj-path">C:\Users\...\Desktop\my_first_app</div>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button id="btn-open-proj-vscode" class="btn-secondary" onclick="openActiveProjectVSCode()">
+                <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+                <span>فتح في VS Code</span>
+              </button>
+
+              <button id="btn-clean-project" class="btn-secondary" onclick="cleanActiveProject()">
+                <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+                <span>تنظيف البناء (Clean)</span>
+              </button>
+
+              <button id="btn-run-proj-phone" class="btn-primary" style="padding: 8px 18px; font-size: 12px;" onclick="runActiveProjectPhone()">
+                <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
+                <span>تشغيل وبناء على الهاتف</span>
+              </button>
+            </div>
           </div>
-          <div class="step-item" id="chk-dl">
-            <span class="step-chk-icon icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
-            <span>تنزيل وتجهيز محرك Flutter & Dart الرسمي وتسجيل المسار</span>
+
+          <!-- Recent Projects -->
+          <div style="width: 100%; margin-top: 6px;">
+            <div style="font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 8px;">المشاريع الأخيرة على جهازك:</div>
+            <div class="recent-list" id="recent-projects-list">
+              <!-- Dynamically populated -->
+            </div>
           </div>
-          <div class="step-item" id="chk-vsc">
-            <span class="step-chk-icon icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
-            <span>تثبيت إضافات فلاتر لمحرر VS Code وتجهيز مشروعك الأول</span>
+        </div>
+
+        <!-- TAB 3: EMERGENCY RESCUE BOX -->
+        <div id="tab-rescue" class="comp-tab-pane">
+          <div class="hero-desc" style="text-align: right; margin-bottom: 12px; max-width: 100%;">
+            حلول فورية وسحرية لأكثر المشاكل المزعجة التي تواجه الطلاب أثناء المحاضرات دون الحاجة لكتابة أوامر بالترمينال:
+          </div>
+
+          <div class="rescue-grid">
+            <!-- Rescue 1 -->
+            <div class="rescue-card">
+              <div>
+                <div class="rescue-title">
+                  <span class="icon" style="width: 16px; height: 16px; color: var(--warning);"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                  <span>حل تعليق الجرادل وقفل الكاش (Gradle Deadlock)</span>
+                </div>
+                <div class="rescue-desc">
+                  ينهي العمليات العالقة في الذاكرة (java.exe) ويحذف ملفات القفل العالقة .lock ليفتح لك المجال للبناء فوراً دون إعادة تنزيل.
+                </div>
+              </div>
+              <button id="btn-rescue-gradle" class="btn-warning" onclick="executeRescueRemedy('fix_gradle_cache')">
+                <span>فك تعليق الجرادل وحذف ملفات القفل</span>
+              </button>
+            </div>
+
+            <!-- Rescue 2 -->
+            <div class="rescue-card">
+              <div>
+                <div class="rescue-title">
+                  <span class="icon" style="width: 16px; height: 16px; color: var(--success);"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>
+                  <span>الموافقة التلقائية على كل رخص أندرويد</span>
+                </div>
+                <div class="rescue-desc">
+                  يحل مشكلة (Android license status unknown) ويرسل موافقة رسمية y لكافة شروط غوغل بنقرة واحدة وبصمت.
+                </div>
+              </div>
+              <button id="btn-rescue-licenses" class="btn-secondary" style="border-color: var(--success); color: var(--success);" onclick="executeRescueRemedy('fix_licenses')">
+                <span>الموافقة على جميع الرخص الآن</span>
+              </button>
+            </div>
+
+            <!-- Rescue 3 -->
+            <div class="rescue-card">
+              <div>
+                <div class="rescue-title">
+                  <span class="icon" style="width: 16px; height: 16px; color: var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></span>
+                  <span>إعادة تشغيل منفذ الهاتف (Restart ADB 5037)</span>
+                </div>
+                <div class="rescue-desc">
+                  يحل مشكلة اختفاء الهاتف فجأة أو تعليق المنفذ بسبب تضارب برامج أخرى، ويعيد تشغيل خدمة adb server بنظافة.
+                </div>
+              </div>
+              <button id="btn-rescue-adb" class="btn-secondary" onclick="executeRescueRemedy('fix_adb')">
+                <span>إعادة ضبط وتصفية اتصال ADB</span>
+              </button>
+            </div>
+
+            <!-- Rescue 4 -->
+            <div class="rescue-card">
+              <div>
+                <div class="rescue-title">
+                  <span class="icon" style="width: 16px; height: 16px; color: var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
+                  <span>تفعيل مسارات ويندوز العميقة (LongPaths)</span>
+                </div>
+                <div class="rescue-desc">
+                  يحل خطأ انهيار بناء أندرويد الشهير الناتج عن تقييد ويندوز القديم بـ 260 حرف، بتعديل السجل تلقائياً.
+                </div>
+              </div>
+              <button id="btn-rescue-longpaths" class="btn-secondary" onclick="executeRescueRemedy('fix_long_paths')">
+                <span>تفعيل المسارات الطويلة في الويندوز</span>
+              </button>
+            </div>
+
+            <!-- Rescue 5 -->
+            <div class="rescue-card" style="grid-column: span 2;">
+              <div>
+                <div class="rescue-title">
+                  <span class="icon" style="width: 16px; height: 16px; color: var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+                  <span>حل مشاكل شبكة العراق/المنطقة ومستودعات غوغل (Network & Mirrors Check)</span>
+                </div>
+                <div class="rescue-desc">
+                  يفرغ كاش الـ DNS ويزيل أي متغيرات بروكسي معطلة قد تمنع تحميل مكتبات Maven أو حزم pub.dev.
+                </div>
+              </div>
+              <button id="btn-rescue-network" class="btn-secondary" onclick="executeRescueRemedy('fix_network')">
+                <span>تفريغ كاش الشبكة وإعادة ضبط الاتصال</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Toast result -->
+          <div id="rescue-toast" style="display: none; padding: 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; margin-top: 8px;"></div>
+        </div>
+
+        <!-- TAB 4: CONNECTED DEVICE STUDIO -->
+        <div id="tab-device" class="comp-tab-pane">
+          <div class="device-studio-container">
+            <!-- Telemetry Box -->
+            <div class="device-spec-box">
+              <div style="font-size: 14px; font-weight: 800; color: var(--text); display: flex; justify-content: space-between; align-items: center;">
+                <span>مواصفات الهاتف المتصل الحقيقي</span>
+                <span class="level-badge" style="margin: 0; background: var(--success-bg); color: var(--success); border-color: var(--success);">متصل وجاهز</span>
+              </div>
+
+              <div class="spec-line">
+                <span>اسم الجهاز والموديل:</span>
+                <span class="spec-line-val" id="dev-val-name">HONOR JMS-W09</span>
+              </div>
+              <div class="spec-line">
+                <span>إصدار أندرويد (Android):</span>
+                <span class="spec-line-val" id="dev-val-android">Android 15 (SDK 35)</span>
+              </div>
+              <div class="spec-line">
+                <span>مستوى البطارية:</span>
+                <span class="spec-line-val" id="dev-val-battery">100%</span>
+              </div>
+              <div class="spec-line">
+                <span>دقة الشاشة (Resolution):</span>
+                <span class="spec-line-val" id="dev-val-screen">800x1340</span>
+              </div>
+              <div class="spec-line">
+                <span>معمارية المعالج (ABI):</span>
+                <span class="spec-line-val" id="dev-val-abi">arm64-v8a</span>
+              </div>
+              <div class="spec-line">
+                <span>نوع التوصيل:</span>
+                <span class="spec-line-val" id="dev-val-conn">USB عالي السرعة</span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                <button id="btn-device-ping" class="btn-secondary" onclick="pingConnectedDevice()">
+                  <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg></span>
+                  <span>إرسال إشارة تنشيط للشاشة (Wakeup Ping)</span>
+                </button>
+
+                <button id="btn-device-screenshot" class="btn-primary" style="padding: 10px 16px; font-size: 13px;" onclick="captureLiveDeviceScreen()">
+                  <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                  <span>التقاط لقطة شاشة حية من الهاتف الآن</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Preview Box -->
+            <div class="device-preview-box" id="device-preview-box">
+              <div id="device-preview-placeholder" style="text-align: center; color: var(--text-muted); font-size: 12px;">
+                <span class="icon" style="width: 32px; height: 32px; display: inline-block; margin-bottom: 8px; color: var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
+                <div>انقر على "التقاط لقطة شاشة حية" لمعاينة شاشة هاتفك هنا فورياً!</div>
+              </div>
+              <img id="device-live-img" class="device-screen-img" style="display: none;" src="" alt="Live Screen Preview">
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: STUDENT CHEATSHEET & SECRETS -->
+        <div id="tab-cheatsheet" class="comp-tab-pane">
+          <div class="cheat-grid" style="grid-template-columns: 1fr 1fr;">
+            <!-- Secret 1 -->
+            <div class="cheat-item">
+              <div class="cheat-icon-box">
+                <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+              </div>
+              <div>
+                <div class="cheat-item-title">1. التحديث الفوري Hot Reload مقابل Restart</div>
+                <div class="cheat-item-desc">
+                  • <strong>Ctrl + S أو r</strong>: يحدّث واجهة الشاشة بأجزاء من الثانية دون فقدان حالة التطبيق.<br>
+                  • <strong>R (كبيرة)</strong>: يعيد تشغيل التطبيق بالكامل إذا قمت بتغيير دالة main أو initState.
+                </div>
+              </div>
+            </div>
+
+            <!-- Secret 2 -->
+            <div class="cheat-item">
+              <div class="cheat-icon-box">
+                <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+              </div>
+              <div>
+                <div class="cheat-item-title">2. مفتاح الحل السحري في VS Code (Ctrl + .)</div>
+                <div class="cheat-item-desc">
+                  قف على أي ويدجت واضغط <strong>Ctrl + .</strong> لتغليفها داخل Padding أو Center أو Row أو استخراجها في دالة بلمح البصر!
+                </div>
+              </div>
+            </div>
+
+            <!-- Secret 3 -->
+            <div class="cheat-item">
+              <div class="cheat-icon-box">
+                <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg></span>
+              </div>
+              <div>
+                <div class="cheat-item-title">3. متى تختار StatelessWidget ومتى StatefulWidget؟</div>
+                <div class="cheat-item-desc">
+                  • <strong>Stateless</strong>: لشاشة أو عنصر ثابت لا يتغير نصه أو حالته (مثل شاشة حول التطبيق).<br>
+                  • <strong>Stateful</strong>: إذا كان هناك عداد، زر، حقل كتابة، أو بيانات تتغير على الشاشة.
+                </div>
+              </div>
+            </div>
+
+            <!-- Secret 4 -->
+            <div class="cheat-item">
+              <div class="cheat-icon-box">
+                <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+              </div>
+              <div>
+                <div class="cheat-item-title">4. القاعدة الذهبية لتفادي أخطاء الجرادل وبطء البناء</div>
+                <div class="cheat-item-desc">
+                  • أبقِ الكيبل موصولاً دوماً وثابتاً أثناء البناء.<br>
+                  • لا تقم بإنشاء مشاريع في مسارات تحتوي على أحرف عربية (مثل مجلد "سطح المكتب").
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- STEP 3: PHONE CONNECT & REAL BUILD QUEST -->
-    <section id="step-3" class="step-view">
-      <div class="device-box">
-        <div class="level-badge">المستوى 3: ربط الجهاز وتحدي الإطلاق الأول</div>
-        <div class="hero-title" style="font-size: 20px;">ربط الهاتف واختبار التشغيل الفعلي</div>
-        <p class="hero-desc" style="font-size: 13px; margin-bottom: 16px;">
-          دعنا نتأكد معاً أن فلاتر تعمل 100% على هاتفك بتشغيل تطبيق حقيقي أمامه قبل كتابة الكود!
+    <!-- ========================================================
+         VIEW 2: GAMIFIED 4-LEVEL ONBOARDING WIZARD
+         ======================================================== -->
+    <div id="view-wizard" class="main-view">
+      <!-- STEP 1: HARDWARE & CANDID BENCHMARK COMPARISON -->
+      <section id="step-1" class="step-view active">
+        <div class="level-badge">
+          <span class="icon" style="width: 12px; height: 12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </span>
+          <span>المستوى 1: فحص العتاد والمقارنة الواقعية</span>
+        </div>
+
+        <div class="hero-title">كيف تريد اختبار تطبيقاتك؟</div>
+        <p class="hero-desc">
+          بدون أي تضخيم أو مبالغة: اختر المسار المناسب للابتوبك لتوفير الجهد والذاكرة والانطلاق بسلاسة.
         </p>
 
-        <!-- Dynamic Pulse Device Box -->
-        <div class="pulse-icon-box" id="device-pulse-box">
-          <span class="icon" style="width: 30px; height: 30px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-          </span>
-        </div>
-
-        <div id="device-status-badge" class="device-status-badge waiting">
-          <span class="icon" style="width: 12px; height: 12px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-          </span>
-          <span id="device-status-text">بانتظار ربط هاتفك باللابتوب عبر كيبل USB...</span>
-        </div>
-
-        <!-- Missing Driver Alert Card -->
-        <div class="driver-alert-box" id="driver-alert-card">
-          <div class="driver-alert-header">
+        <!-- 1-Click Hardware Reality Check Banner -->
+        <div class="specs-banner" id="banner-check">
+          <div class="specs-banner-info">
+            <div class="banner-icon-box">
+              <span class="icon" style="width: 18px; height: 18px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </span>
+            </div>
             <div>
-              <div style="font-weight: 800; font-size: 13px; color: var(--warning);">تم اكتشاف جهاز أندرويد لكن ينقصه تعريف USB!</div>
-              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">ويندوز يحتاج تعريف (Android Composite ADB Interface) للتعرف عليه</div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text);">فحص توافق اللابتوب والمحاكي بالكامل</div>
+              <div style="font-size: 11px; color: var(--text-muted);">يفحص الرام الحقيقي، دعم المعالج في BIOS، ويقارن الأداء بصدق بدون AI Hype</div>
+            </div>
+          </div>
+          <button id="btn-check-laptop" class="btn-check" onclick="checkLaptopSpecs()">
+            <span>فحص مواصفات لابتوبي بنقرة واحدة</span>
+          </button>
+        </div>
+
+        <!-- Diagnostic Result & Honest Side-by-Side Comparison -->
+        <div class="diag-result-card" id="diag-result-box">
+          <div class="diag-header">
+            <div style="font-size: 13px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px;">
+              <span class="icon" style="width: 14px; height: 14px; color: var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span>نتيجة فحص عتاد لابتوبك الحقيقية</span>
+            </div>
+            <div id="diag-rec-badge" class="level-badge" style="margin: 0; background: var(--success-bg); color: var(--success); border-color: var(--success);">
+              المسار المنصوح به: هاتف USB
+            </div>
+          </div>
+
+          <div class="diag-specs-grid">
+            <div class="spec-item">
+              <div class="spec-val" id="spec-ram">11.7 GB</div>
+              <div class="spec-lbl">الرام المتاح في جهازك</div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-val" id="spec-disk">65.1 GB</div>
+              <div class="spec-lbl">مساحة القرص C المتاحة</div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-val" id="spec-vt" style="color: var(--warning);">معطلة في BIOS</div>
+              <div class="spec-lbl">ميزة المحاكاة (Virtualization)</div>
+            </div>
+          </div>
+
+          <div style="font-size: 12px; color: var(--text); font-weight: 700; line-height: 1.5;" id="diag-reason-text">
+            ميزة المحاكاة (Virtualization) غير مفعلة في معالجك (BIOS). خيار (هاتف USB) هو الأسرع والجاهز للعمل معك فوراً وبدون أي تعقيد أو تجميد للحاسبة!
+          </div>
+
+          <!-- Honest Side-by-Side Comparison -->
+          <div class="benchmark-comparison-grid">
+            <div class="bench-card warn">
+              <div class="bench-head">
+                <span class="bench-title" style="color: var(--warning);">المحاكي الافتراضي (AVD)</span>
+                <span class="bench-tag" style="background: var(--warning-bg); color: var(--warning);">استنزاف عالي</span>
+              </div>
+              <div class="bench-stat-row">
+                <span>استهلاك الرام:</span>
+                <span class="bench-stat-val" style="color: var(--danger);">4 - 6 GB محجوزة</span>
+              </div>
+              <div class="bench-stat-row">
+                <span>ضغط المعالج:</span>
+                <span class="bench-stat-val" style="color: var(--danger);">85% - 100% مستمر</span>
+              </div>
+              <div class="bench-stat-row">
+                <span>الحرارة والمراوح:</span>
+                <span class="bench-stat-val">حرارة عالية وصوت مرتفع</span>
+              </div>
+              <div class="bench-verdict" style="color: var(--warning);">
+                تنبيه صريح: المحاكي سيثقل جهازك جداً وقد يجمد الويندوز إذا كانت المحاكاة معطلة.
+              </div>
+            </div>
+
+            <div class="bench-card rec">
+              <div class="bench-head">
+                <span class="bench-title" style="color: var(--success);">هاتف أندرويد عبر كيبل USB</span>
+                <span class="bench-tag" style="background: var(--success-bg); color: var(--success);">الخيار الذهبي 95%</span>
+              </div>
+              <div class="bench-stat-row">
+                <span>استهلاك الرام:</span>
+                <span class="bench-stat-val" style="color: var(--success);">0 MB من لابتوبك!</span>
+              </div>
+              <div class="bench-stat-row">
+                <span>ضغط المعالج:</span>
+                <span class="bench-stat-val" style="color: var(--success);">0% أثناء الاستخدام</span>
+              </div>
+              <div class="bench-stat-row">
+                <span>السلاسة والشاشة:</span>
+                <span class="bench-stat-val" style="color: var(--success);">60 - 120 FPS بسلاسة التلفون</span>
+              </div>
+              <div class="bench-verdict" style="color: var(--success);">
+                الخيار الواقعي: لابتوبك سيبقى بارداً وسريعاً للغاية، وتلمس تطبيقك بيدك مباشرة!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <!-- USB Mode Card -->
+          <div id="card-usb" class="mode-card selected" onclick="selectChoice('usb')">
+            <div class="card-badge">المنصوح به لـ 95% من الطلاب</div>
+            <div class="card-icon-title">
+              <div class="card-icon">
+                <span class="icon" style="width: 20px; height: 20px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                </span>
+              </div>
+              <div>
+                <div class="card-title">هاتف أندرويد عبر كيبل USB</div>
+                <div style="font-size: 11px; color: var(--success); font-weight: 700;">سريع، خفيف، ولا يستهلك رام اللابتوب إطلاقاً</div>
+              </div>
+            </div>
+            <div class="card-desc">
+              أي موبايل أندرويد لديك مع كيبل الشحن. سنقوم بتوجيهك خطوة بخطوة للتعرف عليه وتشغيل التطبيق في يدك.
+            </div>
+          </div>
+
+          <!-- Emulator Mode Card -->
+          <div id="card-emu" class="mode-card" onclick="selectChoice('emu')">
+            <div class="card-icon-title">
+              <div class="card-icon">
+                <span class="icon" style="width: 20px; height: 20px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </span>
+              </div>
+              <div>
+                <div class="card-title">محاكي افتراضي على اللابتوب</div>
+                <div style="font-size: 11px; color: var(--warning); font-weight: 700;">يتطلب 16GB رام ومعالج يدعم VT</div>
+              </div>
+            </div>
+            <div class="card-desc">
+              جهاز أندرويد افتراضي يفتح على شاشة الويندوز. يتطلب عتاداً قوياً وتفعيل تقنية المحاكاة بالبايوس.
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-start-setup" class="btn-primary" onclick="startSetup()">
+          <span>متابعة التجهيز التلقائي</span>
+          <span class="icon" style="width: 16px; height: 16px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          </span>
+        </button>
+      </section>
+
+      <!-- STEP 2: SILENT SETUP PROGRESS -->
+      <section id="step-2" class="step-view">
+        <div class="level-badge">
+          <span class="icon" style="width: 12px; height: 12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </span>
+          <span>المستوى 2: التجهيز الآلي الصامت</span>
+        </div>
+
+        <div class="hero-title">جاري إعداد محرك فلاتر بالكامل</div>
+        <div class="hero-desc">
+          استرخِ... نحن نقوم بتهيئة جافا، فلاتر، متغيرات النظام، وإضافات VS Code آلياً في الخلفية.
+        </div>
+
+        <div class="progress-box">
+          <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+            <div id="progress-text" style="font-size: 13px; font-weight: 700; color: var(--text);">جاري فحص إعدادات اللابتوب وتوفير أفضل مسار...</div>
+            <div id="progress-pct" style="font-size: 15px; font-weight: 900; color: var(--accent);">0%</div>
+          </div>
+
+          <div class="progress-bar-container">
+            <div id="progress-fill" class="progress-bar-fill"></div>
+          </div>
+
+          <div class="checklist">
+            <div id="chk-step-1" class="chk-item">
+              <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+              <span>تهيئة بيئة النظام والتحقق من التوافقية</span>
+            </div>
+            <div id="chk-step-2" class="chk-item">
+              <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+              <span>تثبيت وضبط بيئة جافا الرسمية ومحرك أندرويد Gradle</span>
+            </div>
+            <div id="chk-step-3" class="chk-item">
+              <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+              <span>تنزيل محرك Flutter وتسجيله في مسار الويندوز (PATH)</span>
+            </div>
+            <div id="chk-step-4" class="chk-item">
+              <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+              <span>تكامل إضافات VS Code وإعداد أول مشروع فلاتر على الديسكتوب</span>
+            </div>
+          </div>
+
+          <div style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px;" id="tips-banner">
+            💡 نصيحة: لن تحتاج مستقبلاً لفتح موجه الأوامر الأسود أو كتابة مسارات PATH المعقدة يدوياً.
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3: PHONE BOSS VIEW & COMMENTARY -->
+      <section id="step-3" class="step-view">
+        <div class="level-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning); border-color: var(--warning);">
+          <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>
+          <span>المستوى 3: وحش المرحلة - توصيل الهاتف وبناء أول تطبيق</span>
+        </div>
+
+        <div class="hero-title" id="step3-title">صِل هاتفك بالكمبيوتر بالكيبل</div>
+        <div class="hero-desc" id="step3-desc">
+          أهم خطوة في مسيرتك! عندما تنجح في رؤية تطبيقك الأول على شاشة هاتفك الحقيقي، تصبح مطوراً رسمياً.
+        </div>
+
+        <div class="device-card">
+          <div class="device-radar" id="device-radar-icon">
+            <span class="icon" style="width: 28px; height: 28px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
+          </div>
+
+          <div style="text-align: center;">
+            <div id="device-status-text" style="font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 4px;">
+              بانتظار توصيل هاتف أندرويد عبر كيبل USB...
+            </div>
+            <div id="device-status-sub" style="font-size: 12px; color: var(--text-muted);">
+              تأكد من فتح شاشة القفل واختيار "نقل الملفات (File Transfer)" عند التوصيل.
+            </div>
+          </div>
+
+          <!-- Missing Driver Alert Banner -->
+          <div id="missing-driver-alert" style="display: none; width: 100%; background: var(--warning-bg); border: 1px solid var(--warning); border-radius: 12px; padding: 12px 16px; text-align: right;">
+            <div style="font-size: 13px; font-weight: 800; color: var(--warning); margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+              <span>تم رصد هاتف أندرويد لكن ينقصه تعريف USB (Driver)!</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text); line-height: 1.5; margin-bottom: 8px;">
+              لابتوبك لم يتعرف على واجهة الهاتف بعد. وفرنا لك حزمة تعريفات Google الرسمية الشاملة لجميع أجهزة أندرويد لتثبيتها بنقرة واحدة فوراً:
             </div>
             <button id="btn-install-drivers" class="btn-warning" onclick="installDrivers()">
-              <span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
-              <span>تثبيت التعريفات بنقرة واحدة</span>
+              <span>تثبيت تعريفات USB الشاملة الآن بنقرة واحدة</span>
+            </button>
+          </div>
+
+          <!-- Universal Debugging Guide with YouTube Search Pill -->
+          <div id="device-guide-box" style="width: 100%; background: var(--bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; text-align: right;">
+            <div style="font-size: 12px; font-weight: 800; color: var(--text); margin-bottom: 8px;">
+              كيف تفعل وضع تصحيح الأخطاء (USB Debugging) في أي هاتف أندرويد بالعالم:
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px;">
+              1. ادخل إلى <strong>الإعدادات (Settings)</strong> ثم <strong>حول الهاتف (About Phone)</strong>.<br>
+              2. اضغط على <strong>رقم الإصدار (Build Number)</strong> سبع (7) مرات متتالية حتى تظهر عبارة "أنت مطور الآن!".<br>
+              3. ارجع للإعدادات وادخل إلى <strong>خيارات المطور (Developer Options)</strong> وفعّل <strong>تصحيح USB (USB Debugging)</strong>.
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 8px 12px;">
+              <span style="font-size: 11px; color: var(--accent); font-weight: 700;">طريقة جهازك محددة باليوتيوب:</span>
+              <button class="btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="copyYoutubeSearch()">
+                <span>نسخ نص البحث لليوتيوب</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Gradle Build Console & Dynamic Iraqi Commentary -->
+          <div class="build-console-box" id="build-console">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-size: 14px; font-weight: 800; color: var(--text);">بناء الجرادل الفعلي وتجربة التطبيق</div>
+              <div class="build-timer-badge">
+                <span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg></span>
+                <span id="build-elapsed-timer">00:00</span>
+              </div>
+            </div>
+
+            <div class="build-commentary" id="build-commentary-text">
+              🚀 شغلنا محركات الجرادل... دا يتعرف على ملفات المشروع وإعدادات أندرويد.
+            </div>
+
+            <div class="build-steps-list">
+              <div id="bstep-1" class="build-step-row active">
+                <div class="bstep-icon"><span class="icon" style="width: 8px; height: 8px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+                <span>مزامنة ملفات Gradle ومكتبات أندرويد</span>
+              </div>
+              <div id="bstep-2" class="build-step-row">
+                <div class="bstep-icon"><span class="icon" style="width: 8px; height: 8px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+                <span>ترجمة كود Dart وبناء حزمة ARM64</span>
+              </div>
+              <div id="bstep-3" class="build-step-row">
+                <div class="bstep-icon"><span class="icon" style="width: 8px; height: 8px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+                <span>تثبيت وتشغيل التطبيق على شاشة الهاتف</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Celebration Benchmark Card -->
+          <div id="benchmark-card" style="display: none; width: 100%; background: rgba(16, 185, 129, 0.08); border: 1px solid var(--success); border-radius: 12px; padding: 16px; text-align: center;">
+            <div style="font-size: 15px; font-weight: 800; color: var(--success); margin-bottom: 6px;" id="benchmark-head-text">
+              التطبيق يعمل الآن بنجاح على شاشة هاتفك الحقيقي!
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
+              انظر لهاتفك الآن! ستجد التطبيق قد فتح أمامك وتستطيع النقر على زر العداد وتجربته بيدك.
+            </div>
+            <div class="diag-specs-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 12px;">
+              <div class="spec-item">
+                <div class="spec-val" style="color: var(--success);" id="stat-speed">1.8 ثانية</div>
+                <div class="spec-lbl">زمن التشغيل المباشر</div>
+              </div>
+              <div class="spec-item">
+                <div class="spec-val" style="color: var(--success);">38 MB</div>
+                <div class="spec-lbl">استهلاك الرام</div>
+              </div>
+              <div class="spec-item">
+                <div class="spec-val" style="color: var(--success);">60 FPS</div>
+                <div class="spec-lbl">سلاسة الشاشة</div>
+              </div>
+            </div>
+            <button id="btn-proceed-to-vscode" class="btn-primary" style="background: var(--success);" onclick="showStep(4)">
+              <span>رائع! أرني كيف أبدأ البرمجة في VS Code الآن</span>
+            </button>
+          </div>
+
+          <!-- Action Buttons -->
+          <button id="btn-run-test" class="btn-primary" style="display: none; padding: 14px 44px; font-size: 15px;" onclick="runRealGradleBuild()">
+            <span class="icon" style="width: 16px; height: 16px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
+            <span>ابدأ بناء وتجربة التطبيق على هاتفي المتصل الآن</span>
+          </button>
+
+          <div style="display: flex; gap: 10px;" id="device-ctrl-btns">
+            <button id="btn-refresh-phone" class="btn-secondary" onclick="checkDeviceNow()">
+              <span>إعادة فحص الهاتف</span>
+            </button>
+            <button id="btn-fix-adb" class="btn-secondary" onclick="restartAdb()">
+              <span>حل مشاكل الاتصال (إعادة تشغيل ADB)</span>
             </button>
           </div>
         </div>
-
-        <!-- Universal 3-Step Debugging Guide + YouTube Search Helper -->
-        <div class="guide-box" id="device-guide-box">
-          <div class="guide-title">
-            <span class="icon" style="width: 14px; height: 14px; color: var(--accent);">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            </span>
-            <span>دليل تفعيل الهاتف وتصحيح USB (3 خطوات سريعة):</span>
-          </div>
-          <ul class="guide-steps">
-            <li>
-              <span class="step-num">1</span>
-              <span>اذهب إلى <strong>الضبط ➔ حول الهاتف ➔ اضغط 7 مرات متتالية على رقم الإصدار (Build Number)</strong> حتى تظهر عبارة "أنت مطوّر برامج".</span>
-            </li>
-            <li>
-              <span class="step-num">2</span>
-              <span>ارجع للقائمة الرئيسية وادخل إلى <strong>خيارات المطور ➔ فعّل خيار تصحيح أخطاء USB (USB Debugging)</strong>.</span>
-            </li>
-            <li>
-              <span class="step-num">3</span>
-              <span>انظر لشاشة هاتفك الآن؛ ستظهر نافذة تطلب السماح، اختر <strong>السماح دائماً (Allow)</strong>.</span>
-            </li>
-          </ul>
-
-          <!-- Universal YouTube / Google Search Helper -->
-          <div class="search-helper-box" onclick="copySearchQuery()">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="icon" style="width: 14px; height: 14px; color: var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
-              <span style="font-size: 11px; color: var(--text-muted);">إذا اختلفت القوائم بجهازك، انسخ وابحث باليوتيوب:</span>
-            </div>
-            <div class="search-pill-text" id="search-query-pill">
-              <span>تفعيل خيارات المطور وتصحيح USB في موديل جهازي</span>
-              <span class="icon" style="width: 12px; height: 12px; margin-right: 4px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
-            </div>
-          </div>
-
-          <!-- Xiaomi Callout -->
-          <div class="oem-callout">
-            <strong>ملاحظة لأجهزة شاومي وريدمي (MIUI / HyperOS):</strong> يتطلب النظام خطوة إضافية بتفعيل خيار <code>Install via USB</code> وخيار <code>USB debugging (Security settings)</code> داخل خيارات المطور.
-          </div>
-        </div>
-
-        <!-- Beginner Concept Translation Card -->
-        <div class="beginner-explainer-card" id="beginner-explainer">
-          <div class="explainer-header">
-            <span class="icon" style="width: 15px; height: 15px; color: var(--accent);">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            </span>
-            <span>دليل المبتدئ السريع: كيف يتحول الكود لتطبيق حقيقي على هاتفك؟</span>
-          </div>
-          <div class="explainer-grid">
-            <div class="explainer-item">
-              <div class="explainer-icon-box">
-                <span class="icon" style="width: 16px; height: 16px;">
-                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-                </span>
-              </div>
-              <div class="explainer-desc">
-                <div class="explainer-title">1. بيئة الجافا (Java Engine - JDK 21)</div>
-                <div>الأساس التقني لأدوات أندرويد؛ تشغّل بيئة Google الرسمية لترجمة الكود والتواصل مع الجهاز.</div>
-              </div>
-            </div>
-
-            <div class="explainer-item">
-              <div class="explainer-icon-box">
-                <span class="icon" style="width: 16px; height: 16px;">
-                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                </span>
-              </div>
-              <div class="explainer-desc">
-                <div class="explainer-title">2. محرك البناء (Gradle Build System)</div>
-                <div>هو "المترجم والطبّاخ"؛ يجمع كود Dart ورسومات فلاتر ويطبخها في حزمة تطبيق واحدة (APK) يفهمها هاتفك.</div>
-              </div>
-            </div>
-
-            <div class="explainer-item">
-              <div class="explainer-icon-box">
-                <span class="icon" style="width: 16px; height: 16px;">
-                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                </span>
-              </div>
-              <div class="explainer-desc">
-                <div class="explainer-title">3. النقل المباشر (USB Direct / ADB)</div>
-                <div>جسر التوصيل السريع؛ ينقل ملف التطبيق عبر الكيبل لذاكرة هاتفك ويفتحه فوراً على الشاشة أمام عينك.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Phone Action Buttons (Refresh & Fix) -->
-        <div id="device-ctrl-btns" style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center;">
-          <button id="btn-refresh-phone" class="btn-secondary" onclick="pollDevices(true)">
-            <span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
-            <span>إعادة فحص الهاتف</span>
-          </button>
-          <button id="btn-fix-adb" class="btn-secondary" onclick="fixAdbConnection()">
-            <span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-            <span>حل مشاكل الاتصال</span>
-          </button>
-        </div>
-
-        <!-- Live Real Build Console with Dynamic Elapsed Timer & Commentary -->
-        <div class="build-console-box" id="build-console">
-          <div class="build-console-header">
-            <div style="font-weight: 800; font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px;">
-              <span class="icon" style="width: 14px; height: 14px; color: var(--accent);"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></span>
-              <span>خوض معركة البناء الفعلي مع Gradle...</span>
-            </div>
-            <div class="build-ticker-badge" id="build-ticker">
-              <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg></span>
-              <span id="ticker-time">00:00</span>
-            </div>
-          </div>
-
-          <div class="build-steps-list">
-            <div class="build-step-row active" id="bstep-1">
-              <span class="bstep-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
-              <div class="bstep-info">
-                <div class="bstep-title">1. إيقاظ الجرادل وفحص إعدادات أندرويد (JDK 21)</div>
-                <div class="bstep-sub">التأكد من جاهزية محرك Java وبيئة البناء ومعمارية معالج جهازك</div>
-              </div>
-            </div>
-            <div class="build-step-row" id="bstep-2">
-              <span class="bstep-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
-              <div class="bstep-info">
-                <div class="bstep-title">2. ترجمة كود Dart وتجميع حزم Gradle (assembleDebug)</div>
-                <div class="bstep-sub">"طبخ" كود فلاتر وتحويله لحزمة كلاسات APK جاهزة للتثبيت</div>
-              </div>
-            </div>
-            <div class="build-step-row" id="bstep-3">
-              <span class="bstep-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
-              <div class="bstep-info">
-                <div class="bstep-title">3. النقل والتثبيت المباشر بالكيبل (USB Direct / ADB)</div>
-                <div class="bstep-sub">إرسال ملف APK عبر كيبل USB لذاكرة الجهاز وإطلاق الواجهة على الشاشة فوراً</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dynamic Authentic Commentary -->
-          <div class="dynamic-commentary-box" id="dynamic-commentary">
-            🚀 شغلنا محركات الجرادل... دا يتعرف على ملفات المشروع وإعدادات أندرويد.
-          </div>
-        </div>
-
-        <!-- Success & Benchmark Celebration Card -->
-        <div class="benchmark-card" id="benchmark-card">
-          <div class="benchmark-title">
-            <span class="icon" style="width: 18px; height: 18px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-            <span id="benchmark-head-text">التطبيق يعمل الآن بنجاح على شاشة جهازك!</span>
-          </div>
-          <div class="benchmark-sub" id="benchmark-sub-text">
-            انظر لشاشة هاتفك الآن؛ التطبيق يعمل كدامك وتقدر تدوس زر الزيادة بيدك! هذا يثبت أن فلاتر وجافا وغراديل تعمل بكفاءة تامة.
-          </div>
-          <div class="stats-grid">
-            <div class="stat-box">
-              <div class="stat-val" id="stat-speed">1.8 ثانية</div>
-              <div class="stat-lbl">سرعة الإقلاع الفعلي</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-val" id="stat-ram">38 MB</div>
-              <div class="stat-lbl">استهلاك الرام (خفيف جداً)</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-val" id="stat-fps">60 FPS</div>
-              <div class="stat-lbl">سلاسة واستجابة اللمس</div>
-            </div>
-          </div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 12px;">
-            تريد نفتح كود المشروع بـ VS Code علمود تعدل بيه وتشوف سحر الـ Hot Reload؟
-          </div>
-          <button id="btn-proceed-to-vscode" class="btn-primary" style="background: var(--success); width: 100%; justify-content: center;" onclick="showStep(4)">
-            <span class="icon" style="width: 16px; height: 16px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
-            <span>نعم، افتح VS Code وابدأ البرمجة الآن</span>
-          </button>
-        </div>
-
-        <!-- Big Launch Test Button (Gamified) -->
-        <button id="btn-run-test" class="btn-primary" style="width: 100%; justify-content: center; margin-bottom: 12px;" onclick="runRealTestOnPhone()">
-          <span class="icon" style="width: 16px; height: 16px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
-          <span id="btn-run-test-label">بناء وتجربة أول تطبيق على هاتفي الآن</span>
-        </button>
 
         <button id="btn-skip-to-vscode" class="btn-secondary" style="border: none; font-size: 11px;" onclick="showStep(4)">
           <span>تخطي هذه الخطوة والذهاب مباشرة لـ VS Code</span>
           <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
         </button>
-      </div>
-    </section>
+      </section>
 
-    <!-- STEP 4: ALL DONE & VS CODE CHEATSHEET -->
-    <section id="step-4" class="step-view">
-      <div class="cheatsheet-card">
-        <div class="level-badge" style="background: var(--success-bg); color: var(--success); border-color: var(--success);">
-          <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-          <span>المستوى 4: شارة المطور الأول وبدء البرمجة</span>
+      <!-- STEP 4: ALL DONE & VS CODE CHEATSHEET -->
+      <section id="step-4" class="step-view">
+        <div class="cheatsheet-card">
+          <div class="level-badge" style="background: var(--success-bg); color: var(--success); border-color: var(--success);">
+            <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>المستوى 4: شارة المطور الأول وبدء البرمجة</span>
+          </div>
+          <div class="hero-title" style="font-size: 22px;">لابتوبك وهاتفك جاهزان بالكامل</div>
+          <div class="hero-desc" style="font-size: 13px; margin-bottom: 20px;">
+            تم تثبيت فلاتر وضبط المحرر وإنشاء مشروعك الأول. إليك كيف تبدأ العمل في VS Code:
+          </div>
+
+          <div class="cheat-grid">
+            <div class="cheat-item">
+              <div class="cheat-icon-box">
+                <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+              </div>
+              <div>
+                <div class="cheat-item-title">1. مشروعك مفتوح وجاهز</div>
+                <div class="cheat-item-desc">ستجد مجلد (my_first_app) مفتوحاً في VS Code وتكدر تبدأ مباشرة.</div>
+              </div>
+            </div>
+
+            <div class="cheat-item">
+              <div class="cheat-icon-box">
+                <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
+              </div>
+              <div>
+                <div class="cheat-item-title">2. أبقِ هاتفك متصلاً بالكيبل</div>
+                <div class="cheat-item-desc">تأكد من بقاء الكيبل موصولاً حتى يتم إرسال التطبيق لشاشة هاتفك فوراً.</div>
+              </div>
+            </div>
+
+            <div class="cheat-item">
+              <div class="cheat-icon-box">
+                <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
+              </div>
+              <div>
+                <div class="cheat-item-title">3. زر التشغيل السحري F5</div>
+                <div class="cheat-item-desc">اضغط F5 في الكيبورد لتشغيل وبناء التطبيق وإرساله لشاشة الهاتف.</div>
+              </div>
+            </div>
+
+            <div class="cheat-item">
+              <div class="cheat-icon-box">
+                <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+              </div>
+              <div>
+                <div class="cheat-item-title">4. التحديث الفوري Hot Reload</div>
+                <div class="cheat-item-desc">عدّل أي نص في ملف (lib/main.dart) واضغط Ctrl+S؛ يتغير الهاتف بثانية!</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 8px;">
+            <button id="btn-open-vscode" class="btn-primary" style="background: var(--success); padding: 14px 36px; font-size: 14px;" onclick="openVSCode()">
+              <span class="icon" style="width: 16px; height: 16px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+              <span>افتح VS Code وابدأ البرمجة الآن</span>
+            </button>
+
+            <button class="btn-secondary" onclick="switchMainView('companion')">
+              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 3 6 3 6 3s6 0 6-3v-5"/></svg></span>
+              <span>الذهاب للوحة رفيق الطالب</span>
+            </button>
+          </div>
         </div>
-        <div class="hero-title" style="font-size: 22px;">لابتوبك وهاتفك جاهزان بالكامل</div>
-        <div class="hero-desc" style="font-size: 13px; margin-bottom: 20px;">
-          تم تثبيت فلاتر وضبط المحرر وإنشاء مشروعك الأول. إليك كيف تبدأ العمل في VS Code:
-        </div>
-
-        <!-- Visual 4-Point Cheatsheet -->
-        <div class="cheat-grid">
-          <div class="cheat-item">
-            <div class="cheat-icon-box">
-              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
-            </div>
-            <div>
-              <div class="cheat-item-title">1. مشروعك مفتوح وجاهز</div>
-              <div class="cheat-item-desc">ستجد مجلد (my_first_app) مفتوحاً في VS Code وتكدر تبدأ مباشرة.</div>
-            </div>
-          </div>
-
-          <div class="cheat-item">
-            <div class="cheat-icon-box">
-              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
-            </div>
-            <div>
-              <div class="cheat-item-title">2. أبقِ هاتفك متصلاً بالكيبل</div>
-              <div class="cheat-item-desc">تأكد من بقاء الكيبل موصولاً حتى يتم إرسال التطبيق لشاشة هاتفك فوراً.</div>
-            </div>
-          </div>
-
-          <div class="cheat-item">
-            <div class="cheat-icon-box">
-              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
-            </div>
-            <div>
-              <div class="cheat-item-title">3. زر التشغيل السحري F5</div>
-              <div class="cheat-item-desc">اضغط F5 في الكيبورد لتشغيل وبناء التطبيق وإرساله لشاشة الهاتف.</div>
-            </div>
-          </div>
-
-          <div class="cheat-item">
-            <div class="cheat-icon-box">
-              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
-            </div>
-            <div>
-              <div class="cheat-item-title">4. التحديث الفوري Hot Reload</div>
-              <div class="cheat-item-desc">عدّل أي نص في ملف (lib/main.dart) واضغط Ctrl+S؛ يتغير الهاتف بثانية!</div>
-            </div>
-          </div>
-        </div>
-
-        <button id="btn-open-vscode" class="btn-primary" style="background: var(--success); padding: 14px 44px; font-size: 15px;" onclick="openVSCode()">
-          <span class="icon" style="width: 16px; height: 16px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
-          <span>افتح VS Code وابدأ البرمجة الآن</span>
-        </button>
-      </div>
-    </section>
+      </section>
+    </div>
   </main>
 
-  <!-- Footer -->
   <footer>
     FlutterWay — تطبيق سطح مكتب أصلي لتيسير انطلاقة مطوري الموبايل | مفتوح المصدر برخصة MIT
   </footer>
 
   <script>
+    let activeMainView = 'companion';
+    let activeCompanionTab = 'doctor';
     let selectedMode = 'usb';
     let currentTheme = 'dark';
     let currentProgress = 0;
@@ -1632,21 +2008,48 @@
     let devicePollInterval = null;
     let detectedDevices = [];
 
-    // Rotating tips
-    const tipsList = [
-      "ميزة Hot Reload في فلاتر تتيح لك رؤية أي تعديل تكتبه بالكود على هاتفك في أقل من ثانية واحدة!",
-      "كبرى التطبيقات العالمية مثل Google Pay و BMW و Alibaba مبنية بالكامل باستخدام فلاتر.",
-      "لغة دارت (Dart) سهلة وممتعة، وإذا كنت تعرف القليل من جافا أو C++ ستتعلمها خلال أيام قليلة!",
-      "إعداد فلاتر يدوياً يحتاج ضبط أكثر من 7 متغيرات بالويندوز، فلاتر-واي أنجزها لك آلياً الآن.",
-      "أول مشروع تم إنشاؤه على الديسكتوب باسم (my_first_app) وسنقوم بتجربته معاً فوراً!"
-    ];
-    let currentTipIndex = 0;
+    // Main View Switching (Wizard vs Companion)
+    function switchMainView(viewName) {
+      activeMainView = viewName;
+      document.querySelectorAll('.main-view').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById(`view-${viewName}`);
+      if (target) target.classList.add('active');
 
-    // Theme toggle
+      document.getElementById('btn-nav-companion').classList.toggle('active', viewName === 'companion');
+      document.getElementById('btn-nav-wizard').classList.toggle('active', viewName === 'wizard');
+
+      if (viewName === 'companion') {
+        runSmartDoctorScan();
+        loadRecentProjectsList();
+      } else {
+        showStep(1);
+      }
+    }
+
+    // Companion Tab Switching
+    function switchCompanionTab(tabId) {
+      activeCompanionTab = tabId;
+      document.querySelectorAll('.comp-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.comp-tab-pane').forEach(pane => pane.classList.remove('active'));
+
+      const btn = document.getElementById(`btn-tab-${tabId}`);
+      const pane = document.getElementById(`tab-${tabId}`);
+      if (btn) btn.classList.add('active');
+      if (pane) pane.classList.add('active');
+
+      if (tabId === 'doctor') {
+        runSmartDoctorScan();
+      } else if (tabId === 'projects') {
+        loadRecentProjectsList();
+      } else if (tabId === 'device') {
+        loadDeviceStudioData();
+      }
+    }
+
+    // Theme Toggle
     function toggleTheme() {
       currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', currentTheme);
-      
       const icon = document.getElementById('theme-icon');
       const label = document.getElementById('theme-label');
       if (currentTheme === 'light') {
@@ -1658,6 +2061,296 @@
       }
     }
 
+    // ========================================================
+    // SMART DOCTOR FRONTEND ENGINE
+    // ========================================================
+    async function runSmartDoctorScan() {
+      const grid = document.getElementById('doctor-cards-grid');
+      grid.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">جاري فحص حالة بيئة فلاتر وجافا وSDK بدقة...</div>';
+
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const rep = await window.pywebview.api.get_smart_doctor_report();
+          renderDoctorReport(rep);
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        // Fallback preview
+        renderDoctorReport({
+          score: 100,
+          pass_count: 6,
+          total_count: 6,
+          items: [
+            { id: "flutter_sdk", title: "محرك Flutter & Dart SDK", status: "PASS", badge: "جاهز ومسجل", detail: "المسار: C:\\flutter | الإصدار: 3.47.9 (Stable)", auto_fixable: false },
+            { id: "java_jdk", title: "بيئة جافا ومحرك أندرويد (JDK 21)", status: "PASS", badge: "مضبوط بالكامل", detail: "Adoptium Temurin JDK 21 | C:\\Program Files\\Adoptium\\...", auto_fixable: false },
+            { id: "android_sdk", title: "حزمة أدوات أندرويد (Android SDK)", status: "PASS", badge: "API 35/36 مثبت", detail: "مسار الحزمة: C:\\Android | Build-Tools 36.0.0", auto_fixable: false },
+            { id: "android_licenses", title: "رخص واتفاقيات أندرويد الرسمية", status: "PASS", badge: "جميع الرخص مقبولة", detail: "تم تأكيد وقبول كافة رخص Google Android SDK", auto_fixable: false },
+            { id: "long_paths", title: "مسارات ويندوز العميقة (LongPaths)", status: "PASS", badge: "مفعل ومحمي", detail: "ويندوز مهيأ لتجاوز حد 260 حرف وتفادي انهيار بناء أندرويد", auto_fixable: false },
+            { id: "vscode", title: "محرر VS Code وتكامل فلاتر ودارت", status: "PASS", badge: "متكامل وجاهز", detail: "إضافات Flutter & Dart مثبتة وإعدادات settings.json مضبوطة", auto_fixable: false }
+          ]
+        });
+      }
+    }
+
+    function renderDoctorReport(rep) {
+      document.getElementById('doctor-score-display').innerText = `${rep.score || 100}%`;
+      const grid = document.getElementById('doctor-cards-grid');
+      grid.innerHTML = '';
+
+      if (!rep.items || rep.items.length === 0) return;
+
+      rep.items.forEach(it => {
+        const isPass = it.status === 'PASS';
+        const card = document.createElement('div');
+        card.className = `doc-item-card ${isPass ? 'pass' : 'warn'}`;
+        
+        let fixBtnHtml = '';
+        if (!isPass && it.auto_fixable && it.fix_id) {
+          fixBtnHtml = `
+            <div class="doc-item-action">
+              <button class="btn-item-heal" onclick="healSingleDoctorItem('${it.fix_id}')">
+                <span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+                <span>إصلاح تلقائي فوري</span>
+              </button>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div>
+            <div class="doc-item-top">
+              <div class="doc-item-title">${it.title}</div>
+              <div class="doc-item-badge ${isPass ? 'pass' : 'warn'}">${it.badge}</div>
+            </div>
+            <div class="doc-item-detail" style="margin-top: 6px;">${it.detail}</div>
+          </div>
+          ${fixBtnHtml}
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function healSingleDoctorItem(fixId) {
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.heal_doctor_item(fixId);
+          showRescueToast(res.message || "تم الإصلاح بنجاح!", res.success);
+          runSmartDoctorScan();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    async function healAllDoctorIssues() {
+      const btn = document.getElementById('btn-doctor-heal-all');
+      btn.innerHTML = `<span>جاري الإصلاح الشامل لكافة العناصر...</span>`;
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.heal_all_doctor_items();
+          btn.innerHTML = `<span>تم إتمام الإصلاح الشامل بنجاح!</span>`;
+          setTimeout(() => {
+            btn.innerHTML = `<span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span>زر الإصلاح الشامل بنقرة واحدة</span>`;
+          }, 2000);
+          runSmartDoctorScan();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    // ========================================================
+    // LECTURE PROJECTS FRONTEND ENGINE
+    // ========================================================
+    async function loadRecentProjectsList() {
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const projs = await window.pywebview.api.get_recent_projects();
+          renderRecentProjects(projs);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    function renderRecentProjects(projs) {
+      const container = document.getElementById('recent-projects-list');
+      container.innerHTML = '';
+      if (!projs || projs.length === 0) {
+        container.innerHTML = '<div style="font-size: 11px; color: var(--text-muted);">لم يتم إنشاء مشاريع حديثة بعد.</div>';
+        return;
+      }
+
+      projs.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'recent-item';
+        item.innerHTML = `
+          <div>
+            <div style="font-size: 13px; font-weight: 800; color: var(--text);">${p.name}</div>
+            <div style="font-size: 10px; color: var(--text-muted);">${p.path}</div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="selectActiveProject('${p.name}', '${p.path.replace(/\\/g, '\\\\')}')">
+              <span>تحديد كنشط</span>
+            </button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function selectActiveProject(name, path) {
+      document.getElementById('active-proj-name').innerText = name;
+      document.getElementById('active-proj-path').innerText = path;
+    }
+
+    async function createNewLectureProject() {
+      const inp = document.getElementById('input-lecture-name');
+      const name = inp.value.trim();
+      if (!name) {
+        alert("يرجى كتابة اسم المشروع باللغة الإنجليزية أولاً.");
+        return;
+      }
+      const btn = document.getElementById('btn-create-lecture-proj');
+      btn.innerHTML = `<span>جاري التجهيز والإنشاء...</span>`;
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.create_lecture_project(name);
+          btn.innerHTML = `<span>تم الإنشاء بنجاح!</span>`;
+          setTimeout(() => {
+            btn.innerHTML = `<span>إنشاء وتجهيز المشروع فوراً</span>`;
+            inp.value = '';
+          }, 1500);
+          selectActiveProject(res.name, res.path);
+          loadRecentProjectsList();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    function openActiveProjectVSCode() {
+      const path = document.getElementById('active-proj-path').innerText;
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.open_project_in_vscode(path);
+      }
+    }
+
+    async function cleanActiveProject() {
+      const path = document.getElementById('active-proj-path').innerText;
+      const btn = document.getElementById('btn-clean-project');
+      btn.innerHTML = `<span>جاري التنظيف...</span>`;
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.clean_project(path);
+          btn.innerHTML = `<span>تم تنظيف الكاش!</span>`;
+          setTimeout(() => {
+            btn.innerHTML = `<span>تنظيف البناء (Clean)</span>`;
+          }, 1500);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    function runActiveProjectPhone() {
+      switchMainView('wizard');
+      showStep(3);
+      runRealGradleBuild();
+    }
+
+    // ========================================================
+    // EMERGENCY RESCUE FRONTEND ENGINE
+    // ========================================================
+    async function executeRescueRemedy(fixId) {
+      showRescueToast("جاري تنفيذ المعالجة الفورية في الخلفية...", true);
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.heal_doctor_item(fixId);
+          showRescueToast(res.message || "تم حل المشكلة بنجاح!", res.success);
+        } catch (e) {
+          showRescueToast(`حدث خطأ أثناء المعالجة: ${e}`, false);
+        }
+      }
+    }
+
+    function showRescueToast(msg, isSuccess) {
+      const t = document.getElementById('rescue-toast');
+      t.style.display = 'block';
+      t.style.background = isSuccess ? 'var(--success-bg)' : 'var(--danger-bg)';
+      t.style.color = isSuccess ? 'var(--success)' : 'var(--danger)';
+      t.style.border = `1px solid ${isSuccess ? 'var(--success)' : 'var(--danger)'}`;
+      t.innerText = msg;
+      setTimeout(() => {
+        t.style.display = 'none';
+      }, 5000);
+    }
+
+    // ========================================================
+    // CONNECTED DEVICE STUDIO FRONTEND ENGINE
+    // ========================================================
+    async function loadDeviceStudioData() {
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const dev = await window.pywebview.api.get_device_studio_data();
+          if (dev.connected) {
+            document.getElementById('dev-val-name').innerText = dev.full_name;
+            document.getElementById('dev-val-android').innerText = `Android ${dev.android_version} (API ${dev.sdk_api})`;
+            document.getElementById('dev-val-battery').innerText = dev.battery_level;
+            document.getElementById('dev-val-screen').innerText = dev.screen_size;
+            document.getElementById('dev-val-abi').innerText = dev.cpu_abi;
+            document.getElementById('dev-val-conn').innerText = dev.connection_type;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    async function pingConnectedDevice() {
+      const btn = document.getElementById('btn-device-ping');
+      btn.innerHTML = `<span>جاري الإرسال...</span>`;
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.ping_device_screen();
+          btn.innerHTML = `<span>تم تنشيط الشاشة بنجاح!</span>`;
+          setTimeout(() => {
+            btn.innerHTML = `<span>إرسال إشارة تنشيط للشاشة (Wakeup Ping)</span>`;
+          }, 1500);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    async function captureLiveDeviceScreen() {
+      const btn = document.getElementById('btn-device-screenshot');
+      btn.innerHTML = `<span>جاري التقاط لقطة الشاشة...</span>`;
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.capture_device_screenshot();
+          if (res.success && res.data_url) {
+            document.getElementById('device-preview-placeholder').style.display = 'none';
+            const img = document.getElementById('device-live-img');
+            img.src = res.data_url;
+            img.style.display = 'block';
+            btn.innerHTML = `<span>تم تحديث الشاشة بنجاح!</span>`;
+          } else {
+            btn.innerHTML = `<span>تعذر الالتقاط، تأكد من فتح الشاشة</span>`;
+          }
+          setTimeout(() => {
+            btn.innerHTML = `<span>التقاط لقطة شاشة حية من الهاتف الآن</span>`;
+          }, 1500);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    // ========================================================
+    // WIZARD ENGINE (STEPS 1 - 4)
+    // ========================================================
     function selectChoice(mode) {
       selectedMode = mode;
       document.getElementById('card-usb').classList.toggle('selected', mode === 'usb');
@@ -1680,11 +2373,9 @@
       }
     }
 
-    // 1-Click Laptop Specs Check
     async function checkLaptopSpecs() {
       const btn = document.getElementById('btn-check-laptop');
       btn.innerHTML = `<span>جاري الفحص...</span>`;
-
       if (window.pywebview && window.pywebview.api) {
         try {
           const res = await window.pywebview.api.check_laptop_compatibility();
@@ -1698,117 +2389,66 @@
           free_disk_gb: 65.1,
           vt_enabled: false,
           recommended_mode: 'usb',
-          reason: 'ميزة المحاكاة (Virtualization) غير مفعلة في معالجك بالـ BIOS. خيار (هاتف USB) هو الأسرع والجاهز فوراً بدون أي أخطاء!'
+          reason: 'ميزة المحاكاة (Virtualization) غير مفعلة في معالجك (BIOS). خيار (هاتف USB) هو الأسرع والجاهز للعمل معك فوراً وبدون أي تعقيد أو تجميد للحاسبة!'
         });
       }
     }
 
-    function displaySpecsResult(data) {
+    function displaySpecsResult(res) {
+      document.getElementById('banner-check').style.display = 'none';
       const box = document.getElementById('diag-result-box');
       box.style.display = 'block';
 
-      document.getElementById('spec-ram').innerText = (data.ram_gb || '--') + ' GB';
-      document.getElementById('spec-disk').innerText = (data.free_disk_gb || '--') + ' GB';
-      
+      document.getElementById('spec-ram').innerText = `${res.ram_gb} GB`;
+      document.getElementById('spec-disk').innerText = `${res.free_disk_gb} GB`;
       const vtEl = document.getElementById('spec-vt');
-      const vtCond = document.getElementById('vt-condition-text');
-      if (data.vt_enabled) {
+      if (res.vt_enabled) {
         vtEl.innerText = 'مفعلة';
         vtEl.style.color = 'var(--success)';
-        if (vtCond) vtCond.innerText = 'مفعلة بالـ BIOS (مقبول لكن ثقيل)';
       } else {
-        vtEl.innerText = 'معطلة بالـ BIOS';
-        vtEl.style.color = 'var(--danger)';
-        if (vtCond) vtCond.innerText = 'معطلة بالـ BIOS (المحاكي لن يعمل نهائياً!)';
+        vtEl.innerText = 'معطلة في BIOS';
+        vtEl.style.color = 'var(--warning)';
       }
-
-      if (data.recommended_mode) {
-        selectChoice(data.recommended_mode);
-      }
-
-      document.getElementById('banner-check').style.display = 'none';
+      document.getElementById('diag-reason-text').innerText = res.reason;
+      selectChoice(res.recommended_mode || 'usb');
     }
 
-    // Smooth Asymptotic Progress Ticker
     function startSetup() {
       showStep(2);
-      startAsymptoticTicker();
-      startRotatingTips();
-
       if (window.pywebview && window.pywebview.api) {
         window.pywebview.api.start_onboarding(selectedMode);
-      } else {
-        simulateProgressDev();
       }
-    }
-
-    function startAsymptoticTicker() {
-      if (progressTimer) clearInterval(progressTimer);
-      progressTimer = setInterval(() => {
-        if (currentProgress < targetProgress) {
-          currentProgress += 1;
-        } else if (currentProgress < 96 && targetProgress >= currentProgress) {
-          currentProgress += 0.2;
-        }
-        applyProgressUI(Math.min(99, Math.round(currentProgress)));
-      }, 400);
-    }
-
-    function applyProgressUI(p) {
-      const fill = document.getElementById('progress-fill');
-      const percentLbl = document.getElementById('percent-indicator');
-      if (fill) fill.style.width = p + '%';
-      if (percentLbl) percentLbl.innerText = p + '%';
     }
 
     function updateProgress(percent, statusText, chkStep) {
-      targetProgress = percent;
-      const titleLbl = document.getElementById('setup-step-title');
-      if (statusText && titleLbl) titleLbl.innerText = statusText;
+      const fill = document.getElementById('progress-fill');
+      const text = document.getElementById('progress-text');
+      const pct = document.getElementById('progress-pct');
 
-      // Update checklists
-      if (chkStep >= 1) markChecklist('chk-env');
-      if (chkStep >= 2) markChecklist('chk-java');
-      if (chkStep >= 3) markChecklist('chk-dl');
-      if (chkStep >= 4) markChecklist('chk-vsc');
+      if (fill) fill.style.width = `${percent}%`;
+      if (text) text.innerText = statusText;
+      if (pct) pct.innerText = `${percent}%`;
 
-      if (percent >= 100) {
-        currentProgress = 100;
-        applyProgressUI(100);
-        if (progressTimer) clearInterval(progressTimer);
-      }
-    }
-
-    function markChecklist(id) {
-      const el = document.getElementById(id);
-      if (el) {
-        el.classList.add('done');
-        const icon = el.querySelector('.step-chk-icon');
-        if (icon) {
-          icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+      for (let i = 1; i <= 4; i++) {
+        const item = document.getElementById(`chk-step-${i}`);
+        if (item) {
+          if (i < chkStep) {
+            item.className = 'chk-item done';
+          } else if (i === chkStep) {
+            item.className = 'chk-item';
+            item.style.color = 'var(--accent)';
+          } else {
+            item.className = 'chk-item';
+            item.style.color = 'var(--text-muted)';
+          }
         }
       }
     }
 
-    function startRotatingTips() {
-      setInterval(() => {
-        currentTipIndex = (currentTipIndex + 1) % tipsList.length;
-        const tipEl = document.getElementById('tip-text');
-        if (tipEl) {
-          tipEl.style.opacity = '0';
-          setTimeout(() => {
-            tipEl.innerHTML = `<strong>نصيحة للمطورين:</strong> ${tipsList[currentTipIndex]}`;
-            tipEl.style.opacity = '1';
-          }, 250);
-        }
-      }, 4500);
-    }
-
-    // Step 3: Device Polling & USB Debugging
     function startDevicePolling() {
-      pollDevices();
+      checkDeviceNow();
       if (!devicePollInterval) {
-        devicePollInterval = setInterval(pollDevices, 2500);
+        devicePollInterval = setInterval(checkDeviceNow, 2000);
       }
     }
 
@@ -1819,157 +2459,99 @@
       }
     }
 
-    async function pollDevices(manual=false) {
-      if (manual) {
-        const btn = document.getElementById('btn-refresh-phone');
-        if (btn) btn.innerHTML = `<span>جاري الفحص...</span>`;
-      }
-
+    async function checkDeviceNow() {
       if (window.pywebview && window.pywebview.api) {
         try {
           const res = await window.pywebview.api.check_connected_devices();
           handleDeviceResponse(res);
         } catch (e) {
-          console.error("Device poll error:", e);
+          console.error(e);
         }
-      }
-
-      if (manual) {
-        setTimeout(() => {
-          const btn = document.getElementById('btn-refresh-phone');
-          if (btn) btn.innerHTML = `<span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><span>إعادة فحص الهاتف</span>`;
-        }, 500);
       }
     }
 
     function handleDeviceResponse(res) {
-      const badge = document.getElementById('device-status-badge');
-      const text = document.getElementById('device-status-text');
-      const guideBox = document.getElementById('device-guide-box');
-      const driverAlert = document.getElementById('driver-alert-card');
-      const runBtn = document.getElementById('btn-run-test');
-      const runBtnLabel = document.getElementById('btn-run-test-label');
-      const searchPill = document.getElementById('search-query-pill');
+      const statusText = document.getElementById('device-status-text');
+      const statusSub = document.getElementById('device-status-sub');
+      const radar = document.getElementById('device-radar-icon');
+      const btnRun = document.getElementById('btn-run-test');
+      const driverAlert = document.getElementById('missing-driver-alert');
 
-      // Check missing driver status
-      if (res.missing_driver && (!res.devices || res.devices.length === 0)) {
+      if (res.missing_driver) {
         if (driverAlert) driverAlert.style.display = 'block';
       } else {
         if (driverAlert) driverAlert.style.display = 'none';
       }
 
-      if (!res.devices || res.devices.length === 0) {
-        badge.className = 'device-status-badge waiting';
-        text.innerText = 'بانتظار ربط هاتفك باللابتوب عبر كيبل USB...';
-        guideBox.style.display = 'block';
-        runBtnLabel.innerText = 'بناء وتجربة أول تطبيق على هاتفي الآن';
-        detectedDevices = [];
-      } else {
-        detectedDevices = res.devices;
+      if (res.success && res.devices && res.devices.length > 0) {
         const dev = res.devices[0];
-        if (dev.status === 'unauthorized') {
-          badge.className = 'device-status-badge unauthorized';
-          text.innerText = `تم العثور على ${dev.model}! انظر لشاشة هاتفك واضغط "سماح" (Allow)`;
-          guideBox.style.display = 'block';
-        } else if (dev.status === 'device') {
-          badge.className = 'device-status-badge ready';
-          text.innerText = `تم التعرف بنجاح على: ${dev.model} (متصل وجاهز للعمل)`;
-          guideBox.style.display = 'none';
-          runBtnLabel.innerText = `🚀 ابدأ بناء وتجربة التطبيق فوراً على ${dev.model}`;
-          if (searchPill) {
-            searchPill.innerHTML = `<span>تفعيل خيارات المطور وتصحيح USB في ${dev.model}</span><span class="icon" style="width: 12px; height: 12px; margin-right: 4px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>`;
-          }
+        if (dev.is_ready) {
+          statusText.innerText = `تم الاتصال بنجاح! جهازك: ${dev.model}`;
+          statusText.style.color = 'var(--success)';
+          statusSub.innerText = `الهاتف معرّف وجاهز لتلقي كود التطبيق وتجربته فوراً.`;
+          radar.style.borderColor = 'var(--success)';
+          radar.style.background = 'var(--success-bg)';
+          radar.style.color = 'var(--success)';
+          if (btnRun) btnRun.style.display = 'inline-flex';
+        } else if (dev.status === 'unauthorized') {
+          statusText.innerText = `الهاتف متصل، لكن يتطلب الموافقة!`;
+          statusText.style.color = 'var(--warning)';
+          statusSub.innerText = `انظر لشاشة هاتفك الآن واضغط (سماح / Always Allow) لتصحيح USB.`;
+          if (btnRun) btnRun.style.display = 'none';
         }
       }
     }
 
-    async function fixAdbConnection() {
-      const btn = document.getElementById('btn-fix-adb');
-      btn.innerHTML = `<span>جاري إعادة تشغيل الخادم...</span>`;
-      if (window.pywebview && window.pywebview.api) {
-        await window.pywebview.api.restart_adb();
-      }
-      setTimeout(() => {
-        btn.innerHTML = `<span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>تم إعادة التشغيل بنجاح</span>`;
-        pollDevices();
-      }, 1200);
-    }
-
-    async function installDrivers() {
+    function installDrivers() {
       const btn = document.getElementById('btn-install-drivers');
-      if (btn) btn.innerHTML = `<span>جاري التثبيت...</span>`;
+      btn.innerHTML = `<span>جاري تثبيت التعريفات...</span>`;
       if (window.pywebview && window.pywebview.api) {
-        await window.pywebview.api.install_usb_drivers();
-      }
-      setTimeout(() => {
-        if (btn) btn.innerHTML = `<span>تم إطلاق التثبيت! افحص ويندوز</span>`;
-        pollDevices(true);
-      }, 1500);
-    }
-
-    function copySearchQuery() {
-      const pill = document.getElementById('search-query-pill');
-      const text = pill ? pill.innerText.trim() : "تفعيل خيارات المطور وتصحيح USB في جهازي";
-      navigator.clipboard.writeText(text);
-      if (pill) {
-        const oldHTML = pill.innerHTML;
-        pill.innerHTML = `<span style="color: var(--success);">تم نسخ نص البحث! الصقه في يوتيوب</span>`;
-        setTimeout(() => pill.innerHTML = oldHTML, 2000);
+        window.pywebview.api.install_usb_drivers();
       }
     }
 
-    // Real Build & Launch Quest
-    async function runRealTestOnPhone() {
-      const btn = document.getElementById('btn-run-test');
-      const consoleBox = document.getElementById('build-console');
-      const benchmarkCard = document.getElementById('benchmark-card');
-      const guideBox = document.getElementById('device-guide-box');
-      const ctrlBtns = document.getElementById('device-ctrl-btns');
-      const explainer = document.getElementById('beginner-explainer');
-      const skipBtn = document.getElementById('btn-skip-to-vscode');
+    function restartAdb() {
+      const btn = document.getElementById('btn-fix-adb');
+      btn.innerHTML = `<span>جاري التصفية...</span>`;
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.restart_adb();
+        setTimeout(() => {
+          btn.innerHTML = `<span>حل مشاكل الاتصال (إعادة تشغيل ADB)</span>`;
+          checkDeviceNow();
+        }, 1500);
+      }
+    }
 
-      btn.style.display = 'none';
-      if (guideBox) guideBox.style.display = 'none';
-      if (ctrlBtns) ctrlBtns.style.display = 'none';
-      if (explainer) explainer.style.display = 'none';
-      if (skipBtn) skipBtn.style.display = 'none';
-      consoleBox.style.display = 'block';
+    function copyYoutubeSearch() {
+      const query = "تفعيل خيارات المطور وتصحيح USB في هاتف أندرويد";
+      navigator.clipboard.writeText(query);
+      alert("تم نسخ نص البحث بنجاح! الصقه في بحث يوتيوب متبوعاً باسم موديل جهازك.");
+    }
 
-      // Reset step rows
+    function runRealGradleBuild() {
+      document.getElementById('btn-run-test').style.display = 'none';
+      document.getElementById('device-guide-box').style.display = 'none';
+      document.getElementById('device-ctrl-btns').style.display = 'none';
+      document.getElementById('build-console').style.display = 'block';
+
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.start_real_gradle_build();
+      }
+    }
+
+    function updateBuildTicker(elapsedSeconds, commentary, phase) {
+      const timerEl = document.getElementById('build-elapsed-timer');
+      const commEl = document.getElementById('build-commentary-text');
+
+      const mins = Math.floor(elapsedSeconds / 60);
+      const secs = elapsedSeconds % 60;
+      const fmt = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      if (timerEl) timerEl.innerText = fmt;
+      if (commEl) commEl.innerText = commentary;
+
       const s1 = document.getElementById('bstep-1');
       const s2 = document.getElementById('bstep-2');
       const s3 = document.getElementById('bstep-3');
-
-      if (s1) s1.className = 'build-step-row active';
-      if (s2) s2.className = 'build-step-row';
-      if (s3) s3.className = 'build-step-row';
-
-      let serial = detectedDevices.length > 0 ? detectedDevices[0].serial : null;
-
-      if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api.start_real_gradle_build(serial);
-      } else {
-        // Fallback simulation for browser test
-        simulateRealBuildDev();
-      }
-    }
-
-    function updateBuildTicker(seconds, statusMessage, phase) {
-      const tickerEl = document.getElementById('ticker-time');
-      const commentaryEl = document.getElementById('dynamic-commentary');
-      const s1 = document.getElementById('bstep-1');
-      const s2 = document.getElementById('bstep-2');
-      const s3 = document.getElementById('bstep-3');
-
-      if (tickerEl) {
-        const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
-        const secs = String(seconds % 60).padStart(2, '0');
-        tickerEl.innerText = `${mins}:${secs}`;
-      }
-
-      if (commentaryEl && statusMessage) {
-        commentaryEl.innerText = statusMessage;
-      }
 
       if (phase === 1) {
         if (s1) s1.className = 'build-step-row active';
@@ -2014,7 +2596,6 @@
       }, 700);
     }
 
-    // Step 4: Open VS Code
     function openVSCode() {
       const btn = document.getElementById('btn-open-vscode');
       if (btn) btn.innerHTML = `<span>جاري فتح VS Code...</span>`;
@@ -2023,47 +2604,26 @@
       }
     }
 
-    // Agent Harness Trigger
     function triggerAgentTap(targetId) {
       const el = document.getElementById(targetId);
       if (el) el.click();
     }
 
-    // Dev Fallback Simulation
-    function simulateProgressDev() {
-      let p = 0;
-      const interval = setInterval(() => {
-        p += 15;
-        updateProgress(p, `جاري محاكاة التجهيز (${p}%)...`, p > 30 ? (p > 70 ? 3 : 2) : 1);
-        if (p >= 100) {
-          clearInterval(interval);
-          setTimeout(() => showStep(3), 600);
+    // Auto-Initialization
+    window.addEventListener('pywebviewready', async () => {
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const init = await window.pywebview.api.get_initial_app_state();
+          if (init.has_setup) {
+            switchMainView('companion');
+          } else {
+            switchMainView('wizard');
+          }
+        } catch (e) {
+          switchMainView('companion');
         }
-      }, 800);
-    }
-
-    function simulateRealBuildDev() {
-      let sec = 0;
-      const t = setInterval(() => {
-        sec++;
-        if (sec <= 3) {
-          updateBuildTicker(sec, "🚀 شغلنا محركات الجرادل... دا يتعرف على ملفات المشروع وإعدادات أندرويد.", 1);
-        } else if (sec <= 6) {
-          updateBuildTicker(sec, "☕ أول بناء دايماً ثقيل: الجرادل كاعد يجمع حزم SDK ومكتبات Dart لأول مرة بحياتك!", 2);
-        } else if (sec <= 9) {
-          updateBuildTicker(sec, "🔨 شغال على نار هادئة: المعالج دا يترجم كود Dart للغة الآلة الثنائية (ARM64) الخاصة بجهازك.", 2);
-        } else {
-          updateBuildTicker(sec, "⏳ مرحلة الرزم والـ DEX: كاعد يجمع ملفات الكلاسات ويوقع الـ APK النهائي... هانت!", 3);
-          clearInterval(t);
-          setTimeout(() => {
-            finishRealBuild({
-              device_name: "تابلت أندرويد",
-              build_time: "10.4 ثانية"
-            });
-          }, 1200);
-        }
-      }, 1000);
-    }
+      }
+    });
   </script>
 </body>
 </html>
