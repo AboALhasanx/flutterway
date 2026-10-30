@@ -56,6 +56,9 @@ def static_checks() -> None:
     assert 'id="setup-error-box"' in html_src, "step 2 must render a setup error box"
     assert '<details id="build-log-details"' in html_src, "the raw Gradle log must stay collapsed by default"
     assert "logDetails.open = true" in html_src, "build failures must reveal the raw log"
+    assert 'id="advanced-device-options"' in html_src, "emulator must be a secondary advanced option"
+    assert "95%" not in html_src, "unmeasured marketing percentages must stay removed"
+    assert "0 MB" not in html_src, "fake zero-RAM claim must stay removed"
 
     for source_path in (APP, COMPANION, VSCODE):
         source = source_path.read_text(encoding="utf-8")
@@ -353,6 +356,7 @@ def ui_checks() -> None:
         # 2d) Keyboard, focus, text selection, and dialog semantics.
         page.evaluate("switchMainView('wizard'); showStep(1);")
         assert page.locator("#card-usb").get_attribute("tabindex") == "0"
+        page.evaluate("document.getElementById('advanced-device-options').open = true")
         page.locator("#card-emu").focus()
         page.keyboard.press("Enter")
         assert page.locator("#card-emu").get_attribute("aria-pressed") == "true"

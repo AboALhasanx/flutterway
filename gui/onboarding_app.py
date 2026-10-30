@@ -161,13 +161,13 @@ class OnboardingApi:
 
             if not vt_enabled:
                 rec_mode = "usb"
-                reason = "ميزة المحاكاة (Virtualization) غير مفعلة في معالجك (BIOS). خيار (هاتف USB) هو الأسرع والجاهز للعمل معك فوراً وبدون أي تعقيد أو تجميد للحاسبة!"
+                reason = "المحاكاة غير مفعّلة في BIOS. هاتف USB هو المسار الجاهز فوراً."
             elif ram_gb < 8:
                 rec_mode = "usb"
-                reason = f"الرام المتاح ({ram_gb}GB) خفيف، والمحاكي سيستهلك نصفه. هاتف USB سيبقي لابتوبك سريعاً وبارداً جداً!"
+                reason = f"الرام {ram_gb}GB قليلة للمحاكي. هاتف USB أخف وأسرع."
             else:
                 rec_mode = "usb"
-                reason = f"لابتوبك بمواصفات جيدة ({ram_gb}GB رام). ننصحك بهاتف USB كخيار أسرع بدون استنزاف للموارد، لكن المحاكي ممكن أيضاً."
+                reason = f"لابتوبك جاهز ({ram_gb}GB رام). هاتف USB أسرع وأخف من المحاكي."
 
             return {
                 "success": True,
@@ -177,20 +177,6 @@ class OnboardingApi:
                 "vt_enabled": vt_enabled,
                 "recommended_mode": rec_mode,
                 "reason": reason,
-                "emulator_benchmark": {
-                    "ram_cost": "4 إلى 6 GB رام محجوزة بالكامل",
-                    "cpu_cost": "85% - 100% ضغط مستمر",
-                    "heat_fan": "مراوح عالية وحرارة مرتفعة",
-                    "bios_status": "معطلة في BIOS" if not vt_enabled else "مفعلة",
-                    "verdict": "المحاكي يستنزف لابتوبك جداً ويسبب بطء شديد" if not vt_enabled or ram_gb < 16 else "مقبول لكن ثقيل"
-                },
-                "usb_benchmark": {
-                    "ram_cost": "0 MB من حاسبتك (يستخدم رام الهاتف نفسه!)",
-                    "cpu_cost": "0% ضغط معالج أثناء الاستخدام",
-                    "heat_fan": "حاسبتك باردة وهادئة تماماً",
-                    "fps": "60 إلى 120 FPS بسلاسة شاشة التلفون الحقيقية",
-                    "verdict": "الخيار الذهبي والواقعي لـ 95% من الطلاب والمطورين"
-                }
             }
         except Exception as e:
             return {
@@ -702,12 +688,12 @@ class OnboardingApi:
                 time.sleep(0.3)
 
                 # Stage 2: Java (JDK 21) & Gradle Toolchain (18% - 42%) -> Checklist Item 2
-                self._update_ui(win, 24, "جاري تهيئة بيئة Java ومحرك بناء أندرويد Gradle...", 2)
+                self._update_ui(win, 24, "نثبّت Java وأدوات بناء أندرويد...", 2)
                 jdk_path = ensure_jdk()
                 if not jdk_path:
                     fail("تعذر تثبيت JDK 21. تأكد من اتصال الإنترنت أو ثبّت Microsoft OpenJDK 21 يدوياً ثم أعد المحاولة.", 24)
                     return
-                self._update_ui(win, 40, "تم تهيئة بيئة Java (JDK 21) ومحرك Gradle بنجاح", 2)
+                self._update_ui(win, 40, "تم تثبيت Java وأدوات أندرويد بنجاح", 2)
                 time.sleep(0.4)
 
                 # Stage 3: Flutter Toolchain & PATH Registration (42% - 75%) -> Checklist Item 3
@@ -751,22 +737,22 @@ class OnboardingApi:
                         return
 
                 # Register the Flutter bin directory in the user PATH via the Registry
-                self._update_ui(win, 70, "جاري تسجيل مسار فلاتر في بيئة النظام (PATH)...", 3)
+                self._update_ui(win, 70, "نربط Flutter بالنظام...", 3)
                 if not add_to_user_path(flutter_bin):
-                    self._update_ui(win, 72, "تم تنزيل Flutter، لكن تعذر تسجيله في PATH. سنكمل بالمسار المباشر.", 3)
+                    self._update_ui(win, 72, "تم تنزيل Flutter، لكن تعذر ربطه بالنظام. سنكمل بالمسار المباشر.", 3)
                 else:
-                    self._update_ui(win, 75, "تم اكتمال تنزيل وتسجيل محرك فلاتر بنجاح", 3)
+                    self._update_ui(win, 75, "تم تنزيل Flutter وربطه بالنظام", 3)
                 time.sleep(0.4)
 
                 # Stage 3.5: Android SDK (platform-tools, platforms, build-tools)
-                self._update_ui(win, 78, "جاري تجهيز Android SDK وأدوات adb...", 3)
+                self._update_ui(win, 78, "نجهّز أدوات أندرويد (Android SDK)...", 3)
                 sdk_result = android_sdk.install_android_sdk(
                     progress=lambda message: self._update_ui(win, 80, message, 3)
                 )
                 if not sdk_result.get("success"):
                     fail(sdk_result.get("error", "تعذر تجهيز Android SDK. تأكد من اتصال الإنترنت ثم أعد المحاولة."), 80)
                     return
-                self._update_ui(win, 86, "تم تجهيز Android SDK وأدوات adb بنجاح", 3)
+                self._update_ui(win, 86, "تم تجهيز أدوات أندرويد بنجاح", 3)
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = 0
@@ -785,7 +771,7 @@ class OnboardingApi:
                 time.sleep(0.3)
 
                 # Stage 4: VS Code Configuration & Extensions (75% - 90%) -> Checklist Item 4
-                self._update_ui(win, 88, "جاري ربط محرر VS Code وتثبيت إضافات فلاتر...", 4)
+                self._update_ui(win, 88, "نربط VS Code ونثبّت إضافات Flutter...", 4)
                 vscode_ok = False
                 try:
                     vscode_res = configure_vscode(flutter_target)
@@ -794,7 +780,7 @@ class OnboardingApi:
                     print("VS Code setup error:", e)
 
                 # Stage 5: Starter Project Setup on Desktop (90% - 100%) -> Checklist Item 4
-                self._update_ui(win, 94, "جاري تجهيز أول مشروع فلاتر حقيقي على الديسكتوب...", 4)
+                self._update_ui(win, 94, "نجهّز أول مشروع Flutter على سطح المكتب...", 4)
                 project_path = paths.default_project_path()
                 if not self._ensure_starter_project(project_path):
                     fail("تم تثبيت Flutter لكن تعذر إنشاء مشروع البداية. راجع سجل الأخطاء ثم أعد المحاولة.", 92)

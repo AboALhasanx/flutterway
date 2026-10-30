@@ -615,6 +615,30 @@
       margin-bottom: 24px;
     }
 
+    .advanced-options {
+      width: 100%;
+      border: 1px dashed var(--card-border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 24px;
+    }
+
+    .advanced-options summary {
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    .advanced-options summary:hover {
+      color: var(--text);
+    }
+
+    .advanced-options .cards-grid {
+      margin-bottom: 0;
+    }
+
     .mode-card {
       background: var(--card-bg);
       border: 2px solid var(--card-border);
@@ -2079,12 +2103,12 @@
           <span class="icon" style="width: 12px; height: 12px;">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           </span>
-          <span>المستوى 1: فحص العتاد والمقارنة الواقعية</span>
+          <span>الخطوة 1 من 4 — فحص سريع للابتوب</span>
         </div>
 
-        <div class="hero-title">كيف تريد اختبار تطبيقاتك؟</div>
+        <div class="hero-title">هاتفك هو الأسرع</div>
         <p class="hero-desc">
-          بدون أي تضخيم أو مبالغة: اختر المسار المناسب للابتوبك لتوفير الجهد والذاكرة والانطلاق بسلاسة.
+          وصّل هاتف أندرويد بكيبل USB. نفحص اللابتوب ونجهّز كل شي تلقائياً — بدون محاكي وبدون إعدادات معقدة.
         </p>
 
         <!-- 1-Click Hardware Reality Check Banner -->
@@ -2096,31 +2120,31 @@
               </span>
             </div>
             <div>
-              <div style="font-size: 13px; font-weight: 800; color: var(--text);">فحص توافق اللابتوب والمحاكي بالكامل</div>
-              <div style="font-size: 11px; color: var(--text-muted);">يفحص الرام الحقيقي، دعم المعالج في BIOS، ويقارن الأداء بصدق بدون AI Hype</div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text);">فحص سريع للابتوب</div>
+              <div style="font-size: 11px; color: var(--text-muted);">نتأكد من الرام والمساحة ودعم المحاكاة.</div>
             </div>
           </div>
           <button id="btn-check-laptop" class="btn-check" onclick="checkLaptopSpecs()">
-            <span>فحص مواصفات لابتوبي بنقرة واحدة</span>
+            <span>افحص لابتوبي</span>
           </button>
         </div>
 
-        <!-- Diagnostic Result & Honest Side-by-Side Comparison -->
+        <!-- Diagnostic Result -->
         <div class="diag-result-card" id="diag-result-box">
           <div class="diag-header">
             <div style="font-size: 13px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px;">
               <span class="icon" style="width: 14px; height: 14px; color: var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span>نتيجة فحص عتاد لابتوبك الحقيقية</span>
+              <span>نتيجة فحص لابتوبك</span>
             </div>
             <div id="diag-rec-badge" class="level-badge" style="margin: 0; background: var(--success-bg); color: var(--success); border-color: var(--success);">
-              المسار المنصوح به: هاتف USB
+              المسار المنصوح: هاتف USB
             </div>
           </div>
 
           <div class="diag-specs-grid">
             <div class="spec-item">
               <div class="spec-val" id="spec-ram">11.7 GB</div>
-              <div class="spec-lbl">الرام المتاح في جهازك</div>
+              <div class="spec-lbl">الرام الإجمالية في جهازك</div>
             </div>
             <div class="spec-item">
               <div class="spec-val" id="spec-disk">65.1 GB</div>
@@ -2133,61 +2157,13 @@
           </div>
 
           <div style="font-size: 12px; color: var(--text); font-weight: 700; line-height: 1.5;" id="diag-reason-text">
-            ميزة المحاكاة (Virtualization) غير مفعلة في معالجك (BIOS). خيار (هاتف USB) هو الأسرع والجاهز للعمل معك فوراً وبدون أي تعقيد أو تجميد للحاسبة!
-          </div>
-
-          <!-- Honest Side-by-Side Comparison -->
-          <div class="benchmark-comparison-grid">
-            <div class="bench-card warn">
-              <div class="bench-head">
-                <span class="bench-title" style="color: var(--warning);">المحاكي الافتراضي (AVD)</span>
-                <span class="bench-tag" style="background: var(--warning-bg); color: var(--warning);">استنزاف عالي</span>
-              </div>
-              <div class="bench-stat-row">
-                <span>استهلاك الرام:</span>
-                <span class="bench-stat-val" style="color: var(--danger);">4 - 6 GB محجوزة</span>
-              </div>
-              <div class="bench-stat-row">
-                <span>ضغط المعالج:</span>
-                <span class="bench-stat-val" style="color: var(--danger);">85% - 100% مستمر</span>
-              </div>
-              <div class="bench-stat-row">
-                <span>الحرارة والمراوح:</span>
-                <span class="bench-stat-val">حرارة عالية وصوت مرتفع</span>
-              </div>
-              <div class="bench-verdict" style="color: var(--warning);">
-                تنبيه صريح: المحاكي سيثقل جهازك جداً وقد يجمد الويندوز إذا كانت المحاكاة معطلة.
-              </div>
-            </div>
-
-            <div class="bench-card rec">
-              <div class="bench-head">
-                <span class="bench-title" style="color: var(--success);">هاتف أندرويد عبر كيبل USB</span>
-                <span class="bench-tag" style="background: var(--success-bg); color: var(--success);">الخيار الذهبي 95%</span>
-              </div>
-              <div class="bench-stat-row">
-                <span>استهلاك الرام:</span>
-                <span class="bench-stat-val" style="color: var(--success);">0 MB من لابتوبك!</span>
-              </div>
-              <div class="bench-stat-row">
-                <span>ضغط المعالج:</span>
-                <span class="bench-stat-val" style="color: var(--success);">0% أثناء الاستخدام</span>
-              </div>
-              <div class="bench-stat-row">
-                <span>السلاسة والشاشة:</span>
-                <span class="bench-stat-val" style="color: var(--success);">60 - 120 FPS بسلاسة التلفون</span>
-              </div>
-              <div class="bench-verdict" style="color: var(--success);">
-                الخيار الواقعي: لابتوبك سيبقى بارداً وسريعاً للغاية، وتلمس تطبيقك بيدك مباشرة!
-              </div>
-            </div>
+            هاتف USB هو المسار الجاهز فوراً، ويُبقي لابتوبك سريعاً وبارداً.
           </div>
         </div>
 
-        <div class="cards-grid">
+        <div class="cards-grid" style="grid-template-columns: 1fr;">
           <!-- USB Mode Card -->
           <div id="card-usb" class="mode-card selected" role="button" tabindex="0" aria-pressed="true" onclick="selectChoice('usb')">
-            <div class="card-badge">المنصوح به لـ 95% من الطلاب</div>
             <div class="card-icon-title">
               <div class="card-icon">
                 <span class="icon" style="width: 20px; height: 20px;">
@@ -2196,35 +2172,40 @@
               </div>
               <div>
                 <div class="card-title">هاتف أندرويد عبر كيبل USB</div>
-                <div style="font-size: 11px; color: var(--success); font-weight: 700;">سريع، خفيف، ولا يستهلك رام اللابتوب إطلاقاً</div>
+                <div style="font-size: 11px; color: var(--success); font-weight: 700;">كل اللي تحتاجه: هاتف وكيبل شحن</div>
               </div>
             </div>
             <div class="card-desc">
-              أي موبايل أندرويد لديك مع كيبل الشحن. سنقوم بتوجيهك خطوة بخطوة للتعرف عليه وتشغيل التطبيق في يدك.
-            </div>
-          </div>
-
-          <!-- Emulator Mode Card -->
-          <div id="card-emu" class="mode-card" role="button" tabindex="0" aria-pressed="false" onclick="selectChoice('emu')">
-            <div class="card-icon-title">
-              <div class="card-icon">
-                <span class="icon" style="width: 20px; height: 20px;">
-                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                </span>
-              </div>
-              <div>
-                <div class="card-title">محاكي افتراضي على اللابتوب</div>
-                <div style="font-size: 11px; color: var(--warning); font-weight: 700;">يتطلب 16GB رام ومعالج يدعم VT</div>
-              </div>
-            </div>
-            <div class="card-desc">
-              جهاز أندرويد افتراضي يفتح على شاشة الويندوز. يتطلب عتاداً قوياً وتفعيل تقنية المحاكاة بالبايوس.
+              أي موبايل أندرويد لديك. ننشئ مشروعك، نبنيه، ونشغّله على شاشة هاتفك.
             </div>
           </div>
         </div>
 
+        <details id="advanced-device-options" class="advanced-options">
+          <summary>خيارات متقدمة: أفضّل المحاكي</summary>
+          <div class="cards-grid" style="grid-template-columns: 1fr; margin-top: 10px;">
+            <!-- Emulator Mode Card -->
+            <div id="card-emu" class="mode-card" role="button" tabindex="0" aria-pressed="false" onclick="selectChoice('emu')">
+              <div class="card-icon-title">
+                <div class="card-icon">
+                  <span class="icon" style="width: 20px; height: 20px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  </span>
+                </div>
+                <div>
+                  <div class="card-title">محاكي افتراضي على اللابتوب</div>
+                  <div style="font-size: 11px; color: var(--warning); font-weight: 700;">يتطلب رام كافية وتفعيل المحاكاة في BIOS</div>
+                </div>
+              </div>
+              <div class="card-desc">
+                جهاز أندرويد افتراضي يفتح على شاشة الويندوز. أبطأ من الهاتف الحقيقي.
+              </div>
+            </div>
+          </div>
+        </details>
+
         <button id="btn-start-setup" class="btn-primary" onclick="startSetup()">
-          <span>متابعة التجهيز التلقائي</span>
+          <span>ابدأ التجهيز</span>
           <span class="icon" style="width: 16px; height: 16px;">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           </span>
@@ -2237,17 +2218,17 @@
           <span class="icon" style="width: 12px; height: 12px;">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </span>
-          <span>المستوى 2: التجهيز الآلي الصامت</span>
+          <span>الخطوة 2 من 4 — التجهيز التلقائي</span>
         </div>
 
-        <div class="hero-title">جاري إعداد محرك فلاتر بالكامل</div>
+        <div class="hero-title">نجهّز بيئتك الآن</div>
         <div class="hero-desc">
-          استرخِ... نحن نقوم بتهيئة جافا، فلاتر، متغيرات النظام، وإضافات VS Code آلياً في الخلفية.
+          نثبّت Java وأدوات أندرويد وFlutter تلقائياً. أول مرة قد تأخذ دقائق — لا تغلق النافذة.
         </div>
 
         <div class="progress-box">
           <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-            <div id="progress-text" style="font-size: 13px; font-weight: 700; color: var(--text);">جاري فحص إعدادات اللابتوب وتوفير أفضل مسار...</div>
+            <div id="progress-text" style="font-size: 13px; font-weight: 700; color: var(--text);">نفحص اللابتوب ونختار أفضل مسار...</div>
             <div id="progress-pct" style="font-size: 15px; font-weight: 900; color: var(--accent);">0%</div>
           </div>
 
@@ -2258,24 +2239,24 @@
           <div class="checklist">
             <div id="chk-step-1" class="chk-item">
               <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
-              <span>تهيئة بيئة النظام والتحقق من التوافقية</span>
+              <span>فحص اللابتوب وتجهيز بيئة النظام</span>
             </div>
             <div id="chk-step-2" class="chk-item">
               <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
-              <span>تثبيت وضبط بيئة جافا الرسمية ومحرك أندرويد Gradle</span>
+              <span>تثبيت Java وأدوات بناء أندرويد</span>
             </div>
             <div id="chk-step-3" class="chk-item">
               <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
-              <span>تنزيل محرك Flutter وتسجيله في مسار الويندوز (PATH)</span>
+              <span>تنزيل Flutter وإضافته إلى PATH</span>
             </div>
             <div id="chk-step-4" class="chk-item">
               <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
-              <span>تكامل إضافات VS Code وإعداد أول مشروع فلاتر على الديسكتوب</span>
+              <span>تجهيز VS Code وأول مشروع</span>
             </div>
           </div>
 
           <div style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px;" id="tips-banner">
-            💡 نصيحة: لن تحتاج مستقبلاً لفتح موجه الأوامر الأسود أو كتابة مسارات PATH المعقدة يدوياً.
+            💡 لن تحتاج فتح موجه الأوامر أو تعديل PATH يدوياً.
           </div>
 
           <div id="setup-error-box" style="display: none; width: 100%; margin-top: 12px; padding: 12px 14px; border: 1px solid var(--danger); border-radius: 10px; background: var(--danger-bg); text-align: right;">
@@ -2289,12 +2270,12 @@
       <section id="step-3" class="step-view">
         <div class="level-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--warning); border-color: var(--warning);">
           <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>
-          <span>المستوى 3: وحش المرحلة - توصيل الهاتف وبناء أول تطبيق</span>
+          <span>الخطوة 3 من 4 — توصيل الهاتف وأول تطبيق</span>
         </div>
 
-        <div class="hero-title" id="step3-title">صِل هاتفك بالكمبيوتر بالكيبل</div>
+        <div class="hero-title" id="step3-title">وصّل هاتفك بالكيبل</div>
         <div class="hero-desc" id="step3-desc">
-          أهم خطوة في مسيرتك! عندما تنجح في رؤية تطبيقك الأول على شاشة هاتفك الحقيقي، تصبح مطوراً رسمياً.
+          عندما يظهر تطبيقك على شاشة الهاتف، تكون جاهزاً للبرمجة.
         </div>
 
         <div class="device-card">
@@ -2325,12 +2306,10 @@
             </button>
           </div>
 
-          <!-- Universal Debugging Guide with YouTube Search Pill -->
-          <div id="device-guide-box" style="width: 100%; background: var(--bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; text-align: right;">
-            <div style="font-size: 12px; font-weight: 800; color: var(--text); margin-bottom: 8px;">
-              كيف تفعل وضع تصحيح الأخطاء (USB Debugging) في أي هاتف أندرويد بالعالم:
-            </div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px;">
+          <!-- Universal Debugging Guide (collapsed by default) -->
+          <details id="device-guide-box" class="advanced-options" style="margin-bottom: 0;">
+            <summary>كيف أفعّل تصحيح USB؟</summary>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.6; margin: 10px 0;">
               1. ادخل إلى <strong>الإعدادات (Settings)</strong> ثم <strong>حول الهاتف (About Phone)</strong>.<br>
               2. اضغط على <strong>رقم الإصدار (Build Number)</strong> سبع (7) مرات متتالية حتى تظهر عبارة "أنت مطور الآن!".<br>
               3. ارجع للإعدادات وادخل إلى <strong>خيارات المطور (Developer Options)</strong> وفعّل <strong>تصحيح USB (USB Debugging)</strong>.
@@ -2342,7 +2321,7 @@
                 <span>نسخ نص البحث لليوتيوب</span>
               </button>
             </div>
-          </div>
+          </details>
 
           <!-- Live Gradle Build Console & Dynamic Iraqi Commentary -->
           <div class="build-console-box" id="build-console">
@@ -2438,7 +2417,7 @@
         <div class="cheatsheet-card">
           <div class="level-badge" style="background: var(--success-bg); color: var(--success); border-color: var(--success);">
             <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
-            <span>المستوى 4: شارة المطور الأول وبدء البرمجة</span>
+            <span>الخطوة 4 من 4 — جاهز للبرمجة</span>
           </div>
           <div class="hero-title" style="font-size: 22px;">لابتوبك وهاتفك جاهزان بالكامل</div>
           <div class="hero-desc" style="font-size: 13px; margin-bottom: 20px;">

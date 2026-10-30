@@ -134,7 +134,8 @@ def main() -> int:
 
             # 2. Student clicks the laptop check (real read-only Python API).
             page.click("#btn-check-laptop")
-            page.wait_for_timeout(1200)
+            page.wait_for_selector("#diag-result-box", state="visible", timeout=12000)
+            page.wait_for_timeout(250)
             shot("02_step1_laptop_check", "بعد فحص اللابتوب: النتيجة والمقارنة")
             check = page.evaluate("""() => ({
                 ram: document.getElementById('spec-ram')?.innerText,
@@ -154,9 +155,19 @@ def main() -> int:
                 finding("high", "Step 1 selection", "اختيار (هاتف USB) لا يظهر كبطاقة محددة.")
 
             # 4. Step 2 preview: in-progress and failure states, without running setup.
-            page.evaluate("showStep(2); updateProgress(25, 'جاري تهيئة بيئة Java ومحرك بناء أندرويد Gradle...', 2);")
-            page.wait_for_timeout(350)
-            shot("03_step2_progress", "المستوى 2: شكل التقدم (بدون تشغيل التثبيت)")
+            page.evaluate("showStep(2); updateProgress(25, 'نثبّت Java وأدوات بناء أندرويد...', 2);")
+            page.wait_for_timeout(500)
+            bar = page.evaluate("""() => {
+                const fill = document.getElementById('progress-fill');
+                const track = fill.parentElement;
+                return { fill: fill.getBoundingClientRect().width, track: track.getBoundingClientRect().width };
+            }""")
+            if bar["track"]:
+                ratio = bar["fill"] / bar["track"]
+                report["metrics"]["progress_bar"] = {"ratio": round(ratio, 3), **bar}
+                if abs(ratio - 0.25) > 0.06:
+                    finding("high", "Step 2 progress", f"شريط التقدم لا يعكس النسبة: {round(ratio * 100)}% بدل 25%.")
+            shot("03_step2_progress", "الخطوة 2: شكل التقدم (بدون تشغيل التثبيت)")
             page.evaluate("onboardingFailed('تعذر تنزيل Flutter SDK. تأكد من اتصال الإنترنت ثم أعد المحاولة.')")
             page.wait_for_timeout(250)
             shot("04_step2_error", "المستوى 2: حالة فشل واضحة مع زر إعادة المحاولة")
@@ -333,7 +344,7 @@ def main() -> int:
                 finding("medium", "Developer modal", "Escape لا يغلق نافذة المطور.")
 
             # 10. Keyboard selection on the mode cards.
-            page.evaluate("switchMainView('wizard'); showStep(1); selectChoice('usb')")
+            page.evaluate("switchMainView('wizard'); showStep(1); selectChoice('usb'); document.getElementById('advanced-device-options').open = true")
             page.locator("#card-emu").focus()
             page.keyboard.press("Enter")
             page.wait_for_timeout(150)
