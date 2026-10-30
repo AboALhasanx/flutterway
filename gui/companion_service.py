@@ -149,7 +149,11 @@ def load_recent_projects():
     if os.path.exists(fpath):
         try:
             with open(fpath, "r", encoding="utf-8") as f:
-                return json.load(f)
+                projects = json.load(f)
+            return [
+                project for project in projects
+                if isinstance(project, dict) and project.get("path") and os.path.exists(project["path"])
+            ]
         except Exception:
             return []
     # Seed with default first app if exists

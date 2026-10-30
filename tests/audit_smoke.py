@@ -76,7 +76,9 @@ def static_checks() -> None:
     assert "def kill_gradle_daemons" in companion_src
     assert "ram_usage" not in app_src, "fake RAM metric must stay removed"
     assert 'id="stat-size"' in html_src, "success card must show the real APK size"
-    assert "زمن بناء Gradle" in html_src, "build time must be labelled honestly"
+    assert "زمن البناء والتثبيت" in html_src, "build+install time must be labelled honestly"
+    assert "launched_ok" in app_src and "launched_ok" in html_src
+    assert "Installing on device" in html_src
     assert "item.innerHTML" not in html_src, "recent project names must not use innerHTML"
     assert "activeProjPath" in html_src, "selected project path must be tracked"
     assert "start_real_gradle_build(projectPath || null)" in html_src

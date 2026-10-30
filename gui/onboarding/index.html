@@ -2029,12 +2029,12 @@
               التطبيق يعمل الآن بنجاح على شاشة هاتفك الحقيقي!
             </div>
             <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
-              انظر لهاتفك الآن! ستجد التطبيق قد فتح أمامك وتستطيع النقر على زر العداد وتجربته بيدك.
+              انظر لهاتفك الآن! إذا ظهر شعار فلاتر فانتظر لحظات حتى يكتمل فتح التطبيق، ثم جرّب العداد بيدك.
             </div>
             <div class="diag-specs-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 12px;">
               <div class="spec-item">
                 <div class="spec-val" style="color: var(--success);" id="stat-speed">—</div>
-                <div class="spec-lbl">زمن بناء Gradle</div>
+                <div class="spec-lbl">زمن البناء والتثبيت</div>
               </div>
               <div class="spec-item">
                 <div class="spec-val" style="color: var(--success);" id="stat-size">—</div>
@@ -2934,9 +2934,17 @@
       if (!container) return;
       const div = document.createElement('div');
       div.innerText = line;
+      div.dir = 'auto';
+      div.style.whiteSpace = 'pre-wrap';
       if (line.includes('> Task')) {
         div.style.color = '#a78bfa';
         if (taskActive) taskActive.innerText = line.replace('> Task ', '');
+      } else if (line.includes('[APK]')) {
+        div.style.color = '#fbbf24';
+        if (taskActive) taskActive.innerText = 'Optimizing APK...';
+      } else if (line.includes('[ADB]') || line.includes('تثبيت') || line.includes('تشغيل شاشة')) {
+        div.style.color = '#fbbf24';
+        if (taskActive) taskActive.innerText = 'Installing on device...';
       } else if (line.includes('Built build') || line.includes('Success') || line.includes('SUCCESSFUL')) {
         div.style.color = '#34d399';
         if (taskActive) taskActive.innerText = 'Build Succeeded';
@@ -2982,7 +2990,9 @@
       setTimeout(() => {
         if (consoleBox) consoleBox.style.display = 'none';
         if (benchmarkCard) benchmarkCard.style.display = 'block';
-        if (res.device_name) {
+        if (res.launched_ok === false) {
+          document.getElementById('benchmark-head-text').innerText = `تم تثبيت التطبيق على ${res.device_name}، لكنه لم يفتح بعد. جرّب فتحه من شاشة الهاتف.`;
+        } else if (res.device_name) {
           document.getElementById('benchmark-head-text').innerText = `التطبيق يعمل الآن بنجاح على شاشة ${res.device_name}!`;
         }
         if (res.build_time) {

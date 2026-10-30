@@ -540,9 +540,6 @@ class OnboardingApi:
                 send_log(f"خطأ أثناء استدعاء محرك فلاتر: {e}")
                 build_success = False
 
-            stop_ticker = True
-            elapsed_total = round(time.time() - t_start, 1)
-
             apk_candidates = [
                 os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-release.apk"),
                 os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-arm64-v8a-release.apk"),
@@ -579,6 +576,8 @@ class OnboardingApi:
 
             # Install & Run via ADB
             installed_ok = False
+            launched_ok = False
+            launch_seconds = 0.0
             manufacturer = "أندرويد"
             device_model = "هاتف ذكي"
             if target_serial:
@@ -604,9 +603,34 @@ class OnboardingApi:
                         capture_output=True, text=True, timeout=6, startupinfo=startupinfo, creationflags=creationflags
                     )
                     installed_ok = True
-                    send_log("[FlutterWay] التطبيق يعمل الآن على شاشة جهازك!")
+                    launch_start = time.time()
+                    for _ in range(12):
+                        try:
+                            dump = subprocess.run(
+                                [adb, "-s", target_serial, "shell", "dumpsys", "activity", "activities"],
+                                capture_output=True, text=True, timeout=8, startupinfo=startupinfo, creationflags=creationflags
+                            )
+                            for line in dump.stdout.splitlines():
+                                if ("mResumedActivity" in line or "topResumedActivity" in line) and app_id in line:
+                                    launched_ok = True
+                                    break
+                        except Exception:
+                            pass
+                        if launched_ok:
+                            break
+                        time.sleep(1)
+                    launch_seconds = round(time.time() - launch_start, 1)
+                    if launched_ok:
+                        send_log("[FlutterWay] ننتظر اكتمال أول إطار للتطبيق على الشاشة...")
+                        time.sleep(6)
+                        send_log("[FlutterWay] التطبيق يعمل الآن على شاشة جهازك!")
+                    else:
+                        send_log("[FlutterWay] تم تثبيت التطبيق، لكن لم نتحقق من فتحه بعد. افتحه من شاشة الهاتف.")
                 except Exception as e:
                     send_log(f"[ADB Error] تعذر التثبيت أو التشغيل: {e}")
+
+            stop_ticker = True
+            elapsed_total = round(time.time() - t_start, 1)
 
             self.state["app_running_on_phone"] = installed_ok
 
@@ -614,8 +638,10 @@ class OnboardingApi:
             secs = int(elapsed_total % 60)
             time_formatted = f"{mins}د و {secs}ث ({elapsed_total} ثانية)" if mins > 0 else f"{elapsed_total} ثانية"
 
-            if build_success and apk_exists and installed_ok:
+            if build_success and apk_exists and installed_ok and launched_ok:
                 build_message = f"تم بناء وتشغيل التطبيق بنجاح على {manufacturer} {device_model}!"
+            elif build_success and apk_exists and installed_ok:
+                build_message = f"تم تثبيت التطبيق على {manufacturer} {device_model}، لكن لم نتحقق من فتحه بعد."
             elif build_success and apk_exists:
                 build_message = f"تم بناء التطبيق بنجاح، لكن تعذر تثبيته على {manufacturer} {device_model}."
             else:
@@ -625,6 +651,8 @@ class OnboardingApi:
                 "success": build_success and apk_exists,
                 "device_name": f"{manufacturer} {device_model}".strip(),
                 "installed_ok": installed_ok,
+                "launched_ok": launched_ok,
+                "launch_seconds": launch_seconds,
                 "build_time": time_formatted,
                 "apk_size": f"{apk_size_mb} MB",
                 "build_returncode": build_returncode,

@@ -60,7 +60,7 @@ def optimize_apk(apk_path: str, log=print) -> str:
     signed_apk = base + ".signed.apk"
 
     try:
-        log("جاري تجريد رموز debug من مكتبات APK...")
+        log("[APK] جاري تجريد رموز debug من مكتبات APK...")
         with zipfile.ZipFile(apk_path, "r") as source, zipfile.ZipFile(stripped_zip, "w", zipfile.ZIP_DEFLATED) as target:
             for info in source.infolist():
                 name = info.filename
@@ -115,7 +115,7 @@ def optimize_apk(apk_path: str, log=print) -> str:
         if new_size >= original_size:
             return apk_path
         log(
-            f"تم تجريد APK: {round(original_size / 1024 / 1024, 1)} MB → "
+            f"[APK] تم تجريد APK: {round(original_size / 1024 / 1024, 1)} MB → "
             f"{round(new_size / 1024 / 1024, 1)} MB"
         )
         return signed_apk
