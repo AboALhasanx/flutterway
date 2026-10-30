@@ -22,6 +22,58 @@ except ImportError:
 def get_adb_path():
     return paths.adb_path()
 
+def _android_gradle_file(project_path):
+    for relative in ("android/app/build.gradle.kts", "android/app/build.gradle"):
+        candidate = os.path.join(project_path, relative)
+        if os.path.exists(candidate):
+            return candidate
+    return None
+
+def get_application_id(project_path):
+    """Read the real Android applicationId (or namespace) from the project."""
+    gradle_file = _android_gradle_file(project_path)
+    if not gradle_file:
+        return "com.example.flutter_test_app"
+    try:
+        with open(gradle_file, "r", encoding="utf-8") as handle:
+            content = handle.read()
+        for pattern in (
+            r'applicationId\s*=\s*"([^"]+)"',
+            r'applicationId\s+"([^"]+)"',
+            r'namespace\s*=\s*"([^"]+)"',
+            r'namespace\s+"([^"]+)"',
+        ):
+            match = re.search(pattern, content)
+            if match:
+                return match.group(1)
+    except Exception:
+        pass
+    return "com.example.flutter_test_app"
+
+def set_application_id(project_path, app_id):
+    """Give a copied lecture project its own Android applicationId/namespace."""
+    gradle_file = _android_gradle_file(project_path)
+    if not gradle_file:
+        return False
+    try:
+        with open(gradle_file, "r", encoding="utf-8") as handle:
+            content = handle.read()
+        original = content
+        for pattern, replacement in (
+            (r'(applicationId\s*=\s*")[^"]+(")', rf'\g<1>{app_id}\g<2>'),
+            (r'(applicationId\s+")[^"]+(")', rf'\g<1>{app_id}\g<2>'),
+            (r'(namespace\s*=\s*")[^"]+(")', rf'\g<1>{app_id}\g<2>'),
+            (r'(namespace\s+")[^"]+(")', rf'\g<1>{app_id}\g<2>'),
+        ):
+            content = re.sub(pattern, replacement, content)
+        if content != original:
+            with open(gradle_file, "w", encoding="utf-8") as handle:
+                handle.write(content)
+            return True
+    except Exception:
+        pass
+    return False
+
 def run_silent(cmd_args, **kwargs):
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -370,6 +422,8 @@ def create_lecture_project(name, custom_parent_folder=None):
             shutil.copytree(src_template, project_dir, ignore=ignore_patterns)
         except Exception as e:
             print("Lecture template copy error:", e)
+
+        set_application_id(project_dir, f"com.university.flutterway.{clean_name}")
 
         # Update pubspec.yaml name
         pubspec_path = os.path.join(project_dir, "pubspec.yaml")

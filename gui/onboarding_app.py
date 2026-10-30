@@ -330,6 +330,7 @@ class OnboardingApi:
 
         # 3. Locate compiled APK strictly from real project build output
         project_path = self.state.get("project_path") or paths.default_project_path()
+        app_id = companion_service.get_application_id(project_path)
         apk_candidates = [
             os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-debug.apk"),
             os.path.join(project_path, "build", "app", "outputs", "apk", "debug", "app-debug.apk")
@@ -355,7 +356,7 @@ class OnboardingApi:
                     capture_output=True, startupinfo=startupinfo, creationflags=creationflags, timeout=35
                 )
                 subprocess.run(
-                    [adb, "-s", serial, "shell", "monkey", "-p", "com.example.flutter_test_app", "-c", "android.intent.category.LAUNCHER", "1"],
+                    [adb, "-s", serial, "shell", "monkey", "-p", app_id, "-c", "android.intent.category.LAUNCHER", "1"],
                     capture_output=True, startupinfo=startupinfo, creationflags=creationflags, timeout=5
                 )
                 installed_ok = True
@@ -440,6 +441,7 @@ class OnboardingApi:
             # 2. Resolve project path
             project_path = self.state.get("project_path") or paths.default_project_path()
             self._ensure_starter_project(project_path)
+            app_id = companion_service.get_application_id(project_path)
 
             send_log(f"$ cd {project_path}")
             send_log("$ flutter build apk --debug -v")
@@ -576,7 +578,7 @@ class OnboardingApi:
 
                     send_log(f"[ADB] جاري تشغيل شاشة التطبيق الرئيسية...")
                     subprocess.run(
-                        [adb, "-s", target_serial, "shell", "monkey", "-p", "com.example.flutter_test_app", "-c", "android.intent.category.LAUNCHER", "1"],
+                        [adb, "-s", target_serial, "shell", "monkey", "-p", app_id, "-c", "android.intent.category.LAUNCHER", "1"],
                         capture_output=True, text=True, timeout=6, startupinfo=startupinfo, creationflags=creationflags
                     )
                     installed_ok = True

@@ -82,6 +82,9 @@ def static_checks() -> None:
     assert "path_backup.txt" in companion_src, "PATH changes must be backed up"
     assert "flutter_bins" in companion_src, "full reset must match Flutter PATH exactly"
     assert "android-sdk-license" in companion_src, "license check must verify the real license file"
+    assert "get_application_id(project_path)" in app_src, "APK launch must use the real applicationId"
+    assert "set_application_id(project_dir" in companion_src, "lecture projects need unique applicationIds"
+    assert '"monkey", "-p", "com.example' not in app_src
     clean_src = CLEAN.read_text(encoding="utf-8")
     assert "--uninstall-extensions" in clean_src, "extension removal must be opt-in"
     assert '"flutter" in lower' not in clean_src, "clean slate must not delete unrelated PATH entries"
@@ -154,6 +157,23 @@ def python_checks() -> None:
 
     params = inspect.signature(app.OnboardingApi.start_real_gradle_build).parameters
     assert "project_path" in params, "build API must accept the selected project path"
+
+    import shutil
+    import tempfile
+
+    from gui import companion_service
+
+    temp_project = tempfile.mkdtemp(prefix="fw_appid_")
+    try:
+        os.makedirs(os.path.join(temp_project, "android", "app"), exist_ok=True)
+        gradle_file = os.path.join(temp_project, "android", "app", "build.gradle.kts")
+        with open(gradle_file, "w", encoding="utf-8") as handle:
+            handle.write('namespace = "com.old.app"\napplicationId = "com.old.app"\n')
+        assert companion_service.get_application_id(temp_project) == "com.old.app"
+        assert companion_service.set_application_id(temp_project, "com.new.app")
+        assert companion_service.get_application_id(temp_project) == "com.new.app"
+    finally:
+        shutil.rmtree(temp_project, ignore_errors=True)
 
     class FakeWindow:
         def __init__(self):
