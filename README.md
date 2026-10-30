@@ -179,6 +179,7 @@ pyinstaller FlutterWayNative.spec --noconfirm
 | `python tests/reliability_faults.py` | **36 اختبار فشل** بدون جهاز (نجاح كاذب/ازدواج/حالة عالقة) |
 | `python tests/test_build_guard.py` | منع بناء/تجهيز متزامن |
 | `python tests/test_pnp_filter.py` | منع تنبيه تعريف USB الكاذب |
+| `python tests/clean_slate_e2e.py` | الرحلة الكاملة على بيئة نظيفة (تجهيز → بناء → Hot Reload) |
 | `python tests/custom_project_journey.py` | بناء وتثبيت حقيقي (يتطلب هاتف) |
 | `python tests/hot_reload_journey.py` | Hot Reload حقيقي (يتطلب هاتف) |
 

@@ -4439,6 +4439,9 @@
 
       if (numeric < displayedProgress - 0.5) displayedProgress = numeric;
       targetProgress = numeric;
+      if (numeric >= 100) {
+        displayedProgress = 100;
+      }
       lastProgressAt = Date.now();
       if (bar) bar.setAttribute('aria-valuenow', String(numeric));
 
