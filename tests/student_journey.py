@@ -250,7 +250,7 @@ def main() -> int:
 
             # 9. Developer modal: inspect only, never execute a destructive reset.
             page.evaluate("openDevModal()")
-            page.wait_for_timeout(2600)
+            page.wait_for_timeout(4500)
             shot("14_dev_modal", "لوحة المطور: معاينة ما يمكن حذفه وإجراءات granular")
             modal = page.evaluate("""() => {
                 const m = document.getElementById('dev-modal');
