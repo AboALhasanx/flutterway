@@ -184,6 +184,21 @@ def main() -> int:
                 finding("high", "Step 3 device", "فصل الهاتف لا يعيد الواجهة لحالة الانتظار.")
             page.evaluate("stopDevicePolling()")
 
+            # 5b. Build screen: three beginner steps, raw log collapsed until failure.
+            page.evaluate("""() => {
+                document.getElementById('build-console').style.display = 'block';
+                document.getElementById('device-guide-box').style.display = 'none';
+            }""")
+            page.wait_for_timeout(200)
+            shot("05b_build_beginners", "شاشة البناء: ثلاث مراحل والسجل مطوي")
+            if page.evaluate("document.getElementById('build-log-details').open"):
+                finding("high", "Build screen", "سجل البناء مفتوح افتراضياً؛ يجب أن يبقى مطوياً.")
+            page.evaluate("finishRealBuild({success: false, installed_ok: false, message: 'build failed'})")
+            page.wait_for_timeout(250)
+            shot("05c_build_failure", "شاشة البناء: الفشل يفتح السجل تلقائياً")
+            if not page.evaluate("document.getElementById('build-log-details').open"):
+                finding("high", "Build screen", "الفشل لا يفتح سجل البناء تلقائياً.")
+
             # 6. Step 4 preview without opening VS Code.
             page.evaluate("""() => {
                 document.querySelectorAll('.step-view').forEach(el => el.classList.remove('active'));
@@ -194,6 +209,25 @@ def main() -> int:
 
             # 7. Companion dashboard: the returning-student path.
             page.evaluate("switchMainView('companion')")
+            page.wait_for_timeout(1200)
+            shot("07b_home", "الرئيسية: الخطوة التالية للطالب")
+            home_title = page.locator("#home-title").inner_text()
+            report["metrics"]["home_title"] = home_title
+            if not home_title.strip():
+                finding("high", "Home", "الرئيسية لا تعرض خطوة تالية.")
+            page.click("#btn-tab-more")
+            page.wait_for_timeout(250)
+            shot("07c_more_menu", "المزيد: الأدوات الثانوية في قائمة واحدة")
+            more_open = page.evaluate("getComputedStyle(document.getElementById('more-menu')).display")
+            if more_open != "block":
+                finding("high", "More menu", "قائمة المزيد لا تفتح.")
+            page.click("#more-menu .more-item:nth-child(4)")
+            page.wait_for_timeout(1200)
+            hot_active = page.evaluate("document.getElementById('tab-hotreload').classList.contains('active')")
+            if not hot_active:
+                finding("high", "More menu", "Hot Reload غير قابل للوصول من قائمة المزيد.")
+            shot("07d_hot_reload_entry", "الوصول إلى Hot Reload من المزيد")
+            page.evaluate("switchCompanionTab('doctor')")
             page.wait_for_timeout(3000)
             shot("08_companion_doctor", "لوحة رفيق الطالب: طبيب فلاتر الذكي")
             doctor = page.evaluate("""() => ({

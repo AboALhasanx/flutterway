@@ -110,15 +110,21 @@
 
     /* Header */
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       padding: 14px 28px;
       border-bottom: 1px solid var(--card-border);
       background: var(--card-bg);
       position: sticky;
       top: 0;
       z-index: 50;
+    }
+
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
     }
 
     .brand {
@@ -300,6 +306,13 @@
       max-width: 960px;
       margin: 0 auto;
       width: 100%;
+    }
+
+    .wizard-back-row {
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 4px;
     }
 
     .main-view {
@@ -822,6 +835,33 @@
       font-size: 11px;
     }
 
+    .build-log-details {
+      margin-top: 14px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+    }
+
+    .build-log-details summary {
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 0;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .build-log-details[open] summary {
+      color: var(--accent);
+      margin-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
     .build-step-row {
       display: flex;
       align-items: center;
@@ -927,6 +967,188 @@
       border: 1px solid var(--card-border);
       border-radius: 8px;
       background: #fff;
+    }
+
+    /* HOME / NEXT STEP */
+    .home-card {
+      width: 100%;
+      max-width: 820px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      text-align: right;
+    }
+
+    .home-card .level-badge {
+      align-self: flex-start;
+      margin: 0;
+    }
+
+    .home-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    .home-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 60ch;
+    }
+
+    .home-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-top: 4px;
+    }
+
+    .home-status-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: var(--bg);
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .status-chip.ok {
+      color: var(--success);
+      border-color: var(--success);
+      background: var(--success-bg);
+    }
+
+    .status-chip.warn {
+      color: var(--warning);
+      border-color: var(--warning);
+      background: var(--warning-bg);
+    }
+
+    .home-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 820px;
+    }
+
+    .home-step {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .home-step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--highlight);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .home-step-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .home-step-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-top: 2px;
+    }
+
+    button.home-step {
+      font-family: inherit;
+      text-align: right;
+      color: inherit;
+      cursor: pointer;
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+
+    button.home-step:hover {
+      border-color: var(--accent);
+      background: var(--card-hover);
+    }
+
+    .more-wrap {
+      position: relative;
+    }
+
+    .more-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 190px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+      z-index: 40;
+      display: none;
+    }
+
+    .more-item {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      text-align: right;
+      padding: 9px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .more-item:hover {
+      background: var(--card-hover);
+    }
+
+    @media (max-width: 900px) {
+      .home-steps {
+        grid-template-columns: 1fr;
+      }
+      .home-card {
+        padding: 20px;
+      }
+      .home-title {
+        font-size: 22px;
+      }
     }
 
     /* STEP 4: Cheatsheet */
@@ -1372,6 +1594,7 @@
 <body>
   <!-- Header with Brand, Mode Switcher, and Theme Toggle -->
   <header>
+    <div class="header-inner">
     <div class="brand">
       <div class="brand-logo" style="overflow: hidden; padding: 2px;">
         <img src="flutter_logo.png" style="width: 100%; height: 100%; object-fit: contain;" alt="FlutterWay Logo">
@@ -1380,23 +1603,6 @@
         <div class="brand-title">FlutterWay</div>
         <div class="brand-sub">بوابة ومساعد فلاتر الأصلي للمبتدئين والجامعات</div>
       </div>
-    </div>
-
-    <!-- Mode Switcher Pills -->
-    <div class="nav-switcher">
-      <button id="btn-nav-companion" class="nav-btn active" onclick="switchMainView('companion')">
-        <span class="icon" style="width: 14px; height: 14px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 3 6 3 6 3s6 0 6-3v-5"/></svg>
-        </span>
-        <span>لوحة رفيق الطالب للمحاضرات</span>
-      </button>
-
-      <button id="btn-nav-wizard" class="nav-btn" onclick="switchMainView('wizard')">
-        <span class="icon" style="width: 14px; height: 14px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-        </span>
-        <span>معالج البداية (4 مستويات)</span>
-      </button>
     </div>
 
     <div class="header-actions">
@@ -1414,6 +1620,7 @@
         <span id="theme-label">الوضع النهاري</span>
       </button>
     </div>
+    </div>
   </header>
 
   <main>
@@ -1424,51 +1631,93 @@
       <div class="companion-container">
         <!-- Sub-Navigation Tabs -->
         <div class="companion-subnav">
-          <button id="btn-tab-doctor" class="comp-tab-btn active" onclick="switchCompanionTab('doctor')">
+          <button id="btn-tab-home" class="comp-tab-btn active" onclick="switchCompanionTab('home')">
             <span class="icon" style="width: 14px; height: 14px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
             </span>
-            <span>طبيب فلاتر الذكي</span>
+            <span>الرئيسية</span>
           </button>
 
           <button id="btn-tab-projects" class="comp-tab-btn" onclick="switchCompanionTab('projects')">
             <span class="icon" style="width: 14px; height: 14px;">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
             </span>
-            <span>مشاريع المحاضرات</span>
-          </button>
-
-          <button id="btn-tab-rescue" class="comp-tab-btn" onclick="switchCompanionTab('rescue')">
-            <span class="icon" style="width: 14px; height: 14px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-            </span>
-            <span>صندوق الإنقاذ السريع</span>
-          </button>
-
-          <button id="btn-tab-device" class="comp-tab-btn" onclick="switchCompanionTab('device')">
-            <span class="icon" style="width: 14px; height: 14px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            </span>
-            <span>استوديو الهاتف المتصل</span>
+            <span>مشروعي</span>
           </button>
 
           <button id="btn-tab-cheatsheet" class="comp-tab-btn" onclick="switchCompanionTab('cheatsheet')">
             <span class="icon" style="width: 14px; height: 14px;">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             </span>
-            <span>مفكرة الطالب والمختصرات</span>
+            <span>تعلّم</span>
           </button>
 
-          <button id="btn-tab-hotreload" class="comp-tab-btn" onclick="switchCompanionTab('hotreload')">
-            <span class="icon" style="width: 14px; height: 14px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            </span>
-            <span>التحديث الفوري (Hot Reload)</span>
-          </button>
+          <div class="more-wrap">
+            <button id="btn-tab-more" class="comp-tab-btn" onclick="toggleMoreMenu(event)">
+              <span class="icon" style="width: 14px; height: 14px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+              </span>
+              <span>المزيد</span>
+            </button>
+            <div id="more-menu" class="more-menu">
+              <button class="more-item" onclick="switchCompanionTab('doctor')">طبيب فلاتر الذكي</button>
+              <button class="more-item" onclick="switchCompanionTab('rescue')">صندوق الإنقاذ السريع</button>
+              <button class="more-item" onclick="switchCompanionTab('device')">استوديو الهاتف المتصل</button>
+              <button class="more-item" onclick="switchCompanionTab('hotreload')">التحديث الفوري (Hot Reload)</button>
+              <button class="more-item" onclick="switchMainView('wizard')">معالج البداية</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 0: HOME / NEXT STEP -->
+        <div id="tab-home" class="comp-tab-pane active">
+          <div class="home-card">
+            <div class="level-badge" style="margin: 0;">الخطوة التالية</div>
+            <div class="home-title" id="home-title">لنشغّل أول تطبيق على هاتفك</div>
+            <div class="home-desc" id="home-desc">
+              أربع خطوات بسيطة: نفحص اللابتوب، نجهّز فلاتر، ننشئ مشروعك، ثم نشغّله على هاتفك.
+            </div>
+            <div class="home-actions">
+              <button id="home-primary" class="btn-primary" style="padding: 12px 24px;" onclick="homePrimaryAction()">ابدأ التجهيز</button>
+              <button id="home-secondary" class="btn-secondary" style="padding: 12px 20px;" onclick="homeSecondaryAction()">عندي مشروع</button>
+            </div>
+            <div class="home-status-row">
+              <span id="home-device" class="status-chip warn">الهاتف: غير متصل</span>
+              <span id="home-project" class="status-chip">المشروع: —</span>
+            </div>
+          </div>
+          <div class="home-steps" id="home-steps">
+            <div class="home-step">
+              <div class="home-step-num">1</div>
+              <div><div class="home-step-title">جهّز البيئة</div><div class="home-step-desc">فحص اللابتوب وتنزيل Flutter.</div></div>
+            </div>
+            <div class="home-step">
+              <div class="home-step-num">2</div>
+              <div><div class="home-step-title">أنشئ مشروعك</div><div class="home-step-desc">مشروع بسيط وجاهز للتجربة.</div></div>
+            </div>
+            <div class="home-step">
+              <div class="home-step-num">3</div>
+              <div><div class="home-step-title">شغّله على الهاتف</div><div class="home-step-desc">بناء وتثبيت وفتح التطبيق.</div></div>
+            </div>
+          </div>
+          <div class="home-steps" id="home-quick" style="display: none;">
+            <button class="home-step" onclick="openVSCode()">
+              <div class="home-step-num">VS</div>
+              <div><div class="home-step-title">افتح VS Code</div><div class="home-step-desc">عدّل مشروعك وابدأ الكتابة.</div></div>
+            </button>
+            <button class="home-step" onclick="switchCompanionTab('hotreload')">
+              <div class="home-step-num">↻</div>
+              <div><div class="home-step-title">جرّب Hot Reload</div><div class="home-step-desc">غيّر نصاً وشاهد الهاتف يتحدّث.</div></div>
+            </button>
+            <button class="home-step" onclick="switchCompanionTab('cheatsheet')">
+              <div class="home-step-num">؟</div>
+              <div><div class="home-step-title">تعلّم الأساسيات</div><div class="home-step-desc">مفكرة قصيرة للمبتدئين.</div></div>
+            </button>
+          </div>
         </div>
 
         <!-- TAB 1: SMART DOCTOR -->
-        <div id="tab-doctor" class="comp-tab-pane active">
+        <div id="tab-doctor" class="comp-tab-pane">
           <!-- Readiness Overview Card -->
           <div class="doctor-overview-card">
             <div class="doctor-score-badge">
@@ -1818,6 +2067,12 @@
          VIEW 2: GAMIFIED 4-LEVEL ONBOARDING WIZARD
          ======================================================== -->
     <div id="view-wizard" class="main-view">
+      <div class="wizard-back-row">
+        <button class="btn-secondary" style="padding: 8px 16px; font-size: 12px;" onclick="switchMainView('companion')">
+          <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span>
+          <span>العودة للرئيسية</span>
+        </button>
+      </div>
       <!-- STEP 1: HARDWARE & CANDID BENCHMARK COMPARISON -->
       <section id="step-1" class="step-view active">
         <div class="level-badge">
@@ -2092,7 +2347,7 @@
           <!-- Live Gradle Build Console & Dynamic Iraqi Commentary -->
           <div class="build-console-box" id="build-console">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div style="font-size: 14px; font-weight: 800; color: var(--text);">بناء الجرادل الفعلي وتجربة التطبيق</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text);">بناء التطبيق وتجربته</div>
               <div class="build-timer-badge">
                 <span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg></span>
                 <span id="build-elapsed-timer">00:00</span>
@@ -2100,34 +2355,37 @@
             </div>
 
             <div class="build-commentary" id="build-commentary-text">
-              🚀 شغلنا محركات الجرادل... دا يتعرف على ملفات المشروع وإعدادات أندرويد.
+              🚀 نجهّز مشروعك للبناء... أول مرة قد تأخذ دقيقة.
             </div>
 
             <div class="build-steps-list">
               <div id="bstep-1" class="build-step-row active">
                 <div class="bstep-icon"><span class="icon" style="width: 8px; height: 8px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
-                <span>مزامنة ملفات Gradle ومكتبات أندرويد</span>
+                <span>تجهيز المشروع ومكتبات أندرويد</span>
               </div>
               <div id="bstep-2" class="build-step-row">
                 <div class="bstep-icon"><span class="icon" style="width: 8px; height: 8px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
-                <span>ترجمة كود Dart وبناء حزمة ARM64</span>
+                <span>بناء التطبيق</span>
               </div>
               <div id="bstep-3" class="build-step-row">
                 <div class="bstep-icon"><span class="icon" style="width: 8px; height: 8px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
-                <span>تثبيت وتشغيل التطبيق على شاشة الهاتف</span>
+                <span>تثبيت التطبيق وتشغيله على هاتفك</span>
               </div>
             </div>
 
-            <!-- Live Real Gradle Terminal Output -->
-            <div style="margin-top: 14px; background: rgba(0, 0, 0, 0.45); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px 12px; font-family: 'Consolas', 'Fira Code', monospace; font-size: 11px; text-align: left; direction: ltr;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; color: var(--text-muted); font-size: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">
-                <span style="font-weight: 700;">REAL GRADLE BUILD STREAM (STDOUT)</span>
+            <!-- Real build log, collapsed by default for beginners -->
+            <details id="build-log-details" class="build-log-details">
+              <summary>
+                <span>عرض تفاصيل البناء</span>
                 <span id="build-task-active" style="color: var(--accent); font-weight: 700;">Compiling...</span>
+              </summary>
+              <div style="margin-bottom: 6px; color: var(--text-muted); font-size: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">
+                <span style="font-weight: 700;">سجل البناء</span>
               </div>
-              <div id="build-terminal-lines" style="max-height: 125px; overflow-y: auto; color: #38bdf8; display: flex; flex-direction: column; gap: 3px; word-break: break-all;">
+              <div id="build-terminal-lines" style="max-height: 125px; overflow-y: auto; color: #38bdf8; display: flex; flex-direction: column; gap: 3px; word-break: break-all; font-family: 'Consolas', 'Fira Code', monospace; font-size: 11px; text-align: left; direction: ltr;">
                 <div style="color: #64748b;">$ flutter build apk --debug -v</div>
               </div>
-            </div>
+            </details>
           </div>
 
           <!-- Celebration Benchmark Card -->
@@ -2379,20 +2637,24 @@
     let hrSuppressInput = false;
     let hrLastContent = '';
     let hrRunning = false;
+    window.appInit = null;
 
     // Main View Switching (Wizard vs Companion)
-    function switchMainView(viewName) {
+    function switchMainView(viewName, skipRefresh) {
       activeMainView = viewName;
       document.querySelectorAll('.main-view').forEach(el => el.classList.remove('active'));
       const target = document.getElementById(`view-${viewName}`);
       if (target) target.classList.add('active');
 
-      document.getElementById('btn-nav-companion').classList.toggle('active', viewName === 'companion');
-      document.getElementById('btn-nav-wizard').classList.toggle('active', viewName === 'wizard');
+      const navCompanion = document.getElementById('btn-nav-companion');
+      const navWizard = document.getElementById('btn-nav-wizard');
+      if (navCompanion) navCompanion.classList.toggle('active', viewName === 'companion');
+      if (navWizard) navWizard.classList.toggle('active', viewName === 'wizard');
 
       if (viewName === 'companion') {
-        runSmartDoctorScan();
+        if (!skipRefresh) refreshAppInit();
         loadRecentProjectsList();
+        switchCompanionTab('home');
       } else {
         stopHotReloadPolling();
         showStep(1);
@@ -2405,15 +2667,23 @@
       document.querySelectorAll('.comp-tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.comp-tab-pane').forEach(pane => pane.classList.remove('active'));
 
-      const btn = document.getElementById(`btn-tab-${tabId}`);
+      const primaryMap = {
+        home: 'btn-tab-home',
+        projects: 'btn-tab-projects',
+        cheatsheet: 'btn-tab-cheatsheet'
+      };
+      const navBtn = document.getElementById(primaryMap[tabId] || 'btn-tab-more');
+      if (navBtn) navBtn.classList.add('active');
       const pane = document.getElementById(`tab-${tabId}`);
-      if (btn) btn.classList.add('active');
       if (pane) pane.classList.add('active');
+      closeMoreMenu();
 
       if (tabId !== 'hotreload') {
         stopHotReloadPolling();
       }
-      if (tabId === 'doctor') {
+      if (tabId === 'home') {
+        renderHome();
+      } else if (tabId === 'doctor') {
         runSmartDoctorScan();
       } else if (tabId === 'projects') {
         loadRecentProjectsList();
@@ -2422,6 +2692,96 @@
       } else if (tabId === 'hotreload') {
         refreshHotReloadStatus();
         startHotReloadPolling();
+      }
+    }
+
+    // ========================================================
+    // HOME / NEXT STEP + MORE MENU
+    // ========================================================
+    function closeMoreMenu() {
+      const menu = document.getElementById('more-menu');
+      if (menu) menu.style.display = 'none';
+    }
+
+    function toggleMoreMenu(event) {
+      if (event) event.stopPropagation();
+      const menu = document.getElementById('more-menu');
+      if (!menu) return;
+      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', event => {
+      if (!event.target.closest('.more-wrap')) closeMoreMenu();
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeMoreMenu();
+    });
+
+    function homePrimaryAction() {
+      if (window.appInit && window.appInit.has_setup) {
+        switchCompanionTab('hotreload');
+      } else {
+        switchMainView('wizard');
+        showStep(1);
+      }
+    }
+
+    function homeSecondaryAction() {
+      switchCompanionTab('projects');
+    }
+
+    function renderHome() {
+      const init = window.appInit || {};
+      const recent = init.recent_projects || [];
+      const project = recent[0] || null;
+      const items = init.doctor_report && init.doctor_report.items ? init.doctor_report.items : [];
+      const device = items.find(item => item.id === 'device_connection');
+      const connected = !!(device && device.status === 'PASS');
+      const title = document.getElementById('home-title');
+      const desc = document.getElementById('home-desc');
+      const primary = document.getElementById('home-primary');
+      const secondary = document.getElementById('home-secondary');
+      const deviceEl = document.getElementById('home-device');
+      const projectEl = document.getElementById('home-project');
+      const steps = document.getElementById('home-steps');
+      const quick = document.getElementById('home-quick');
+
+      if (deviceEl) {
+        deviceEl.className = `status-chip ${connected ? 'ok' : 'warn'}`;
+        deviceEl.innerText = connected ? 'الهاتف: متصل وجاهز' : 'الهاتف: غير متصل';
+      }
+      if (projectEl) {
+        projectEl.innerText = project ? `المشروع: ${project.name}` : 'المشروع: —';
+        projectEl.title = project ? project.path : '';
+      }
+
+      if (init.has_setup) {
+        if (title) title.innerText = 'بيئتك جاهزة — الخطوة التالية';
+        if (desc) desc.innerText = project
+          ? `مشروعك ${project.name} جاهز. جرّب تعديلاً سريعاً أو افتح مشروعك.`
+          : 'بيئتك جاهزة. أنشئ مشروعاً جديداً أو افتح مشروعك الحالي.';
+        if (primary) primary.innerText = 'جرّب Hot Reload';
+        if (secondary) secondary.innerText = 'افتح مشروعي';
+        if (steps) steps.style.display = 'none';
+        if (quick) quick.style.display = 'grid';
+      } else {
+        if (title) title.innerText = 'لنشغّل أول تطبيق على هاتفك';
+        if (desc) desc.innerText = 'أربع خطوات بسيطة: نفحص اللابتوب، نجهّز فلاتر، ننشئ مشروعك، ثم نشغّله على هاتفك.';
+        if (primary) primary.innerText = 'ابدأ التجهيز';
+        if (secondary) secondary.innerText = 'عندي مشروع';
+        if (steps) steps.style.display = 'grid';
+        if (quick) quick.style.display = 'none';
+      }
+    }
+
+    async function refreshAppInit() {
+      if (!window.pywebview || !window.pywebview.api) return;
+      try {
+        window.appInit = await window.pywebview.api.get_initial_app_state();
+        renderHome();
+      } catch (e) {
+        // Keep the existing home state.
       }
     }
 
@@ -2745,6 +3105,9 @@
         try {
           const projs = await window.pywebview.api.get_recent_projects();
           renderRecentProjects(projs);
+          if (!window.appInit) window.appInit = {};
+          window.appInit.recent_projects = projs;
+          renderHome();
         } catch (e) {
           console.error(e);
         }
@@ -3187,6 +3550,8 @@
       document.getElementById('device-guide-box').style.display = 'none';
       document.getElementById('device-ctrl-btns').style.display = 'none';
       document.getElementById('build-console').style.display = 'block';
+      const logDetails = document.getElementById('build-log-details');
+      if (logDetails) logDetails.open = false;
 
       if (window.pywebview && window.pywebview.api) {
         window.pywebview.api.start_real_gradle_build(projectPath || null);
@@ -3275,6 +3640,8 @@
         if (taskActive) taskActive.innerText = 'Build Failed';
         const reason = (res && (res.message || res.error)) || 'فشل البناء أو تثبيت التطبيق على الهاتف. راجع سجل الأخطاء أعلاه.';
         appendLiveBuildLog(`[ERROR] ${reason}`);
+        const logDetails = document.getElementById('build-log-details');
+        if (logDetails) logDetails.open = true;
         if (consoleBox) consoleBox.style.display = 'block';
         if (benchmarkCard) benchmarkCard.style.display = 'none';
         if (btnRun) btnRun.style.display = 'inline-flex';
@@ -3577,17 +3944,15 @@
       if (window.pywebview && window.pywebview.api) {
         try {
           const init = await window.pywebview.api.get_initial_app_state();
+          window.appInit = init;
           const devBtn = document.getElementById('btn-dev-modal-toggle');
           if (devBtn) devBtn.style.display = init.dev_mode ? 'inline-flex' : 'none';
           const modeSelect = document.getElementById('dev-build-mode');
           if (modeSelect && init.build_mode) modeSelect.value = init.build_mode;
-          if (init.has_setup) {
-            switchMainView('companion');
-          } else {
-            switchMainView('wizard');
-          }
+          switchMainView('companion', true);
         } catch (e) {
-          switchMainView('companion');
+          switchMainView('companion', true);
+          renderHome();
         }
       }
     });

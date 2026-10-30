@@ -184,7 +184,7 @@ def main() -> int:
                         benchmark: bench ? getComputedStyle(bench).display : 'missing',
                         timer: document.getElementById('build-elapsed-timer')?.innerText || '',
                         task: document.getElementById('build-task-active')?.innerText || '',
-                        lines: terminal ? terminal.innerText.slice(-2000) : '',
+                        lines: terminal ? terminal.textContent.slice(-2000) : '',
                         lineCount: terminal ? terminal.querySelectorAll('div').length : 0,
                         step1: document.getElementById('bstep-1')?.className || '',
                         step2: document.getElementById('bstep-2')?.className || '',
@@ -201,7 +201,7 @@ def main() -> int:
                     last_task = sample["task"]
                 report["samples"].append({"elapsed": elapsed, **sample})
                 if not mid_shot and elapsed > 12 and sample["lineCount"] > 0:
-                    shot("04_build_mid", "منتصف البناء: سجل Gradle الحقيقي")
+                    shot("04_build_mid", "منتصف البناء: شاشة مبسطة والسجل مطوي")
                     mid_shot = True
                 if sample["benchmark"] == "block" and "يعمل" in sample["head"]:
                     success = True
@@ -219,7 +219,7 @@ def main() -> int:
                 speed: document.getElementById('stat-speed')?.innerText || '',
                 size: document.getElementById('stat-size')?.innerText || '',
                 task: document.getElementById('build-task-active')?.innerText || '',
-                lines: document.getElementById('build-terminal-lines')?.innerText || '',
+                lines: document.getElementById('build-terminal-lines')?.textContent || '',
                 step3: document.getElementById('bstep-3')?.className || ''
             })""")
             report["result"] = {"elapsed": elapsed, **end}

@@ -394,14 +394,14 @@ class OnboardingApi:
             self.state["project_path"] = project_path
         win = self.window_holder.get("window")
 
-        # Humorous & empathetic progress messages based on elapsed time
+        # Short, student-facing progress messages (no Gradle/DEX jargon).
         messages = [
-            (0, "🚀 شغلنا محركات الجرادل... دا يتعرف على ملفات المشروع وإعدادات أندرويد.", 1),
-            (15, "☕ أول بناء دايماً ثقيل: الجرادل كاعد يجمع حزم SDK ومكتبات أندرويد لأول مرة بحياتك!", 2),
-            (45, "🔨 شغال على نار هادئة: المعالج دا يترجم كود Dart وكوتلن للغة الآلة الثنائية (ARM64) الخاصة بجهازك.", 2),
-            (85, "😅 حاسبتك مو خارقة بس سباعية وكاعدة تقاتل ويا الجرادل! ترا الجرادل ثقيل حتى على أقوى حواسيب العالم، شوية استراحة وميخالف.", 3),
-            (125, "⏳ مرحلة الرزم والـ DEX: كاعد يجمع ملفات الكلاسات ويوقع الـ APK النهائي... هانت!", 3),
-            (155, "⚡ اللمسات الأخيرة: كاعد يجهز ملف التثبيت المباشر بالكيبل...", 3),
+            (0, "🚀 بدأنا بناء التطبيق... أول مرة قد تأخذ دقيقة.", 1),
+            (15, "📦 نجهّز المكتبات التي يحتاجها مشروعك.", 2),
+            (45, "🔨 نبني التطبيق الآن... لا تغلق النافذة.", 2),
+            (85, "⏳ العملية تأخذ وقتاً أطول على بعض الأجهزة. نكمل.", 3),
+            (125, "📱 نجهّز ملف التطبيق للتثبيت.", 3),
+            (155, "⚡ اللمسات الأخيرة... بعدها يفتح التطبيق على هاتفك.", 3),
         ]
 
         def build_worker():
@@ -1136,12 +1136,8 @@ def apply_window_icon(window):
         pass
 
 def dev_mode_enabled():
-    """Developer tools are visible in source runs and in packaged runs launched with --dev."""
-    return (
-        not getattr(sys, "frozen", False)
-        or os.environ.get("FLUTTERWAY_DEV") == "1"
-        or "--dev" in sys.argv[1:]
-    )
+    """Developer tools are opt-in only; never visible on the student surface."""
+    return os.environ.get("FLUTTERWAY_DEV") == "1" or "--dev" in sys.argv[1:]
 
 
 def harness_enabled():
@@ -1166,6 +1162,7 @@ def main():
         width=980,
         height=740,
         min_size=(860, 640),
+        maximized=True,
         background_color="#0b0f19"
     )
     window_holder["window"] = window

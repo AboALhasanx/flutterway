@@ -54,6 +54,8 @@ def static_checks() -> None:
     assert "flutter_bat, \"create\"" in app_src, "starter project must fall back to flutter create"
     assert "function onboardingFailed" in html_src, "UI must expose a setup failure state"
     assert 'id="setup-error-box"' in html_src, "step 2 must render a setup error box"
+    assert '<details id="build-log-details"' in html_src, "the raw Gradle log must stay collapsed by default"
+    assert "logDetails.open = true" in html_src, "build failures must reveal the raw log"
 
     for source_path in (APP, COMPANION, VSCODE):
         source = source_path.read_text(encoding="utf-8")
@@ -71,7 +73,10 @@ def static_checks() -> None:
     assert "class HotReloadSession" in (ROOT / "gui" / "hot_reload.py").read_text(encoding="utf-8")
     assert "def hot_reload_start" in app_src
     assert "def hot_reload_save" in app_src
-    assert 'id="btn-tab-hotreload"' in html_src
+    assert 'id="tab-hotreload"' in html_src, "hot reload pane must stay reachable"
+    assert "switchCompanionTab('hotreload')" in html_src, "hot reload must be reachable from More"
+    assert 'id="btn-tab-home"' in html_src, "Home must be the first destination"
+    assert html_src.count('class="comp-tab-btn active"') + html_src.count('class="comp-tab-btn"') == 4, "exactly 3 primary tabs plus More"
     assert 'id="hr-editor"' in html_src
     assert "scheduleHotReload" in html_src
     assert "startHotReload" in html_src
@@ -105,6 +110,7 @@ def static_checks() -> None:
     assert "def get_dev_reset_status" in app_src
     assert "def dev_reset_action" in app_src
     assert "def dev_mode_enabled" in app_src
+    assert "maximized=True" in app_src, "the app window must open maximized by default"
     assert "executeDevAction" in html_src
     assert 'id="btn-dev-scan"' in html_src
     assert 'id="chk-dev-legacy-all"' in html_src
@@ -219,7 +225,12 @@ def python_checks() -> None:
     )
     assert not dev_reset.run("jdk").get("success"), "JDK removal must require DELETE"
     assert not dev_reset.run("not-a-real-action").get("success")
-    assert app.dev_mode_enabled() is True, "source runs must expose developer tools"
+    assert app.dev_mode_enabled() is False, "developer tools must be hidden by default"
+    os.environ["FLUTTERWAY_DEV"] = "1"
+    try:
+        assert app.dev_mode_enabled() is True, "FLUTTERWAY_DEV=1 must expose developer tools"
+    finally:
+        os.environ.pop("FLUTTERWAY_DEV", None)
 
     launch_tmp = tempfile.mkdtemp(prefix="fw_launch_")
     try:
