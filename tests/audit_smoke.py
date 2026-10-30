@@ -85,6 +85,13 @@ def static_checks() -> None:
     clean_src = CLEAN.read_text(encoding="utf-8")
     assert "--uninstall-extensions" in clean_src, "extension removal must be opt-in"
     assert '"flutter" in lower' not in clean_src, "clean slate must not delete unrelated PATH entries"
+    assert "var(--border)" not in html_src, "undefined CSS variable must not be used"
+    assert 'role="dialog"' in html_src and 'aria-modal="true"' in html_src
+    assert 'aria-label="إغلاق لوحة المطور"' in html_src
+    assert 'role="button" tabindex="0"' in html_src
+    assert "user-select: text" in html_src
+    assert ":focus-visible" in html_src
+    assert '[data-theme="dark"] .btn-primary' in html_src
     print("[static] passed")
 
 
@@ -241,6 +248,22 @@ def ui_checks() -> None:
         assert "O'Brien" in page.locator("#recent-projects-list").inner_text()
         page.locator("#recent-projects-list button").first.click()
         assert page.evaluate("activeProjPath") == r"C:\Users\O'Brien\proj"
+
+        # 2d) Keyboard, focus, text selection, and dialog semantics.
+        page.evaluate("switchMainView('wizard'); showStep(1);")
+        assert page.locator("#card-usb").get_attribute("tabindex") == "0"
+        page.locator("#card-emu").focus()
+        page.keyboard.press("Enter")
+        assert page.locator("#card-emu").get_attribute("aria-pressed") == "true"
+        assert page.locator("#card-usb").get_attribute("aria-pressed") == "false"
+        assert page.evaluate(
+            "getComputedStyle(document.getElementById('build-terminal-lines')).userSelect"
+        ) == "text"
+        page.evaluate("openDevModal()")
+        assert page.locator("#dev-modal").is_visible()
+        assert page.evaluate("document.activeElement.classList.contains('modal-close-btn')")
+        page.keyboard.press("Escape")
+        assert not page.locator("#dev-modal").is_visible()
 
         # Activate the wizard build screen for the build-state checks.
         page.evaluate("switchMainView('wizard'); showStep(3);")
