@@ -183,6 +183,7 @@ pyinstaller FlutterWayNative.spec --noconfirm
 | `python tests/hot_reload_journey.py` | Hot Reload حقيقي (يتطلب هاتف) |
 
 تفاصيل حزمة الفشل: [`docs/RELIABILITY_TESTS.md`](docs/RELIABILITY_TESTS.md)
+تقرير اختبار البيئة النظيفة: [`docs/CLEAN_SLATE_TEST.md`](docs/CLEAN_SLATE_TEST.md)
 
 ---
 
