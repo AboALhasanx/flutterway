@@ -29,6 +29,23 @@
       --danger: #ef4444;
       --danger-bg: rgba(239, 68, 68, 0.12);
       --font: 'Cairo', 'Inter', system-ui, -apple-system, sans-serif;
+      --fs-caption: 12px;
+      --fs-body: 14px;
+      --fs-section: 16px;
+      --fs-title: 18px;
+      --fs-hero: 28px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-12: 48px;
+      --radius-sm: 10px;
+      --radius-card: 16px;
+      --radius-pill: 999px;
+      --motion-fast: 150ms;
+      --motion: 200ms;
     }
 
     [data-theme="light"] {
@@ -99,6 +116,8 @@
 
     body {
       font-family: var(--font);
+      font-size: var(--fs-body);
+      line-height: 1.6;
       background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -152,7 +171,7 @@
     }
 
     .brand-sub {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
     }
 
@@ -224,7 +243,7 @@
       color: var(--danger);
       padding: 6px 14px;
       border-radius: 20px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       display: flex;
@@ -351,7 +370,7 @@
       gap: 6px;
       padding: 4px 12px;
       border-radius: 20px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 800;
       background: var(--highlight);
       color: var(--accent);
@@ -360,18 +379,20 @@
     }
 
     .hero-title {
-      font-size: 24px;
+      font-size: var(--fs-hero);
       font-weight: 900;
       color: var(--text);
+      line-height: 1.3;
       margin-bottom: 6px;
       text-align: center;
     }
 
     .hero-desc {
-      font-size: 13px;
+      font-size: var(--fs-body);
       color: var(--text-muted);
       text-align: center;
       max-width: 650px;
+      line-height: 1.7;
       margin-bottom: 20px;
       line-height: 1.6;
     }
@@ -534,7 +555,7 @@
     }
 
     .spec-lbl {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
     }
 
@@ -580,7 +601,7 @@
     }
 
     .bench-tag {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 800;
       padding: 2px 8px;
       border-radius: 12px;
@@ -589,7 +610,7 @@
     .bench-stat-row {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
     }
 
@@ -599,7 +620,7 @@
     }
 
     .bench-verdict {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       line-height: 1.4;
       padding-top: 6px;
@@ -663,13 +684,31 @@
       background: var(--highlight);
     }
 
+    .mode-card-wide {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6);
+      align-items: center;
+    }
+
+    .mode-card-wide .card-desc {
+      margin: 0;
+    }
+
+    @media (max-width: 920px) {
+      .mode-card-wide {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+      }
+    }
+
     .card-badge {
       position: absolute;
       top: 14px;
       left: 14px;
       background: var(--success);
       color: #fff;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 800;
       padding: 3px 8px;
       border-radius: 10px;
@@ -695,14 +734,14 @@
     }
 
     .card-title {
-      font-size: 15px;
+      font-size: var(--fs-title);
       font-weight: 800;
     }
 
     .card-desc {
-      font-size: 12px;
+      font-size: var(--fs-body);
       color: var(--text-muted);
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     /* STEP 2: Progress */
@@ -856,7 +895,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      font-size: 11px;
+      font-size: 12px;
     }
 
     .build-log-details {
@@ -870,7 +909,7 @@
     .build-log-details summary {
       cursor: pointer;
       color: var(--text-muted);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       padding: 4px 0;
       user-select: none;
@@ -976,9 +1015,9 @@
     }
 
     .hr-guided-desc {
-      font-size: 12px;
+      font-size: var(--fs-body);
       color: var(--text-muted);
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
     .hr-quick-row {
@@ -995,7 +1034,7 @@
     }
 
     .hr-quick-hint {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
     }
 
@@ -1023,7 +1062,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
       border: 1px dashed var(--card-border);
       border-radius: 10px;
@@ -1074,7 +1113,7 @@
       border-radius: 8px;
       padding: 10px 12px;
       font-family: 'Consolas', 'Fira Code', monospace;
-      font-size: 11px;
+      font-size: 12px;
       direction: ltr;
       text-align: left;
       white-space: pre-wrap;
@@ -1108,7 +1147,7 @@
     }
 
     .home-title {
-      font-size: 26px;
+      font-size: var(--fs-hero);
       font-weight: 800;
       color: var(--text);
       line-height: 1.35;
@@ -1139,7 +1178,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
       border: 1px solid var(--card-border);
       border-radius: 999px;
@@ -1190,7 +1229,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 800;
       flex-shrink: 0;
     }
@@ -1202,7 +1241,7 @@
     }
 
     .home-step-desc {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
       line-height: 1.5;
       margin-top: 2px;
@@ -1323,9 +1362,9 @@
     }
 
     .cheat-item-desc {
-      font-size: 11px;
+      font-size: 13px;
       color: var(--text-muted);
-      line-height: 1.4;
+      line-height: 1.6;
     }
 
     /* ========================================================
@@ -1510,7 +1549,7 @@
     }
 
     .doc-item-badge {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 800;
       padding: 2px 8px;
       border-radius: 10px;
@@ -1527,7 +1566,7 @@
     }
 
     .doc-item-detail {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
       line-height: 1.5;
     }
@@ -1541,7 +1580,7 @@
       background: var(--warning-bg);
       color: var(--warning);
       border: 1px solid var(--warning);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       padding: 4px 10px;
       border-radius: 8px;
@@ -1577,7 +1616,7 @@
       border: 1px solid var(--card-border);
       color: var(--text);
       font-family: var(--font);
-      font-size: 13px;
+      font-size: var(--fs-body);
       padding: 10px 14px;
       border-radius: 10px;
       outline: none;
@@ -1691,9 +1730,9 @@
     }
 
     .rescue-desc {
-      font-size: 11px;
+      font-size: 13px;
       color: var(--text-muted);
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     /* Device Studio Tab */
@@ -1754,10 +1793,86 @@
       border-top: 1px solid var(--card-border);
       padding: 14px;
       text-align: center;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
       background: var(--card-bg);
       margin-top: auto;
+    }
+
+    /* Responsive: keep one column and no horizontal scroll */
+    @media (max-width: 920px) {
+      main {
+        padding: var(--space-4);
+      }
+      .doctor-grid,
+      .cheat-grid,
+      .cards-grid,
+      .rescue-grid,
+      .diag-specs-grid,
+      .hr-guided {
+        grid-template-columns: 1fr !important;
+      }
+      .active-project-card {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .active-project-actions {
+        width: 100%;
+      }
+      .hero-title {
+        font-size: 24px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      header {
+        padding: 10px 14px;
+      }
+      .header-inner {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+      }
+      .brand-sub {
+        display: none;
+      }
+      .header-actions {
+        width: 100%;
+        justify-content: center;
+      }
+      .companion-subnav {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: thin;
+      }
+      .comp-tab-btn {
+        flex-shrink: 0;
+      }
+      .home-actions,
+      .form-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .home-actions button,
+      .form-row button {
+        width: 100%;
+        justify-content: center;
+      }
+      .home-card,
+      .project-creator-card {
+        padding: var(--space-4);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
     }
   </style>
 </head>
@@ -1940,9 +2055,9 @@
           <!-- Active Project Card -->
           <div class="active-project-card" id="active-project-card">
             <div>
-              <div style="font-size: 11px; color: var(--accent); font-weight: 800; margin-bottom: 2px;">المشروع النشط</div>
+              <div style="font-size: 12px; color: var(--accent); font-weight: 800; margin-bottom: 2px;">المشروع النشط</div>
               <div style="font-size: 16px; font-weight: 800; color: var(--text);" id="active-proj-name">—</div>
-              <div style="font-size: 11px; color: var(--text-muted);" id="active-proj-path">اختر مشروعاً من القائمة تحت</div>
+              <div style="font-size: 12px; color: var(--text-muted);" id="active-proj-path">اختر مشروعاً من القائمة تحت</div>
             </div>
 
             <div class="active-project-actions">
@@ -2214,13 +2329,13 @@
             </div>
 
             <div class="hr-toolbar">
-              <span style="font-size: 11px; color: var(--text-muted);">المشروع: <b id="hr-project" style="color: var(--text);">—</b></span>
+              <span style="font-size: 12px; color: var(--text-muted);">المشروع: <b id="hr-project" style="color: var(--text);">—</b></span>
               <button id="btn-hr-start" class="btn-primary" style="padding: 8px 16px; font-size: 12px;" onclick="startHotReload()">بدء الجلسة</button>
               <button id="btn-hr-stop" class="btn-secondary" style="font-size: 12px; color: var(--danger);" onclick="hotReloadAction('stop')">إيقاف</button>
-              <label style="font-size: 11px; color: var(--text-muted); display: flex; gap: 6px; align-items: center;">
+              <label style="font-size: 12px; color: var(--text-muted); display: flex; gap: 6px; align-items: center;">
                 <input type="checkbox" id="hr-auto" checked> تحديث تلقائي عند الكتابة
               </label>
-              <span id="hr-last-reload" style="font-size: 11px; color: var(--text-muted);">آخر تحديث: —</span>
+              <span id="hr-last-reload" style="font-size: 12px; color: var(--text-muted);">آخر تحديث: —</span>
             </div>
 
             <div class="hr-guided">
@@ -2239,10 +2354,10 @@
                 <div id="hr-quick-hint" class="hr-quick-hint">ابدأ الجلسة أولاً، بعدها عدّل النص.</div>
               </div>
               <div class="hr-preview-col">
-                <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">شاشة الهاتف</div>
+                <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">شاشة الهاتف</div>
                 <img id="hr-preview" class="hr-preview" alt="معاينة الهاتف" style="display: none;" />
                 <div id="hr-preview-empty" class="hr-preview-empty">تظهر شاشة الهاتف بعد بدء الجلسة.</div>
-                <button id="btn-hr-preview" class="btn-secondary" style="font-size: 11px; padding: 5px 10px;" onclick="refreshHotReloadPreview()">تحديث المعاينة</button>
+                <button id="btn-hr-preview" class="btn-secondary" style="font-size: 12px; padding: 5px 10px;" onclick="refreshHotReloadPreview()">تحديث المعاينة</button>
               </div>
             </div>
 
@@ -2294,7 +2409,7 @@
             </div>
             <div>
               <div style="font-size: 13px; font-weight: 800; color: var(--text);">فحص سريع للابتوب</div>
-              <div style="font-size: 11px; color: var(--text-muted);">نتأكد من الرام والمساحة ودعم المحاكاة.</div>
+              <div style="font-size: 12px; color: var(--text-muted);">نتأكد من الرام والمساحة ودعم المحاكاة.</div>
             </div>
           </div>
           <button id="btn-check-laptop" class="btn-check" onclick="checkLaptopSpecs()">
@@ -2336,7 +2451,7 @@
 
         <div class="cards-grid" style="grid-template-columns: 1fr;">
           <!-- USB Mode Card -->
-          <div id="card-usb" class="mode-card selected" role="button" tabindex="0" aria-pressed="true" onclick="selectChoice('usb')">
+          <div id="card-usb" class="mode-card mode-card-wide selected" role="button" tabindex="0" aria-pressed="true" onclick="selectChoice('usb')">
             <div class="card-icon-title">
               <div class="card-icon">
                 <span class="icon" style="width: 20px; height: 20px;">
@@ -2345,7 +2460,7 @@
               </div>
               <div>
                 <div class="card-title">هاتف أندرويد عبر كيبل USB</div>
-                <div style="font-size: 11px; color: var(--success); font-weight: 700;">كل اللي تحتاجه: هاتف وكيبل شحن</div>
+                <div style="font-size: 12px; color: var(--success); font-weight: 700;">كل اللي تحتاجه: هاتف وكيبل شحن</div>
               </div>
             </div>
             <div class="card-desc">
@@ -2367,7 +2482,7 @@
                 </div>
                 <div>
                   <div class="card-title">محاكي افتراضي على اللابتوب</div>
-                  <div style="font-size: 11px; color: var(--warning); font-weight: 700;">يتطلب رام كافية وتفعيل المحاكاة في BIOS</div>
+                  <div style="font-size: 12px; color: var(--warning); font-weight: 700;">يتطلب رام كافية وتفعيل المحاكاة في BIOS</div>
                 </div>
               </div>
               <div class="card-desc">
@@ -2428,7 +2543,7 @@
             </div>
           </div>
 
-          <div style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px;" id="tips-banner">
+          <div style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 10px;" id="tips-banner">
             💡 لن تحتاج فتح موجه الأوامر أو تعديل PATH يدوياً.
           </div>
 
@@ -2471,7 +2586,7 @@
               <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
               <span>تم رصد هاتف أندرويد لكن ينقصه تعريف USB (Driver)!</span>
             </div>
-            <div style="font-size: 11px; color: var(--text); line-height: 1.5; margin-bottom: 8px;">
+            <div style="font-size: 12px; color: var(--text); line-height: 1.5; margin-bottom: 8px;">
               لابتوبك لم يتعرف على واجهة الهاتف بعد. وفرنا لك حزمة تعريفات Google الرسمية الشاملة لجميع أجهزة أندرويد لتثبيتها بنقرة واحدة فوراً:
             </div>
             <button id="btn-install-drivers" class="btn-warning" onclick="installDrivers()">
@@ -2482,15 +2597,15 @@
           <!-- Universal Debugging Guide (collapsed by default) -->
           <details id="device-guide-box" class="advanced-options" style="margin-bottom: 0;">
             <summary>كيف أفعّل تصحيح USB؟</summary>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.6; margin: 10px 0;">
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6; margin: 10px 0;">
               1. ادخل إلى <strong>الإعدادات (Settings)</strong> ثم <strong>حول الهاتف (About Phone)</strong>.<br>
               2. اضغط على <strong>رقم الإصدار (Build Number)</strong> سبع (7) مرات متتالية حتى تظهر عبارة "أنت مطور الآن!".<br>
               3. ارجع للإعدادات وادخل إلى <strong>خيارات المطور (Developer Options)</strong> وفعّل <strong>تصحيح USB (USB Debugging)</strong>.
             </div>
 
             <div style="display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 8px 12px;">
-              <span style="font-size: 11px; color: var(--accent); font-weight: 700;">طريقة جهازك محددة باليوتيوب:</span>
-              <button class="btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="copyYoutubeSearch()">
+              <span style="font-size: 12px; color: var(--accent); font-weight: 700;">طريقة جهازك محددة باليوتيوب:</span>
+              <button class="btn-secondary" style="padding: 4px 10px; font-size: 12px;" onclick="copyYoutubeSearch()">
                 <span>نسخ نص البحث لليوتيوب</span>
               </button>
             </div>
@@ -2531,10 +2646,10 @@
                 <span>عرض تفاصيل البناء</span>
                 <span id="build-task-active" style="color: var(--accent); font-weight: 700;">Compiling...</span>
               </summary>
-              <div style="margin-bottom: 6px; color: var(--text-muted); font-size: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">
+              <div style="margin-bottom: 6px; color: var(--text-muted); font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">
                 <span style="font-weight: 700;">سجل البناء</span>
               </div>
-              <div id="build-terminal-lines" style="max-height: 125px; overflow-y: auto; color: #38bdf8; display: flex; flex-direction: column; gap: 3px; word-break: break-all; font-family: 'Consolas', 'Fira Code', monospace; font-size: 11px; text-align: left; direction: ltr;">
+              <div id="build-terminal-lines" style="max-height: 125px; overflow-y: auto; color: #38bdf8; display: flex; flex-direction: column; gap: 3px; word-break: break-all; font-family: 'Consolas', 'Fira Code', monospace; font-size: 12px; text-align: left; direction: ltr;">
                 <div style="color: #64748b;">$ flutter build apk --debug -v</div>
               </div>
             </details>
@@ -2579,7 +2694,7 @@
           </div>
         </div>
 
-        <button id="btn-skip-to-vscode" class="btn-secondary" style="border: none; font-size: 11px;" onclick="showStep(4)">
+        <button id="btn-skip-to-vscode" class="btn-secondary" style="border: none; font-size: 12px;" onclick="showStep(4)">
           <span>تخطي هذه الخطوة والذهاب مباشرة لـ VS Code</span>
           <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
         </button>
@@ -2679,94 +2794,94 @@
 
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
           <button id="btn-dev-scan" class="btn-secondary" style="font-size: 12px; padding: 6px 14px;" onclick="refreshDevResetStatus()">فحص ما يمكن حذفه</button>
-          <label style="font-size: 11px; color: var(--text-muted); display: flex; gap: 6px; align-items: center;">
+          <label style="font-size: 12px; color: var(--text-muted); display: flex; gap: 6px; align-items: center;">
             وضع بناء تطبيق الاختبار:
-            <select id="dev-build-mode" onchange="setDevBuildMode(this.value)" style="font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--card-border); background: var(--bg); color: var(--text);">
+            <select id="dev-build-mode" onchange="setDevBuildMode(this.value)" style="font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--card-border); background: var(--bg); color: var(--text);">
               <option value="release">release (الأصغر)</option>
               <option value="profile">profile</option>
               <option value="debug">debug (Hot Reload — يُجرّد تلقائياً)</option>
             </select>
           </label>
-          <span id="dev-status-summary" style="font-size: 11px; color: var(--text-muted);">اضغط الفحص لمعاينة الملفات قبل الحذف</span>
+          <span id="dev-status-summary" style="font-size: 12px; color: var(--text-muted);">اضغط الفحص لمعاينة الملفات قبل الحذف</span>
         </div>
-        <div id="dev-status-box" style="display: none; background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 11px; line-height: 1.6;"></div>
+        <div id="dev-status-box" style="display: none; background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 12px; line-height: 1.6;"></div>
 
-        <div style="font-size: 11px; color: var(--warning); line-height: 1.6; margin-bottom: 12px;">
+        <div style="font-size: 12px; color: var(--warning); line-height: 1.6; margin-bottom: 12px;">
           ⚠️ هذه الأدوات للمطور فقط. الحذف نهائي. مسارات C:\flutter و C:\Android و C:\g لا تُحذف إلا بعد كتابة DELETE.
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
           <div class="dev-action-box">
             <div style="font-size: 12px; font-weight: 800; color: var(--text);">1. واجهة الطالب فقط</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">ترجع الواجهة للمستوى 1 وتصفّر التقدم والأخطاء بدون لمس أي ملف.</div>
-            <button id="btn-dev-ui-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('ui')">إعادة الواجهة</button>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">ترجع الواجهة للمستوى 1 وتصفّر التقدم والأخطاء بدون لمس أي ملف.</div>
+            <button id="btn-dev-ui-reset" class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="executeDevAction('ui')">إعادة الواجهة</button>
           </div>
 
           <div class="dev-action-box">
             <div style="font-size: 12px; font-weight: 800; color: var(--text);">2. مشاريع الاختبار</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف my_first_app ومشاريع المحاضرات وسجل المشاريع الحديثة.</div>
-            <button id="btn-dev-projects-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('projects')">حذف المشاريع</button>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف my_first_app ومشاريع المحاضرات وسجل المشاريع الحديثة.</div>
+            <button id="btn-dev-projects-reset" class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="executeDevAction('projects')">حذف المشاريع</button>
           </div>
 
           <div class="dev-action-box">
             <div style="font-size: 12px; font-weight: 800; color: var(--text);">3. تحميلات FlutterWay</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف Flutter/JDK/Android SDK/Gradle الموجودين تحت LOCALAPPDATA فقط.</div>
-            <button id="btn-dev-downloads-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('downloads')">حذف التحميلات</button>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف Flutter/JDK/Android SDK/Gradle الموجودين تحت LOCALAPPDATA فقط.</div>
+            <button id="btn-dev-downloads-reset" class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="executeDevAction('downloads')">حذف التحميلات</button>
           </div>
 
           <div class="dev-action-box" style="border-color: var(--danger);">
             <div style="font-size: 12px; font-weight: 800; color: var(--danger);">4. التحميلات القديمة</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف C:\flutter و C:\Android و C:\g أيضاً. يتطلب تأكيد DELETE.</div>
-            <button id="btn-dev-downloads-all" class="btn-primary" style="background: var(--danger); font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('downloads_all')">حذف الكل</button>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف C:\flutter و C:\Android و C:\g أيضاً. يتطلب تأكيد DELETE.</div>
+            <button id="btn-dev-downloads-all" class="btn-primary" style="background: var(--danger); font-size: 12px; padding: 5px 12px;" onclick="executeDevAction('downloads_all')">حذف الكل</button>
           </div>
 
           <div class="dev-action-box">
             <div style="font-size: 12px; font-weight: 800; color: var(--text);">5. PATH والبيئة</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يزيل مسارات Flutter/JDK/SDK ومتغيرات JAVA_HOME وANDROID_HOME مع نسخة احتياطية.</div>
-            <button id="btn-dev-env-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('environment')">إزالة إعدادات البيئة</button>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يزيل مسارات Flutter/JDK/SDK ومتغيرات JAVA_HOME وANDROID_HOME مع نسخة احتياطية.</div>
+            <button id="btn-dev-env-reset" class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="executeDevAction('environment')">إزالة إعدادات البيئة</button>
           </div>
 
           <div class="dev-action-box">
             <div style="font-size: 12px; font-weight: 800; color: var(--text);">6. إعدادات VS Code</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يزيل مفاتيح dart.* فقط. يمكنك أيضاً حذف إضافتي Flutter/Dart لإعادة اختبار تثبيتهما.</div>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يزيل مفاتيح dart.* فقط. يمكنك أيضاً حذف إضافتي Flutter/Dart لإعادة اختبار تثبيتهما.</div>
             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <button id="btn-dev-vscode-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('vscode')">إزالة الإعدادات</button>
-              <button id="btn-dev-vscode-ext-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('vscode_extensions')">حذف الإضافات</button>
+              <button id="btn-dev-vscode-reset" class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="executeDevAction('vscode')">إزالة الإعدادات</button>
+              <button id="btn-dev-vscode-ext-reset" class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="executeDevAction('vscode_extensions')">حذف الإضافات</button>
             </div>
           </div>
 
           <div class="dev-action-box">
             <div style="font-size: 12px; font-weight: 800; color: var(--text);">7. تطبيقات الهاتف</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يلغي تثبيت com.example.flutter_test_app وcom.university.flutterway.* من الأجهزة المتصلة.</div>
-            <button id="btn-dev-device-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('device')">إلغاء تثبيت التطبيقات</button>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يلغي تثبيت com.example.flutter_test_app وcom.university.flutterway.* من الأجهزة المتصلة.</div>
+            <button id="btn-dev-device-reset" class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="executeDevAction('device')">إلغاء تثبيت التطبيقات</button>
           </div>
 
           <div class="dev-action-box">
             <div style="font-size: 12px; font-weight: 800; color: var(--text);">8. كاش البناء</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف build و.dart_tool من المشاريع فقط، لإعادة تجربة زمن البناء.</div>
-            <button id="btn-dev-build-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('build')">حذف كاش البناء</button>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف build و.dart_tool من المشاريع فقط، لإعادة تجربة زمن البناء.</div>
+            <button id="btn-dev-build-reset" class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="executeDevAction('build')">حذف كاش البناء</button>
           </div>
 
           <div class="dev-action-box" style="border-color: var(--danger);">
             <div style="font-size: 12px; font-weight: 800; color: var(--danger);">9. JDK النظامي</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف Eclipse Adoptium JDK 21 من Program Files عبر winget لاختبار تنزيله من جديد. يتطلب DELETE.</div>
-            <button id="btn-dev-jdk-reset" class="btn-primary" style="background: var(--danger); font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('jdk')">حذف JDK</button>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف Eclipse Adoptium JDK 21 من Program Files عبر winget لاختبار تنزيله من جديد. يتطلب DELETE.</div>
+            <button id="btn-dev-jdk-reset" class="btn-primary" style="background: var(--danger); font-size: 12px; padding: 5px 12px;" onclick="executeDevAction('jdk')">حذف JDK</button>
           </div>
 
           <div class="dev-action-box" style="grid-column: 1 / -1; border-color: var(--danger); background: rgba(239, 68, 68, 0.04);">
             <div style="font-size: 12px; font-weight: 800; color: var(--danger);">10. مسح شامل (كل ما سبق)</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">الهاتف + المشاريع + PATH + VS Code + التحميلات. عند تفعيل الخيار: مسارات C:\flutter و C:\Android و C:\g، وإضافات VS Code، وJDK أيضاً.</div>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">الهاتف + المشاريع + PATH + VS Code + التحميلات. عند تفعيل الخيار: مسارات C:\flutter و C:\Android و C:\g، وإضافات VS Code، وJDK أيضاً.</div>
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-              <label style="font-size: 11px; color: var(--danger); display: flex; gap: 6px; align-items: center;">
+              <label style="font-size: 12px; color: var(--danger); display: flex; gap: 6px; align-items: center;">
                 <input type="checkbox" id="chk-dev-legacy-all"> احذف المسارات القديمة أيضاً
               </label>
-              <button id="btn-dev-all-reset" class="btn-primary" style="background: var(--danger); font-size: 11px; padding: 6px 14px;" onclick="executeDevAction('all')">مسح شامل</button>
+              <button id="btn-dev-all-reset" class="btn-primary" style="background: var(--danger); font-size: 12px; padding: 6px 14px;" onclick="executeDevAction('all')">مسح شامل</button>
             </div>
           </div>
         </div>
 
         <!-- Dev Execution Console -->
-        <div id="dev-console-box" style="display: none; background: #000; border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; max-height: 140px; overflow-y: auto; direction: ltr; text-align: left; font-family: monospace; font-size: 11px; color: #10b981;">
+        <div id="dev-console-box" style="display: none; background: #000; border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; max-height: 140px; overflow-y: auto; direction: ltr; text-align: left; font-family: monospace; font-size: 12px; color: #10b981;">
           <div id="dev-console-lines"></div>
         </div>
       </div>
@@ -3409,7 +3524,7 @@
       const container = document.getElementById('recent-projects-list');
       container.innerHTML = '';
       if (recentProjectsAll.length === 0) {
-        container.innerHTML = '<div style="font-size: 11px; color: var(--text-muted);">لم يتم إنشاء مشاريع حديثة بعد.</div>';
+        container.innerHTML = '<div style="font-size: 12px; color: var(--text-muted);">لم يتم إنشاء مشاريع حديثة بعد.</div>';
         return;
       }
 
@@ -3423,7 +3538,7 @@
         nameEl.style.cssText = 'font-size: 13px; font-weight: 800; color: var(--text);';
         nameEl.textContent = p.name;
         const pathEl = document.createElement('div');
-        pathEl.style.cssText = 'font-size: 10px; color: var(--text-muted);';
+        pathEl.style.cssText = 'font-size: 12px; color: var(--text-muted);';
         pathEl.textContent = p.path;
         info.appendChild(nameEl);
         info.appendChild(pathEl);
@@ -3439,7 +3554,7 @@
         } else {
           const button = document.createElement('button');
           button.className = 'btn-secondary';
-          button.style.cssText = 'padding: 4px 10px; font-size: 11px;';
+          button.style.cssText = 'padding: 4px 10px; font-size: 12px;';
           const label = document.createElement('span');
           label.textContent = 'تحديد كنشط';
           button.appendChild(label);
@@ -3455,7 +3570,7 @@
       if (recentProjectsAll.length > 4) {
         const toggle = document.createElement('button');
         toggle.className = 'btn-secondary';
-        toggle.style.cssText = 'align-self: flex-start; padding: 5px 12px; font-size: 11px;';
+        toggle.style.cssText = 'align-self: flex-start; padding: 5px 12px; font-size: 12px;';
         toggle.textContent = recentShowAll
           ? 'عرض أقل'
           : `عرض كل المشاريع (${recentProjectsAll.length})`;
@@ -4101,18 +4216,18 @@
           const meta = document.createElement('span');
           const size = target.size_mb != null ? `${target.size_mb} MB` : (target.exists ? 'موجود' : 'غير موجود');
           meta.textContent = `${size} — ${target.path}`;
-          meta.style.cssText = 'color:var(--text-muted); font-size:10px; direction:ltr; text-align:left;';
+          meta.style.cssText = 'color:var(--text-muted); font-size:12px; direction:ltr; text-align:left;';
           row.appendChild(label);
           row.appendChild(meta);
           box.appendChild(row);
         });
         const envRow = document.createElement('div');
-        envRow.style.cssText = 'padding-top:6px; color:var(--text-muted); font-size:10px;';
+        envRow.style.cssText = 'padding-top:6px; color:var(--text-muted); font-size:12px;';
         const envKeys = Object.keys(status.env?.variables || {});
         envRow.textContent = `متغيرات البيئة: ${envKeys.length ? envKeys.join(', ') : 'لا شيء'} | VS Code keys: ${(status.vscode?.keys || []).length} | إضافات Flutter/Dart: ${(status.vscode?.extensions || []).length}`;
         box.appendChild(envRow);
         const deviceRow = document.createElement('div');
-        deviceRow.style.cssText = 'padding-top:4px; color:var(--warning); font-size:10px;';
+        deviceRow.style.cssText = 'padding-top:4px; color:var(--warning); font-size:12px;';
         deviceRow.textContent = `تطبيقات تجريبية على الهاتف: ${(status.device_packages || []).length}`;
         box.appendChild(deviceRow);
         if (summary) summary.textContent = `${existing} مسار موجود — راجع القائمة قبل الحذف`;

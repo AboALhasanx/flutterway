@@ -83,6 +83,12 @@ def static_checks() -> None:
     assert 'id="doctor-all-details"' in html_src, "full doctor checks must stay available in details"
     assert 'id="doctor-ok-note"' in html_src, "doctor must confirm when everything is healthy"
     assert 'id="btn-proj-hotreload"' in html_src, "active project must link to hot reload"
+    assert "font-size: 10px" not in html_src and "font-size:10px" not in html_src, "no body text below 12px"
+    assert "font-size: 11px" not in html_src and "font-size:11px" not in html_src, "no body text below 12px"
+    assert "prefers-reduced-motion" in html_src, "motion must respect reduced-motion"
+    assert "--fs-body: 14px" in html_src, "body text must use the 14px token"
+    assert "@media (max-width: 920px)" in html_src, "tablet layout must collapse to one column"
+    assert "@media (max-width: 760px)" in html_src, "compact layout must be defined"
     assert 'id="btn-tab-home"' in html_src, "Home must be the first destination"
     assert html_src.count('class="comp-tab-btn active"') + html_src.count('class="comp-tab-btn"') == 4, "exactly 3 primary tabs plus More"
     assert 'id="hr-editor"' in html_src

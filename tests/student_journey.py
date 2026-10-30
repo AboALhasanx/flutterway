@@ -226,6 +226,30 @@ def main() -> int:
             report["metrics"]["home_title"] = home_title
             if not home_title.strip():
                 finding("high", "Home", "الرئيسية لا تعرض خطوة تالية.")
+
+            # 7a. Compact window: no horizontal scroll on Home or Step 1.
+            page.set_viewport_size({"width": 860, "height": 640})
+            page.wait_for_timeout(350)
+            compact_home = page.evaluate("""() => ({
+                scrollWidth: document.documentElement.scrollWidth,
+                clientWidth: document.documentElement.clientWidth
+            })""")
+            shot("07e_home_compact", "الرئيسية على نافذة 860×640")
+            if compact_home["scrollWidth"] > compact_home["clientWidth"] + 1:
+                finding("high", "Responsive", f"الرئيسية فيها Scroll أفقي على 860px ({compact_home['scrollWidth']}>{compact_home['clientWidth']}).")
+            page.evaluate("switchMainView('wizard'); showStep(1);")
+            page.wait_for_timeout(300)
+            compact_step1 = page.evaluate("""() => ({
+                scrollWidth: document.documentElement.scrollWidth,
+                clientWidth: document.documentElement.clientWidth
+            })""")
+            shot("07f_step1_compact", "خطوة 1 على نافذة 860×640")
+            if compact_step1["scrollWidth"] > compact_step1["clientWidth"] + 1:
+                finding("high", "Responsive", f"خطوة 1 فيها Scroll أفقي على 860px ({compact_step1['scrollWidth']}>{compact_step1['clientWidth']}).")
+            report["metrics"]["compact"] = {"home": compact_home, "step1": compact_step1}
+            page.set_viewport_size({"width": 1536, "height": 842})
+            page.evaluate("switchMainView('companion'); switchCompanionTab('home')")
+            page.wait_for_timeout(500)
             page.click("#btn-tab-more")
             page.wait_for_timeout(250)
             shot("07c_more_menu", "المزيد: الأدوات الثانوية في قائمة واحدة")

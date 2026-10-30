@@ -1,7 +1,7 @@
 # خطة تحسين UI/UX — FlutterWay
 > **النطاق:** الواجهة وتجربة المبتدئ فقط. **الهوية/اللوغو خارج النطاق حالياً** (بناءً على طلبك).
-> **الحالة:** Phase 0 + Phase 1 + Phase 2 + Phase 3 منفّذة ومختبرة. Phase 4–6 متبقية جزئياً.
-> **آخر تحديث:** 2026-10-30 — بعد دفعة Phase 3 (Doctor/Projects/Hot Reload).
+> **الحالة:** Phase 0–4 منفّذة ومختبرة. Phase 5–6 متبقية جزئياً.
+> **آخر تحديث:** 2026-10-30 — بعد المرور البصري Phase 4 (توكنز/خطوط/تجاوب).
 
 ---
 
@@ -13,8 +13,8 @@
 | Phase 1 — IA + الرئيسية | ✅ | 3 مناطق + المزيد؛ الرئيسية كخطوة تالية؛ Dev مخفي خارج `--dev`؛ نافذة Maximize. |
 | Phase 2 — Wizard + Build | ✅ | خطوة 1 مسار واحد (USB) والمحاكي متقدم؛ تقدّم حقيقي؛ شاشة بناء 3 مراحل وسجل مطوي؛ دليل USB مطوي. |
 | Phase 3 — Doctor/Projects/Hot Reload | ✅ | Doctor: ملخص + المشاكل فقط وكل الفحوصات مطوية؛ Projects: مشروع نشط أولاً و3 إجراءات؛ Hot Reload: "غيّر هذا النص" + معاينة والمحرر مطوي. |
-| Phase 4 — Visual system | ◐ | حذف الأرقام التسويقية وتوحيد النصوص؛ Tokens/البطاقات تحتاج مروراً كاملاً. |
-| Phase 5 — States/Responsive/A11y | ◐ | A11y أساسي واختبارات؛ تحتاج تدقيقاً كاملاً. |
+| Phase 4 — Visual system | ✅ | توكنز للخط/المسافة/الحركة؛ لا نص تحت 12px؛ body 14px وhero 28px؛ بطاقة USB بعمودين؛ responsive 920/760؛ احترام reduced-motion. |
+| Phase 5 — States/Responsive/A11y | ◐ | التجاوب 860/760 منفّذ ومختبر بلا Scroll أفقي؛ حالات loading/empty/error تحتاج توحيداً. |
 | Phase 6 — User testing | ◐ | اختبارات آلية (Playwright + جهاز حقيقي)؛ لا اختبار 5 طلاب بعد. |
 
 **الأدلة الحالية:** `audit_smoke.py`، `student_journey.py` (19 شاشة، 0 ملاحظات)، `custom_project_journey.py` (بناء وتثبيت 71MB)، `hot_reload_journey.py` (تعديل سريع حقيقي، 1.37s، تغيّر شاشة الهاتف).
