@@ -6,6 +6,8 @@ import socket
 import threading
 import subprocess
 import shutil
+import zipfile
+import urllib.request
 import webview
 import winreg
 
@@ -92,21 +94,123 @@ def find_adb():
 def find_jdk():
     return paths.jdk_home()
 
-def ensure_jdk():
-    """Locates or silently installs JDK 21, sets JAVA_HOME and GRADLE_USER_HOME, and registers in PATH."""
+JDK_PORTABLE_URL = "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jdk/hotspot/normal/eclipse?project=jdk"
+JDK_MIN_ZIP_BYTES = 100 * 1024 * 1024
+
+
+def _jdk_report(progress, message):
+    try:
+        if progress:
+            progress(message)
+        else:
+            print(message)
+    except Exception:
+        pass
+
+
+def _install_portable_jdk(progress=None):
+    """Download and extract a user-scoped Temurin JDK, no UAC required."""
+    target = os.path.join(paths.data_dir(), "jdk-21")
+    java_exe = os.path.join(target, "bin", "java.exe")
+    if os.path.exists(java_exe):
+        return target
+
+    cache = os.path.join(paths.data_dir(), "cache")
+    os.makedirs(cache, exist_ok=True)
+    zip_path = os.path.join(cache, "temurin21.zip")
+    if not os.path.exists(zip_path) or os.path.getsize(zip_path) < JDK_MIN_ZIP_BYTES:
+        _jdk_report(progress, "ننزّل Java 21 المحمول (بدون صلاحيات مدير)...")
+        part_path = zip_path + ".part"
+        try:
+            request = urllib.request.Request(JDK_PORTABLE_URL, headers={"User-Agent": "FlutterWay/1.0"})
+            with urllib.request.urlopen(request, timeout=60) as response, open(part_path, "wb") as output:
+                total = int(response.headers.get("Content-Length") or 0)
+                downloaded = 0
+                last_tenth = -1
+                while True:
+                    chunk = response.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    output.write(chunk)
+                    downloaded += len(chunk)
+                    if total:
+                        percent = int(downloaded * 100 / total)
+                        if percent // 10 != last_tenth:
+                            last_tenth = percent // 10
+                            _jdk_report(progress, f"ننزّل Java 21 المحمول... {percent}%")
+            if os.path.getsize(part_path) < JDK_MIN_ZIP_BYTES:
+                raise RuntimeError("ملف Java الذي نُزّل غير مكتمل")
+            os.replace(part_path, zip_path)
+        except Exception as exc:
+            try:
+                if os.path.exists(part_path):
+                    os.remove(part_path)
+            except Exception:
+                pass
+            print("Portable JDK download error:", exc)
+            return None
+
+    _jdk_report(progress, "نفكّ ضغط Java 21...")
+    extract_dir = os.path.join(cache, "jdk_extract")
+    try:
+        if os.path.isdir(extract_dir):
+            shutil.rmtree(extract_dir, ignore_errors=True)
+        with zipfile.ZipFile(zip_path, "r") as archive:
+            archive.extractall(extract_dir)
+        found = None
+        for root, _dirs, files in os.walk(extract_dir):
+            if "java.exe" in files and os.path.basename(root).lower() == "bin":
+                found = os.path.dirname(root)
+                break
+        if not found:
+            raise RuntimeError("لم نجد java.exe داخل حزمة Java")
+        if os.path.isdir(target):
+            shutil.rmtree(target, ignore_errors=True)
+        shutil.move(found, target)
+        shutil.rmtree(extract_dir, ignore_errors=True)
+        if not os.path.exists(java_exe):
+            raise RuntimeError("تركيب Java المحمول لم يكتمل")
+        return target
+    except Exception as exc:
+        print("Portable JDK extract error:", exc)
+        try:
+            if os.path.exists(zip_path):
+                os.remove(zip_path)
+        except Exception:
+            pass
+        return None
+
+
+def _is_admin():
+    try:
+        import ctypes
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())
+    except Exception:
+        return False
+
+
+def ensure_jdk(progress=None):
+    """Locates or installs JDK 21 (portable first), then configures JAVA_HOME/PATH."""
     jdk = find_jdk()
     if not jdk:
+        _jdk_report(progress, "نجهّز Java 21 بدون صلاحيات مدير...")
+        jdk = _install_portable_jdk(progress)
+
+    if not jdk and _is_admin():
+        _jdk_report(progress, "ننزّل Java 21 عبر winget كخطة بديلة...")
         try:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             startupinfo.wShowWindow = 0
             subprocess.run(
                 ["winget", "install", "EclipseAdoptium.Temurin.21.JDK", "--silent", "--accept-source-agreements", "--accept-package-agreements", "-h"],
-                capture_output=True, startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW, timeout=120
+                capture_output=True, startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW, timeout=180
             )
             jdk = find_jdk()
         except Exception as e:
             print("Winget JDK install fallback error:", e)
+    elif not jdk:
+        print("JDK portable install failed; winget needs admin and was skipped.")
 
     if jdk:
         gradle_home = paths.gradle_user_home()
@@ -727,9 +831,9 @@ class OnboardingApi:
 
                 # Stage 2: Java (JDK 21) & Gradle Toolchain (18% - 42%) -> Checklist Item 2
                 self._update_ui(win, 24, "نثبّت Java وأدوات بناء أندرويد...", 2)
-                jdk_path = ensure_jdk()
+                jdk_path = ensure_jdk(progress=lambda message: self._update_ui(win, 24, message, 2))
                 if not jdk_path:
-                    fail("تعذر تثبيت JDK 21. تأكد من اتصال الإنترنت أو ثبّت Microsoft OpenJDK 21 يدوياً ثم أعد المحاولة.", 24)
+                    fail("تعذر تجهيز Java 21. تأكد من اتصال الإنترنت ثم أعد المحاولة.", 24)
                     return
                 self._update_ui(win, 40, "تم تثبيت Java وأدوات أندرويد بنجاح", 2)
                 time.sleep(0.4)
@@ -820,8 +924,15 @@ class OnboardingApi:
                 # Stage 5: Starter Project Setup on Desktop (90% - 100%) -> Checklist Item 4
                 self._update_ui(win, 94, "نجهّز أول مشروع Flutter على سطح المكتب...", 4)
                 project_path = paths.default_project_path()
-                if not self._ensure_starter_project(project_path):
-                    fail("تم تثبيت Flutter لكن تعذر إنشاء مشروع البداية. راجع سجل الأخطاء ثم أعد المحاولة.", 92)
+                if not self._ensure_starter_project(
+                    project_path,
+                    progress=lambda message: self._update_ui(win, 94, message, 4),
+                ):
+                    detail = (self.state.get("starter_project_error") or "").strip()
+                    message = "تعذر إنشاء مشروع البداية."
+                    if detail:
+                        message += "\n" + detail[-700:]
+                    fail(message, 94)
                     return
 
                 time.sleep(0.4)
@@ -854,8 +965,9 @@ class OnboardingApi:
             return {"success": False, "error": self.state["setup_error"]}
         return {"success": True}
 
-    def _ensure_starter_project(self, project_path):
+    def _ensure_starter_project(self, project_path, progress=None):
         """Ensure a real Flutter project exists; copy a template or run flutter create."""
+        self.state["starter_project_error"] = ""
         os.makedirs(project_path, exist_ok=True)
         pubspec = os.path.join(project_path, "pubspec.yaml")
         if os.path.exists(pubspec):
@@ -877,26 +989,66 @@ class OnboardingApi:
         if not os.path.exists(flutter_bat):
             flutter_bat = shutil.which("flutter.bat") or shutil.which("flutter")
         if not flutter_bat:
+            self.state["starter_project_error"] = "لم نجد flutter.bat بعد التثبيت."
             return False
 
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         startupinfo.wShowWindow = 0
+        command = [
+            flutter_bat, "create", "--org", "com.example",
+            "--platforms", "android", "--overwrite", project_path,
+        ]
+        output_lines = []
+        proc = None
+        timer = None
         try:
-            subprocess.run(
-                [flutter_bat, "create", "--org", "com.example", "--platforms", "android", "--overwrite", project_path],
+            proc = subprocess.Popen(
+                command,
                 cwd=os.path.dirname(project_path),
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 text=True,
+                bufsize=1,
+                encoding="utf-8",
+                errors="replace",
                 startupinfo=startupinfo,
                 creationflags=subprocess.CREATE_NO_WINDOW,
-                timeout=240,
             )
+            timer = threading.Timer(600, proc.kill)
+            timer.daemon = True
+            timer.start()
+            last_report = 0.0
+            for line in proc.stdout:
+                text = (line or "").rstrip()
+                if text:
+                    output_lines.append(text)
+                    output_lines = output_lines[-100:]
+                if progress and time.time() - last_report > 6:
+                    progress("ننشئ مشروعك الأول... قد تأخذ دقائق.")
+                    last_report = time.time()
+            proc.wait()
+            if proc.returncode not in (0, None):
+                tail = "\n".join(output_lines[-6:])
+                self.state["starter_project_error"] = tail or f"flutter create خرج بالرمز {proc.returncode}."
+                print("[Onboarding] flutter create failed:", tail)
         except Exception as e:
+            self.state["starter_project_error"] = f"تعذر تشغيل flutter create: {e}"
             print("flutter create error:", e)
+        finally:
+            if timer:
+                timer.cancel()
+            if proc and proc.poll() is None:
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
+
         if os.path.exists(pubspec):
             companion_service.ensure_vscode_launch(project_path)
             return True
+        if not self.state.get("starter_project_error"):
+            self.state["starter_project_error"] = "لم يُنشأ pubspec.yaml بعد flutter create."
         return False
 
     def open_vscode(self):

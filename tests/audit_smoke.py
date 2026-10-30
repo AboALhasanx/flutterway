@@ -48,7 +48,7 @@ def static_checks() -> None:
     )
     assert "rep.score || 100" not in html_src, "the 0% -> 100% falsy bug must stay fixed"
     assert "if not jdk_path:" in app_src, "onboarding must stop when JDK setup fails"
-    assert "if not self._ensure_starter_project(project_path):" in app_src, (
+    assert "if not self._ensure_starter_project(" in app_src, (
         "onboarding must stop when the starter project fails"
     )
     assert "flutter_bat, \"create\"" in app_src, "starter project must fall back to flutter create"
@@ -133,6 +133,10 @@ def static_checks() -> None:
     assert "def dev_mode_enabled" in app_src
     assert "build_running" in app_src, "duplicate builds must be blocked"
     assert "setup_running" in app_src, "duplicate setup runs must be blocked"
+    assert "JDK_PORTABLE_URL" in app_src, "portable JDK fallback must exist"
+    assert "starter_project_error" in app_src, "flutter create failures must be captured"
+    assert 'id="setup-error-details"' in html_src, "setup failures must show the real log"
+    assert "setupUiRunning" in html_src, "setup retry must be guarded"
     assert "def _looks_like_android_pnp" in app_src, "PnP driver hint must be filtered"
     assert "res.missing_driver && !hasDevices" in html_src, "driver alert must not show without a device"
     assert "maximized=True" in app_src, "the app window must open maximized by default"
@@ -290,7 +294,7 @@ def python_checks() -> None:
 
     api = app.OnboardingApi({"window": None})
     original = app.ensure_jdk
-    app.ensure_jdk = lambda: None
+    app.ensure_jdk = lambda progress=None: None
     try:
         api.start_onboarding("usb")
         deadline = time.time() + 5

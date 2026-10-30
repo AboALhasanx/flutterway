@@ -64,7 +64,7 @@ python tests/student_journey.py
 
 ## 4. نتيجة التشغيل
 
-- `reliability_faults.py`: **36/36 نجحت**.
+- `reliability_faults.py`: **40/40 نجحت**.
 - `test_build_guard.py`: **2/2 نجحت**.
 - `test_pnp_filter.py`: **3/3 نجحت**.
 - `audit_smoke.py`: نجح.

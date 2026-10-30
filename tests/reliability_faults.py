@@ -34,6 +34,27 @@ def new_page(browser):
     return page
 
 
+def test_setup_guard_and_error_details(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("""async () => {
+        window.__setupCalls = 0;
+        window.pywebview.api.start_onboarding = async () => {
+            window.__setupCalls += 1;
+            await new Promise(r => setTimeout(r, 80));
+            return {success: true};
+        };
+        switchMainView('wizard'); showStep(1);
+        await Promise.all([startSetup(), startSetup()]);
+    }""")
+    calls = page.evaluate("window.__setupCalls")
+    check("setup-guard: one start call", calls == 1, f"calls={calls}")
+    page.evaluate("""showStep(2); onboardingFailed('تعذر إنشاء المشروع.\\nError: pub get failed\\nline two')""")
+    check("setup-error: summary only", "تعذر إنشاء المشروع" in page.locator("#setup-error-text").inner_text())
+    check("setup-error: details visible", page.locator("#setup-error-details").is_visible())
+    check("setup-error: real log shown", "pub get failed" in page.locator("#setup-error-details").inner_text())
+    page.close()
+
+
 def test_driver_alert_truth(browser) -> None:
     page = new_page(browser)
     page.evaluate("switchMainView('wizard'); showStep(3);")
@@ -223,6 +244,7 @@ def main() -> int:
         browser = playwright.chromium.launch(executable_path=str(CHROMIUM))
         tests = [
             test_driver_alert_truth,
+            test_setup_guard_and_error_details,
             test_build_success_loop,
             test_build_double_start,
             test_build_retry_resets,

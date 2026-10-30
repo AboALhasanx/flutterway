@@ -174,6 +174,24 @@
       to { transform: rotate(360deg); }
     }
 
+    .setup-error-details {
+      margin: 0 0 10px;
+      padding: 10px;
+      max-height: 180px;
+      overflow: auto;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      font-family: 'Consolas', 'Fira Code', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      color: var(--text-muted);
+      user-select: text;
+    }
+
     [data-theme="dark"] .btn-primary {
       color: #0b0f19;
     }
@@ -2670,7 +2688,11 @@
 
           <div id="setup-error-box" role="alert" aria-live="assertive" style="display: none; width: 100%; margin-top: 12px; padding: 12px 14px; border: 1px solid var(--danger); border-radius: 10px; background: var(--danger-bg); text-align: right;">
             <div id="setup-error-text" style="font-size: 12px; font-weight: 700; color: var(--danger); line-height: 1.6; margin-bottom: 8px;"></div>
-            <button class="btn-secondary" onclick="startSetup()" style="font-size: 12px;">إعادة المحاولة</button>
+            <pre id="setup-error-details" class="setup-error-details" style="display: none;"></pre>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn-secondary" onclick="startSetup()" style="font-size: 12px;">إعادة المحاولة</button>
+              <button id="btn-copy-setup-error" class="btn-secondary" onclick="copySetupError()" style="font-size: 12px;">نسخ الخطأ</button>
+            </div>
           </div>
         </div>
       </section>
@@ -3029,6 +3051,7 @@
     let hrLastContent = '';
     let hrRunning = false;
     let buildState = 'idle';
+    let setupUiRunning = false;
     window.appInit = null;
 
     // Main View Switching (Wizard vs Companion)
@@ -4027,6 +4050,7 @@
       if (target) target.classList.add('active');
 
       if (stepNum === 3) {
+        setupUiRunning = false;
         startDevicePolling();
       } else {
         stopDevicePolling();
@@ -4101,15 +4125,19 @@
     }
 
     async function startSetup() {
+      if (setupUiRunning) return;
+      setupUiRunning = true;
       resetSetupError();
       showStep(2);
       if (!window.pywebview || !window.pywebview.api) return;
       try {
         const res = await window.pywebview.api.start_onboarding(selectedMode);
         if (res && res.success === false) {
+          setupUiRunning = false;
           onboardingFailed(res.error || 'تعذر بدء التجهيز. أعد المحاولة.');
         }
       } catch (e) {
+        setupUiRunning = false;
         onboardingFailed(`تعذر بدء التجهيز: ${e}`);
       }
     }
@@ -4117,6 +4145,13 @@
     function resetSetupError() {
       const box = document.getElementById('setup-error-box');
       if (box) box.style.display = 'none';
+      const details = document.getElementById('setup-error-details');
+      if (details) {
+        details.innerText = '';
+        details.style.display = 'none';
+      }
+      const copyBtn = document.getElementById('btn-copy-setup-error');
+      if (copyBtn) copyBtn.innerText = 'نسخ الخطأ';
       const text = document.getElementById('progress-text');
       if (text) text.style.color = 'var(--text)';
       const pct = document.getElementById('progress-pct');
@@ -4128,17 +4163,41 @@
     function onboardingFailed(message) {
       const box = document.getElementById('setup-error-box');
       const text = document.getElementById('setup-error-text');
-      if (text) text.innerText = message;
+      const lines = String(message || '').split(/\r?\n/);
+      const summary = (lines.shift() || 'تعذر إكمال التجهيز.').trim();
+      const detailsText = lines.join('\n').trim();
+      if (text) text.innerText = summary;
+      const details = document.getElementById('setup-error-details');
+      if (details) {
+        details.innerText = detailsText;
+        details.style.display = detailsText ? 'block' : 'none';
+      }
       if (box) box.style.display = 'block';
       const progressText = document.getElementById('progress-text');
       if (progressText) {
-        progressText.innerText = message;
+        progressText.innerText = summary;
         progressText.style.color = 'var(--danger)';
       }
       const pct = document.getElementById('progress-pct');
       if (pct) pct.style.color = 'var(--danger)';
       const fill = document.getElementById('progress-fill');
       if (fill) fill.style.background = 'var(--danger)';
+      setupUiRunning = false;
+    }
+
+    async function copySetupError() {
+      const summary = document.getElementById('setup-error-text')?.innerText || '';
+      const details = document.getElementById('setup-error-details')?.innerText || '';
+      const btn = document.getElementById('btn-copy-setup-error');
+      try {
+        await navigator.clipboard.writeText(`${summary}\n${details}`.trim());
+        if (btn) {
+          btn.innerText = 'تم النسخ';
+          setTimeout(() => { btn.innerText = 'نسخ الخطأ'; }, 1800);
+        }
+      } catch (e) {
+        if (btn) btn.innerText = 'تعذر النسخ';
+      }
     }
 
     function updateProgress(percent, statusText, chkStep) {
