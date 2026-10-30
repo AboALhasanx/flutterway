@@ -8,6 +8,7 @@ only after the new SDK proves usable.
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import time
@@ -21,6 +22,14 @@ except ImportError:  # pragma: no cover
     import paths  # type: ignore
 
 RELEASES_URL = "https://storage.googleapis.com/flutter_infra_release/releases/releases_windows.json"
+# Shipped with the app so a blocked/offline network cannot break setup.
+_MANIFEST_NAME = os.path.join("data", "flutter_releases_windows.json")
+BUNDLED_MANIFEST_CANDIDATES = [
+    os.path.join(os.path.dirname(__file__), _MANIFEST_NAME),
+    os.path.join(getattr(__import__("sys"), "_MEIPASS", os.path.dirname(__file__)), "gui", _MANIFEST_NAME),
+    os.path.join(getattr(__import__("sys"), "_MEIPASS", os.path.dirname(__file__)), _MANIFEST_NAME),
+]
+BUNDLED_MANIFEST = BUNDLED_MANIFEST_CANDIDATES[0]
 
 
 @dataclass
@@ -67,18 +76,34 @@ def parse_release_manifest(data: dict, channel: str = "stable") -> FlutterReleas
     )
 
 
+def load_bundled_manifest(path: str | None = None) -> dict | None:
+    candidates = [path] if path else BUNDLED_MANIFEST_CANDIDATES
+    for candidate in candidates:
+        try:
+            with open(candidate, "r", encoding="utf-8") as handle:
+                data = json.load(handle)
+            if data:
+                return data
+        except Exception:
+            continue
+    return None
+
+
 def resolve_flutter_release(channel: str = "stable", timeout: int = 30) -> FlutterRelease | None:
-    import json
+    """Prefer the live manifest; fall back to the pinned one shipped with the app."""
     import urllib.request
 
     try:
         request = urllib.request.Request(RELEASES_URL, headers={"User-Agent": "FlutterWay/1.3"})
         with urllib.request.urlopen(request, timeout=timeout) as response:
             data = json.loads(response.read().decode("utf-8"))
-        return parse_release_manifest(data, channel)
+        release = parse_release_manifest(data, channel)
+        if release is not None:
+            return release
     except Exception as exc:
         print("Flutter release manifest error:", exc)
-        return None
+    bundled = load_bundled_manifest()
+    return parse_release_manifest(bundled, channel) if bundled else None
 
 
 def _download(url: str, target: str, progress=None, timeout: int = 120) -> bool:

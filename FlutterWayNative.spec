@@ -6,6 +6,8 @@ a = Analysis(
     binaries=[],
     datas=[
         ('gui/onboarding', 'onboarding'),
+        ('gui/data', 'gui/data'),
+        ('gui/data', 'data'),
         ('assets', 'assets')
     ],
     hiddenimports=[
@@ -13,6 +15,10 @@ a = Analysis(
         'gui.android_sdk',
         'gui.companion_service',
         'gui.dev_reset',
+        'gui.downloads',
+        'gui.managed',
+        'gui.quarantine',
+        'gui.toolchain',
         'gui.elf_strip',
         'gui.hot_reload',
         'gui.paths',

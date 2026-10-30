@@ -99,6 +99,25 @@ class EnvPersistTests(unittest.TestCase):
         with patch.dict(sys.modules, {"winreg": silent}):
             self.assertFalse(android_sdk._persist_env("ANDROID_HOME", r"C:\sdk"))
 
+    def test_ensure_jdk_reports_env_failures(self):
+        warnings: list[str] = []
+        with patch.object(onboarding_app, "find_jdk", return_value=r"C:\jdk"), \
+             patch.object(onboarding_app, "set_user_env", return_value=False), \
+             patch.object(onboarding_app, "add_to_user_path", return_value=False), \
+             patch.object(onboarding_app.paths, "gradle_user_home", return_value=r"C:\gradle"):
+            result = onboarding_app.ensure_jdk(warnings=warnings)
+        self.assertEqual(result, r"C:\jdk")
+        self.assertEqual(len(warnings), 3)
+
+    def test_ensure_jdk_no_warnings_when_writes_succeed(self):
+        warnings: list[str] = []
+        with patch.object(onboarding_app, "find_jdk", return_value=r"C:\jdk"), \
+             patch.object(onboarding_app, "set_user_env", return_value=True), \
+             patch.object(onboarding_app, "add_to_user_path", return_value=True), \
+             patch.object(onboarding_app.paths, "gradle_user_home", return_value=r"C:\gradle"):
+            onboarding_app.ensure_jdk(warnings=warnings)
+        self.assertEqual(warnings, [])
+
 
 if __name__ == "__main__":
     unittest.main()

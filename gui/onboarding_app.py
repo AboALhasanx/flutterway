@@ -253,8 +253,12 @@ def _is_admin():
         return False
 
 
-def ensure_jdk(progress=None):
-    """Locates or installs JDK 21 (portable first), then configures JAVA_HOME/PATH."""
+def ensure_jdk(progress=None, warnings=None):
+    """Locates or installs JDK 21 (portable first), then configures JAVA_HOME/PATH.
+
+    ``warnings`` (optional list) receives a message for every environment write
+    that did not persist, so the setup screen can be honest about it.
+    """
     jdk = find_jdk()
     if not jdk:
         _jdk_report(progress, "نجهّز Java 21 بدون صلاحيات مدير...")
@@ -280,9 +284,12 @@ def ensure_jdk(progress=None):
         gradle_home = paths.gradle_user_home()
         os.environ["JAVA_HOME"] = jdk
         os.environ["GRADLE_USER_HOME"] = gradle_home
-        set_user_env("JAVA_HOME", jdk)
-        set_user_env("GRADLE_USER_HOME", gradle_home)
-        add_to_user_path(os.path.join(jdk, "bin"))
+        if not set_user_env("JAVA_HOME", jdk) and warnings is not None:
+            warnings.append("JAVA_HOME لم يُحفظ في متغيرات المستخدم")
+        if not set_user_env("GRADLE_USER_HOME", gradle_home) and warnings is not None:
+            warnings.append("GRADLE_USER_HOME لم يُحفظ في متغيرات المستخدم")
+        if not add_to_user_path(os.path.join(jdk, "bin")) and warnings is not None:
+            warnings.append("مجلد bin الخاص بـJava لم يُضف إلى PATH")
     return jdk
 
 def _looks_like_android_pnp(name):
@@ -956,15 +963,20 @@ class OnboardingApi:
 
                 # Stage 2: Java (JDK 21) & Gradle Toolchain (18% - 42%) -> Checklist Item 2
                 self._update_ui(win, 24, "نثبّت Java وأدوات بناء أندرويد...", 2)
+                jdk_warnings = []
                 def jdk_progress(message):
                     sub = _percent_from_text(message)
                     overall = 24 if sub is None else 24 + int(sub * 16 / 100)
                     self._update_ui(win, overall, message, 2)
-                jdk_path = ensure_jdk(progress=jdk_progress)
+                jdk_path = ensure_jdk(progress=jdk_progress, warnings=jdk_warnings)
                 if not jdk_path:
                     fail("تعذر تجهيز Java 21. تأكد من اتصال الإنترنت ثم أعد المحاولة.", 24)
                     return
-                self._update_ui(win, 40, "تم تثبيت Java وأدوات أندرويد بنجاح", 2)
+                if jdk_warnings:
+                    self.state["env_warnings"] = list(jdk_warnings)
+                    self._update_ui(win, 42, "تم تجهيز Java، لكن تعذر حفظ بعض متغيرات البيئة. سنكمل بالمسار المباشر.", 2)
+                else:
+                    self._update_ui(win, 40, "تم تثبيت Java وأدوات أندرويد بنجاح", 2)
                 time.sleep(0.4)
 
                 # Stage 3: Flutter Toolchain & PATH Registration (42% - 75%) -> Checklist Item 3

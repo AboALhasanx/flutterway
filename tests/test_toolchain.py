@@ -37,6 +37,30 @@ def manifest(archive_name: str, sha: str, size: int, version: str = "3.19.0") ->
 
 
 class ManifestTests(unittest.TestCase):
+    def test_bundled_manifest_is_valid(self):
+        data = toolchain.load_bundled_manifest()
+        self.assertIsNotNone(data, "bundled manifest must ship with the app")
+        release = toolchain.parse_release_manifest(data, "stable")
+        self.assertIsNotNone(release)
+        self.assertRegex(release.sha256, r"^[0-9a-f]{64}$")
+        self.assertTrue(release.archive.endswith(".zip"))
+
+    def test_resolves_from_bundled_when_network_fails(self):
+        real_urlopen = toolchain.urllib.request.urlopen if hasattr(toolchain, "urllib") else None
+        import urllib.request
+
+        def boom(*args, **kwargs):
+            raise OSError("offline")
+
+        original = urllib.request.urlopen
+        urllib.request.urlopen = boom
+        try:
+            release = toolchain.resolve_flutter_release("stable")
+        finally:
+            urllib.request.urlopen = original
+        self.assertIsNotNone(release)
+        self.assertTrue(release.version)
+
     def test_picks_current_stable(self):
         release = toolchain.parse_release_manifest(manifest("flutter.zip", "a" * 64, 10), "stable")
         self.assertEqual(release.version, "3.19.0")
