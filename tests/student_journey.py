@@ -244,24 +244,32 @@ def main() -> int:
             doctor = page.evaluate("""() => ({
                 score: document.getElementById('doctor-score-display')?.innerText,
                 subtitle: document.getElementById('doctor-score-subtitle')?.innerText,
-                cards: document.querySelectorAll('#doctor-cards-grid .doc-item-card').length
+                issues: document.querySelectorAll('#doctor-cards-grid .doc-item-card').length,
+                allCards: document.querySelectorAll('#doctor-all-grid .doc-item-card').length,
+                okVisible: getComputedStyle(document.getElementById('doctor-ok-note')).display !== 'none',
+                summary: document.getElementById('doctor-summary-line')?.innerText || ''
             })""")
             report["metrics"]["doctor"] = doctor
-            if doctor["cards"] < 5:
-                finding("high", "Companion / Doctor", f"عدد بطاقات الطبيب قليل ({doctor['cards']}) أو الشبكة لم تُرسم.")
-            if doctor["score"] != "100%" and doctor["cards"] == 0:
-                finding("medium", "Companion / Doctor", "التقرير لا يعرض تفاصيل عندما لا تكون البيئة مكتملة.")
+            if doctor["allCards"] < 5:
+                finding("high", "Companion / Doctor", f"القائمة الكاملة للفحوصات ناقصة ({doctor['allCards']}).")
+            if doctor["issues"] == 0 and not doctor["okVisible"]:
+                finding("medium", "Companion / Doctor", "لا توجد مشاكل لكن الواجهة لا تؤكد أن كل شيء سليم.")
+            if not doctor["summary"].strip():
+                finding("medium", "Companion / Doctor", "لا يوجد ملخص واضح لحالة البيئة.")
 
             page.evaluate("switchCompanionTab('projects')")
             page.wait_for_timeout(800)
             shot("09_companion_projects", "تبويب مشاريع المحاضرات")
             projects = page.evaluate("""() => ({
                 count: document.querySelectorAll('#recent-projects-list .recent-item').length,
-                active: typeof activeProjPath !== 'undefined' ? activeProjPath : null
+                active: typeof activeProjPath !== 'undefined' ? activeProjPath : null,
+                activeName: document.getElementById('active-proj-name')?.innerText || ''
             })""")
             report["metrics"]["projects"] = projects
             if projects["count"] == 0:
                 finding("low", "Companion / Projects", "لا توجد مشاريع حديثة، والطالب يرى مساحة فارغة بدون زر إنشاء واضح داخل نفس البطاقة.")
+            elif not projects["active"] or projects["activeName"] == "—":
+                finding("medium", "Companion / Projects", "المشروع النشط غير محدد تلقائياً رغم وجود مشاريع حديثة.")
 
             page.evaluate("switchCompanionTab('rescue')")
             page.wait_for_timeout(300)

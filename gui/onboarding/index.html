@@ -951,6 +951,101 @@
       flex-wrap: wrap;
     }
 
+    .hr-guided {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .hr-guided-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .hr-guided-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .hr-guided-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .hr-quick-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .hr-quick-row .proj-input {
+      flex: 1;
+      min-width: 220px;
+      margin: 0;
+    }
+
+    .hr-quick-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .hr-quick-hint.warn {
+      color: var(--warning);
+    }
+
+    .hr-quick-hint.ok {
+      color: var(--success);
+    }
+
+    .hr-preview-col {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 200px;
+      flex-shrink: 0;
+      align-items: center;
+    }
+
+    .hr-preview-empty {
+      width: 100%;
+      min-height: 210px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      border: 1px dashed var(--card-border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .hr-advanced-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 760px) {
+      .hr-guided {
+        flex-direction: column;
+      }
+      .hr-preview-col {
+        width: 100%;
+      }
+    }
+
     .hr-editor {
       flex: 1;
       min-width: 0;
@@ -1360,6 +1455,24 @@
       width: 100%;
     }
 
+    .doctor-summary {
+      width: 100%;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .doctor-ok-note {
+      width: 100%;
+      background: var(--success-bg);
+      border: 1px solid var(--success);
+      color: var(--success);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
     .doc-item-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -1485,6 +1598,40 @@
       align-items: center;
       justify-content: space-between;
       gap: 16px;
+    }
+
+    .active-project-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .proj-options {
+      position: relative;
+    }
+
+    .proj-options summary {
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      padding: 8px 10px;
+      user-select: none;
+    }
+
+    .proj-options summary:hover {
+      color: var(--text);
+    }
+
+    .proj-options button {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      z-index: 30;
+      white-space: nowrap;
+      background: var(--card-bg);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
     }
 
     .recent-list {
@@ -1760,78 +1907,84 @@
                 <span>إعادة الفحص</span>
               </button>
 
-              <button id="btn-doctor-heal-all" class="btn-primary" onclick="healAllDoctorIssues()">
+              <button id="btn-doctor-heal-all" class="btn-primary" style="display: none;" onclick="healAllDoctorIssues()">
                 <span class="icon" style="width: 14px; height: 14px;">
                   <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                 </span>
-                <span>زر الإصلاح الشامل بنقرة واحدة</span>
+                <span>أصلح كل المشاكل</span>
               </button>
             </div>
           </div>
 
-          <!-- Candid Student Reassurance Banner -->
-          <div class="reassurance-banner">
-            <span class="icon" style="width: 20px; height: 20px; color: var(--accent); flex-shrink: 0;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            </span>
-            <div>
-              <strong>ملاحظة صريحة للطالب:</strong> تم إعفاؤك تماماً من تنزيل Visual Studio وC++ بحجم 20 جيجا! مسارك مخصص لتطبيقات الموبايل للأندرويد، وبيئتك جاهزة 100% دون أي إجهاد للابتوبك أو قرصك.
-            </div>
+          <div class="doctor-summary" id="doctor-summary-line">نفحص بيئتك الآن...</div>
+
+          <div class="doctor-ok-note" id="doctor-ok-note" style="display: none;">
+            ✓ كل الفحوصات سليمة — ما في شي يحتاج إصلاح.
           </div>
 
-          <!-- Diagnostic Cards Grid -->
+          <!-- Only real problems are shown here -->
           <div class="doctor-grid" id="doctor-cards-grid">
             <!-- Dynamically populated via JS -->
           </div>
+
+          <details id="doctor-all-details" class="advanced-options">
+            <summary>عرض كل الفحوصات (<span id="doctor-total-count">0</span>)</summary>
+            <div class="doctor-grid" id="doctor-all-grid" style="margin-top: 10px;">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </details>
         </div>
 
         <!-- TAB 2: LECTURE PROJECTS STUDIO -->
         <div id="tab-projects" class="comp-tab-pane">
-          <div class="project-creator-card">
-            <div style="font-size: 15px; font-weight: 800; color: var(--text);">
-              إنشاء مشروع جديد لمحاضرة اليوم أو الواجب الدراسي
-            </div>
-            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
-              يتم إنشاء المشروع بنسخة نظيفة مسبقة التهيئة ومعدلة لتفادي تنزيل الـ NDK (6.7GB) التلقائي، ومزودة بشرح تفصيلي للودجات الأساسية.
-            </div>
-            <div class="form-row">
-              <input type="text" id="input-lecture-name" class="proj-input" aria-label="اسم مشروع المحاضرة" placeholder="اسم المشروع بالإنجليزية (مثلاً: lecture_1_basics)">
-              <button id="btn-create-lecture-proj" class="btn-primary" onclick="createNewLectureProject()">
-                <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-                <span>إنشاء وتجهيز المشروع فوراً</span>
-              </button>
-            </div>
-          </div>
-
           <!-- Active Project Card -->
           <div class="active-project-card" id="active-project-card">
             <div>
-              <div style="font-size: 11px; color: var(--accent); font-weight: 800; margin-bottom: 2px;">المشروع النشط حالياً</div>
-              <div style="font-size: 16px; font-weight: 800; color: var(--text);" id="active-proj-name">my_first_app</div>
-              <div style="font-size: 11px; color: var(--text-muted);" id="active-proj-path">C:\Users\...\Desktop\my_first_app</div>
+              <div style="font-size: 11px; color: var(--accent); font-weight: 800; margin-bottom: 2px;">المشروع النشط</div>
+              <div style="font-size: 16px; font-weight: 800; color: var(--text);" id="active-proj-name">—</div>
+              <div style="font-size: 11px; color: var(--text-muted);" id="active-proj-path">اختر مشروعاً من القائمة تحت</div>
             </div>
 
-            <div style="display: flex; gap: 8px;">
-              <button id="btn-open-proj-vscode" class="btn-secondary" onclick="openActiveProjectVSCode()">
-                <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
-                <span>فتح في VS Code</span>
-              </button>
-
-              <button id="btn-clean-project" class="btn-secondary" onclick="cleanActiveProject()">
-                <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
-                <span>تنظيف البناء (Clean)</span>
-              </button>
-
+            <div class="active-project-actions">
               <button id="btn-run-proj-phone" class="btn-primary" style="padding: 8px 18px; font-size: 12px;" onclick="runActiveProjectPhone()">
                 <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
-                <span>تشغيل وبناء على الهاتف</span>
+                <span>شغّل على الهاتف</span>
+              </button>
+
+              <button id="btn-open-proj-vscode" class="btn-secondary" onclick="openActiveProjectVSCode()">
+                <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+                <span>افتح VS Code</span>
+              </button>
+
+              <button id="btn-proj-hotreload" class="btn-secondary" onclick="switchCompanionTab('hotreload')">
+                <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+                <span>Hot Reload</span>
+              </button>
+
+              <details class="proj-options">
+                <summary>خيارات</summary>
+                <button id="btn-clean-project" class="btn-secondary" onclick="cleanActiveProject()">تنظيف البناء</button>
+              </details>
+            </div>
+          </div>
+
+          <div class="project-creator-card">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text);">مشروع جديد</div>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+              ينشئ مشروع Flutter جاهزاً للتجربة، مع شرح للودجات الأساسية.
+            </div>
+            <div class="form-row">
+              <input type="text" id="input-lecture-name" class="proj-input" aria-label="اسم مشروع المحاضرة" placeholder="اسم المشروع بالإنجليزية (مثلاً: lecture_1)">
+              <button id="btn-create-lecture-proj" class="btn-primary" onclick="createNewLectureProject()">
+                <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+                <span>أنشئ مشروعي</span>
               </button>
             </div>
           </div>
 
           <!-- Recent Projects -->
           <div style="width: 100%; margin-top: 6px;">
-            <div style="font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 8px;">المشاريع الأخيرة على جهازك:</div>
+            <div style="font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 8px;">المشاريع الأخيرة:</div>
             <div class="recent-list" id="recent-projects-list">
               <!-- Dynamically populated -->
             </div>
@@ -2063,8 +2216,6 @@
             <div class="hr-toolbar">
               <span style="font-size: 11px; color: var(--text-muted);">المشروع: <b id="hr-project" style="color: var(--text);">—</b></span>
               <button id="btn-hr-start" class="btn-primary" style="padding: 8px 16px; font-size: 12px;" onclick="startHotReload()">بدء الجلسة</button>
-              <button id="btn-hr-reload" class="btn-secondary" style="font-size: 12px;" onclick="hotReloadAction('reload')">Hot Reload الآن</button>
-              <button id="btn-hr-restart" class="btn-secondary" style="font-size: 12px;" onclick="hotReloadAction('restart')">Hot Restart</button>
               <button id="btn-hr-stop" class="btn-secondary" style="font-size: 12px; color: var(--danger);" onclick="hotReloadAction('stop')">إيقاف</button>
               <label style="font-size: 11px; color: var(--text-muted); display: flex; gap: 6px; align-items: center;">
                 <input type="checkbox" id="hr-auto" checked> تحديث تلقائي عند الكتابة
@@ -2072,16 +2223,38 @@
               <span id="hr-last-reload" style="font-size: 11px; color: var(--text-muted);">آخر تحديث: —</span>
             </div>
 
-            <div style="display: flex; gap: 14px; align-items: flex-start; width: 100%;">
-              <textarea id="hr-editor" class="hr-editor" spellcheck="false" oninput="scheduleHotReload()" placeholder="اختر مشروعاً من تبويب المشاريع ثم اضغط بدء الجلسة..."></textarea>
-              <div style="display: flex; flex-direction: column; gap: 8px; width: 190px; flex-shrink: 0;">
+            <div class="hr-guided">
+              <div class="hr-guided-main">
+                <div class="hr-guided-title">جرّب تغيير النص</div>
+                <div class="hr-guided-desc">
+                  اكتب جملة جديدة في الحقل. بعد ما تتوقف عن الكتابة، يتحدّث هاتفك تلقائياً — بدون زر وبدون Enter.
+                </div>
+                <div class="hr-quick-row">
+                  <input id="hr-quick-text" class="proj-input" type="text" spellcheck="false"
+                         aria-label="النص الجديد الذي سيظهر على الهاتف"
+                         placeholder="اكتب النص الجديد..."
+                         oninput="scheduleQuickHotReload()">
+                  <button id="btn-hr-apply" class="btn-primary" style="padding: 10px 18px; font-size: 12px;" onclick="applyQuickHotReloadText()">طبّق الآن</button>
+                </div>
+                <div id="hr-quick-hint" class="hr-quick-hint">ابدأ الجلسة أولاً، بعدها عدّل النص.</div>
+              </div>
+              <div class="hr-preview-col">
                 <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">شاشة الهاتف</div>
                 <img id="hr-preview" class="hr-preview" alt="معاينة الهاتف" style="display: none;" />
+                <div id="hr-preview-empty" class="hr-preview-empty">تظهر شاشة الهاتف بعد بدء الجلسة.</div>
                 <button id="btn-hr-preview" class="btn-secondary" style="font-size: 11px; padding: 5px 10px;" onclick="refreshHotReloadPreview()">تحديث المعاينة</button>
               </div>
             </div>
 
-            <div id="hr-log" class="hr-log">لم تبدأ الجلسة بعد.</div>
+            <details id="hr-advanced" class="advanced-options" style="margin-bottom: 0;">
+              <summary>المحرر الكامل والسجل (للمتقدمين)</summary>
+              <div class="hr-advanced-actions">
+                <button id="btn-hr-reload" class="btn-secondary" style="font-size: 12px;" onclick="hotReloadAction('reload')">Hot Reload الآن</button>
+                <button id="btn-hr-restart" class="btn-secondary" style="font-size: 12px;" onclick="hotReloadAction('restart')">Hot Restart</button>
+              </div>
+              <textarea id="hr-editor" class="hr-editor" spellcheck="false" oninput="scheduleHotReload()" placeholder="اختر مشروعاً ثم اضغط بدء الجلسة..." style="margin-top: 10px;"></textarea>
+              <div id="hr-log" class="hr-log">لم تبدأ الجلسة بعد.</div>
+            </details>
           </div>
         </div>
       </div>
@@ -2613,6 +2786,9 @@
     let hrPollTimer = null;
     let hrPreviewTimer = null;
     let hrAutoTimer = null;
+    let hrQuickTimer = null;
+    let hrQuickLiteral = '';
+    let hrQuickOriginal = '';
     let hrSuppressInput = false;
     let hrLastContent = '';
     let hrRunning = false;
@@ -2671,6 +2847,7 @@
       } else if (tabId === 'hotreload') {
         refreshHotReloadStatus();
         startHotReloadPolling();
+        syncHotReloadQuickText();
       }
     }
 
@@ -2713,7 +2890,7 @@
     function renderHome() {
       const init = window.appInit || {};
       const recent = init.recent_projects || [];
-      const project = recent[0] || null;
+      const project = init.active_project && init.active_project.path ? init.active_project : (recent[0] || null);
       const items = init.doctor_report && init.doctor_report.items ? init.doctor_report.items : [];
       const device = items.find(item => item.id === 'device_connection');
       const connected = !!(device && device.status === 'PASS');
@@ -2796,6 +2973,7 @@
       const stop = document.getElementById('btn-hr-stop');
       const running = !!(st && st.running);
       const ready = !!(st && st.ready);
+      const wasReady = hrRunning;
       hrRunning = running && ready;
       if (running && ready) setHrBadge('متصل — جاهز', 'success');
       else if (running) setHrBadge('جاري الاتصال...', 'warn');
@@ -2810,6 +2988,10 @@
       if (reload) reload.disabled = !ready;
       if (restart) restart.disabled = !ready;
       if (stop) stop.disabled = !running;
+      const quick = document.getElementById('hr-quick-text');
+      if (quick) quick.disabled = !hrRunning;
+      if (!hrRunning) setHrQuickHint('ابدأ الجلسة أولاً، بعدها عدّل النص.', '');
+      else if (!wasReady) setHrQuickHint('متصل — عدّل النص وسيتحدّث الهاتف تلقائياً.', '');
       if (st && st.logs) {
         const log = document.getElementById('hr-log');
         if (log) {
@@ -2867,6 +3049,7 @@
           hrSuppressInput = false;
         }
         renderHrStatus(res);
+        syncHotReloadQuickText();
         startHotReloadPolling();
         refreshHotReloadPreview();
       } catch (e) {
@@ -2881,6 +3064,91 @@
       if (!auto || !auto.checked) return;
       if (hrAutoTimer) clearTimeout(hrAutoTimer);
       hrAutoTimer = setTimeout(saveHotReload, 900);
+    }
+
+    function setHrQuickHint(text, kind) {
+      const hint = document.getElementById('hr-quick-hint');
+      if (!hint) return;
+      hint.innerText = text;
+      hint.className = `hr-quick-hint${kind ? ` ${kind}` : ''}`;
+    }
+
+    function syncHotReloadQuickText() {
+      const editor = document.getElementById('hr-editor');
+      const input = document.getElementById('hr-quick-text');
+      if (!editor || !input) return;
+      if (!editor.value.trim()) {
+        hrQuickLiteral = '';
+        hrQuickOriginal = '';
+        input.value = '';
+        input.disabled = true;
+        setHrQuickHint('اختر مشروعاً وابدأ الجلسة، بعدها نعرض لك نصاً جاهزاً للتعديل.', '');
+        return;
+      }
+      const match = editor.value.match(/Text\(\s*('(?:[^'\\]|\\.){1,160}')/);
+      if (!match) {
+        hrQuickLiteral = '';
+        hrQuickOriginal = '';
+        input.value = '';
+        input.disabled = true;
+        setHrQuickHint('ما لقينا نصاً جاهزاً في هذا المشروع. استخدم المحرر الكامل.', 'warn');
+        return;
+      }
+      hrQuickLiteral = match[1];
+      hrQuickOriginal = match[1].slice(1, -1).replace(/\\'/g, "'").replace(/\\\$/g, '$').replace(/\\\\/g, '\\');
+      input.disabled = !hrRunning;
+      if (document.activeElement !== input) input.value = hrQuickOriginal;
+      if (!hrRunning) {
+        setHrQuickHint('ابدأ الجلسة أولاً، بعدها عدّل النص.', '');
+      } else {
+        setHrQuickHint('عدّل النص وسيتحدّث الهاتف تلقائياً.', '');
+      }
+    }
+
+    function scheduleQuickHotReload() {
+      if (hrSuppressInput) return;
+      if (!hrRunning) {
+        setHrQuickHint('ابدأ الجلسة أولاً، بعدها عدّل النص.', 'warn');
+        return;
+      }
+      if (hrQuickTimer) clearTimeout(hrQuickTimer);
+      setHrQuickHint('ننتظر توقفك عن الكتابة...', '');
+      hrQuickTimer = setTimeout(applyQuickHotReloadText, 1100);
+    }
+
+    function applyQuickHotReloadText() {
+      if (hrQuickTimer) {
+        clearTimeout(hrQuickTimer);
+        hrQuickTimer = null;
+      }
+      const editor = document.getElementById('hr-editor');
+      const input = document.getElementById('hr-quick-text');
+      if (!editor || !input) return;
+      if (!hrRunning) {
+        setHrQuickHint('ابدأ الجلسة أولاً حتى يصل التعديل لهاتفك.', 'warn');
+        return;
+      }
+      const next = input.value.trim();
+      if (!next) {
+        setHrQuickHint('اكتب نصاً أولاً.', 'warn');
+        return;
+      }
+      if (!hrQuickLiteral) {
+        setHrQuickHint('ما لقينا النص الأصلي. افتح المحرر الكامل وعدّل يدوياً.', 'warn');
+        return;
+      }
+      if (!editor.value.includes(hrQuickLiteral)) {
+        setHrQuickHint('النص الأصلي تغيّر. حدّثنا الحقل — جرّب مرة ثانية.', 'warn');
+        syncHotReloadQuickText();
+        return;
+      }
+      const escaped = next.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\$/g, '\\$');
+      const newLiteral = `'${escaped}'`;
+      editor.value = editor.value.replace(hrQuickLiteral, () => newLiteral);
+      hrQuickLiteral = newLiteral;
+      hrQuickOriginal = next;
+      editor.dispatchEvent(new Event('input', { bubbles: true }));
+      setHrQuickHint('تم التطبيق — راقب هاتفك.', 'ok');
     }
 
     async function saveHotReload() {
@@ -2900,6 +3168,7 @@
           refreshHotReloadStatus();
           setTimeout(refreshHotReloadStatus, 1500);
           setTimeout(refreshHotReloadPreview, 1800);
+          syncHotReloadQuickText();
         } else {
           setHrLog(res.error || 'تعذر حفظ الملف');
         }
@@ -2917,6 +3186,9 @@
           hrRunning = false;
           stopHotReloadPolling();
           setHrBadge('غير متصل', 'warn');
+          setHrQuickHint('الجلسة متوقفة. اضغط بدء الجلسة من جديد.', '');
+          const quick = document.getElementById('hr-quick-text');
+          if (quick) quick.disabled = true;
         } else {
           refreshHotReloadStatus();
           setTimeout(refreshHotReloadStatus, 1500);
@@ -2932,12 +3204,15 @@
       try {
         const res = await window.pywebview.api.hot_reload_screenshot();
         const img = document.getElementById('hr-preview');
+        const empty = document.getElementById('hr-preview-empty');
         if (!img) return;
         if (res.success && res.data_url) {
           img.src = res.data_url;
           img.style.display = 'block';
+          if (empty) empty.style.display = 'none';
         } else {
           img.style.display = 'none';
+          if (empty) empty.style.display = 'flex';
         }
       } catch (e) {
         // Preview is optional; do not spam the main log.
@@ -2964,7 +3239,11 @@
     // ========================================================
     async function runSmartDoctorScan() {
       const grid = document.getElementById('doctor-cards-grid');
-      grid.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">جاري فحص حالة بيئة فلاتر وجافا وSDK بدقة...</div>';
+      const allGrid = document.getElementById('doctor-all-grid');
+      const summary = document.getElementById('doctor-summary-line');
+      if (grid) grid.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">نفحص بيئتك...</div>';
+      if (allGrid) allGrid.innerHTML = '';
+      if (summary) summary.innerText = 'نفحص بيئة Flutter وJava وأدوات أندرويد...';
 
       if (window.pywebview && window.pywebview.api) {
         try {
@@ -2994,6 +3273,9 @@
     function renderDoctorReport(rep) {
       rep = rep || {};
       const score = Number.isFinite(Number(rep.score)) ? Number(rep.score) : 0;
+      const items = Array.isArray(rep.items) ? rep.items : [];
+      const issues = items.filter(it => it.status !== 'PASS');
+      const hasItems = items.length > 0;
       const scoreEl = document.getElementById('doctor-score-display');
       if (scoreEl) {
         scoreEl.innerText = `${score}%`;
@@ -3005,46 +3287,67 @@
       }
       const subtitleEl = document.getElementById('doctor-score-subtitle');
       if (subtitleEl) {
-        subtitleEl.innerText = score >= 85
-          ? 'كافة أدوات التطوير ومسارات فلاتر وجافا وSDK تعمل بتناغم تام'
-          : score >= 50
-            ? 'بعض الأدوات تحتاج ضبطاً بسيطاً قبل بدء البناء'
-            : 'البيئة غير مكتملة — راجع العناصر الحمراء أدناه';
+        subtitleEl.innerText = !hasItems
+          ? 'تعذر قراءة الفحوصات — أعد المحاولة.'
+          : issues.length === 0
+            ? 'كل الأدوات جاهزة — ما في شي يحتاج إصلاح.'
+            : `${issues.length} من ${items.length} فحوصات تحتاج انتباهك.`;
       }
+      const summary = document.getElementById('doctor-summary-line');
+      if (summary) {
+        summary.innerText = !hasItems
+          ? 'ما وصلنا تقرير الفحوصات. اضغط «إعادة الفحص».'
+          : issues.length === 0
+            ? `فحصنا ${items.length} عناصر: كلها سليمة.`
+            : `وجدنا ${issues.length} مشكلة من أصل ${items.length}. تصلحها من البطاقات تحت.`;
+      }
+      const okNote = document.getElementById('doctor-ok-note');
+      if (okNote) okNote.style.display = hasItems && issues.length === 0 ? 'block' : 'none';
+      const healBtn = document.getElementById('btn-doctor-heal-all');
+      if (healBtn) healBtn.style.display = issues.some(it => it.auto_fixable) ? 'inline-flex' : 'none';
+      const totalEl = document.getElementById('doctor-total-count');
+      if (totalEl) totalEl.innerText = String(items.length);
+
       const grid = document.getElementById('doctor-cards-grid');
-      grid.innerHTML = '';
+      if (grid) {
+        grid.innerHTML = '';
+        issues.forEach(it => grid.appendChild(makeDoctorCard(it)));
+      }
+      const allGrid = document.getElementById('doctor-all-grid');
+      if (allGrid) {
+        allGrid.innerHTML = '';
+        items.forEach(it => allGrid.appendChild(makeDoctorCard(it)));
+      }
+    }
 
-      if (!rep.items || rep.items.length === 0) return;
+    function makeDoctorCard(it) {
+      const isPass = it.status === 'PASS';
+      const card = document.createElement('div');
+      card.className = `doc-item-card ${isPass ? 'pass' : 'warn'}`;
 
-      rep.items.forEach(it => {
-        const isPass = it.status === 'PASS';
-        const card = document.createElement('div');
-        card.className = `doc-item-card ${isPass ? 'pass' : 'warn'}`;
-        
-        let fixBtnHtml = '';
-        if (!isPass && it.auto_fixable && it.fix_id) {
-          fixBtnHtml = `
-            <div class="doc-item-action">
-              <button class="btn-item-heal" onclick="healSingleDoctorItem('${it.fix_id}')">
-                <span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
-                <span>إصلاح تلقائي فوري</span>
-              </button>
-            </div>
-          `;
-        }
-
-        card.innerHTML = `
-          <div>
-            <div class="doc-item-top">
-              <div class="doc-item-title">${it.title}</div>
-              <div class="doc-item-badge ${isPass ? 'pass' : 'warn'}">${it.badge}</div>
-            </div>
-            <div class="doc-item-detail" style="margin-top: 6px;">${it.detail}</div>
+      let fixBtnHtml = '';
+      if (!isPass && it.auto_fixable && it.fix_id) {
+        fixBtnHtml = `
+          <div class="doc-item-action">
+            <button class="btn-item-heal" onclick="healSingleDoctorItem('${it.fix_id}')">
+              <span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+              <span>إصلاح تلقائي</span>
+            </button>
           </div>
-          ${fixBtnHtml}
         `;
-        grid.appendChild(card);
-      });
+      }
+
+      card.innerHTML = `
+        <div>
+          <div class="doc-item-top">
+            <div class="doc-item-title">${it.title}</div>
+            <div class="doc-item-badge ${isPass ? 'pass' : 'warn'}">${it.badge}</div>
+          </div>
+          <div class="doc-item-detail" style="margin-top: 6px;">${it.detail}</div>
+        </div>
+        ${fixBtnHtml}
+      `;
+      return card;
     }
 
     async function healSingleDoctorItem(fixId) {
@@ -3061,13 +3364,13 @@
 
     async function healAllDoctorIssues() {
       const btn = document.getElementById('btn-doctor-heal-all');
-      btn.innerHTML = `<span>جاري الإصلاح الشامل لكافة العناصر...</span>`;
+      btn.innerHTML = `<span>جاري الإصلاح...</span>`;
       if (window.pywebview && window.pywebview.api) {
         try {
           const res = await window.pywebview.api.heal_all_doctor_items();
-          btn.innerHTML = `<span>تم إتمام الإصلاح الشامل بنجاح!</span>`;
+          btn.innerHTML = `<span>تم الإصلاح بنجاح!</span>`;
           setTimeout(() => {
-            btn.innerHTML = `<span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span>زر الإصلاح الشامل بنقرة واحدة</span>`;
+            btn.innerHTML = `<span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span>أصلح كل المشاكل</span>`;
           }, 2000);
           runSmartDoctorScan();
         } catch (e) {
@@ -3094,14 +3397,24 @@
     }
 
     function renderRecentProjects(projs) {
+      recentProjectsAll = Array.isArray(projs) ? projs : [];
+      recentShowAll = false;
+      paintRecentProjects();
+      if (!activeProjPath && recentProjectsAll.length > 0) {
+        selectActiveProject(recentProjectsAll[0].name, recentProjectsAll[0].path);
+      }
+    }
+
+    function paintRecentProjects() {
       const container = document.getElementById('recent-projects-list');
       container.innerHTML = '';
-      if (!projs || projs.length === 0) {
+      if (recentProjectsAll.length === 0) {
         container.innerHTML = '<div style="font-size: 11px; color: var(--text-muted);">لم يتم إنشاء مشاريع حديثة بعد.</div>';
         return;
       }
 
-      projs.forEach(p => {
+      const visible = recentShowAll ? recentProjectsAll : recentProjectsAll.slice(0, 4);
+      visible.forEach(p => {
         const item = document.createElement('div');
         item.className = 'recent-item';
 
@@ -3116,28 +3429,56 @@
         info.appendChild(pathEl);
 
         const actions = document.createElement('div');
-        actions.style.cssText = 'display: flex; gap: 6px;';
-        const button = document.createElement('button');
-        button.className = 'btn-secondary';
-        button.style.cssText = 'padding: 4px 10px; font-size: 11px;';
-        const label = document.createElement('span');
-        label.textContent = 'تحديد كنشط';
-        button.appendChild(label);
-        button.addEventListener('click', () => selectActiveProject(p.name, p.path));
-        actions.appendChild(button);
+        actions.style.cssText = 'display: flex; gap: 6px; align-items: center;';
+        if (p.path === activeProjPath) {
+          item.style.borderColor = 'var(--accent)';
+          const badge = document.createElement('span');
+          badge.className = 'status-chip ok';
+          badge.textContent = 'نشط';
+          actions.appendChild(badge);
+        } else {
+          const button = document.createElement('button');
+          button.className = 'btn-secondary';
+          button.style.cssText = 'padding: 4px 10px; font-size: 11px;';
+          const label = document.createElement('span');
+          label.textContent = 'تحديد كنشط';
+          button.appendChild(label);
+          button.addEventListener('click', () => selectActiveProject(p.name, p.path));
+          actions.appendChild(button);
+        }
 
         item.appendChild(info);
         item.appendChild(actions);
         container.appendChild(item);
       });
+
+      if (recentProjectsAll.length > 4) {
+        const toggle = document.createElement('button');
+        toggle.className = 'btn-secondary';
+        toggle.style.cssText = 'align-self: flex-start; padding: 5px 12px; font-size: 11px;';
+        toggle.textContent = recentShowAll
+          ? 'عرض أقل'
+          : `عرض كل المشاريع (${recentProjectsAll.length})`;
+        toggle.addEventListener('click', () => {
+          recentShowAll = !recentShowAll;
+          paintRecentProjects();
+        });
+        container.appendChild(toggle);
+      }
     }
 
     let activeProjPath = null;
+    let recentProjectsAll = [];
+    let recentShowAll = false;
 
     function selectActiveProject(name, path) {
       activeProjPath = path;
       document.getElementById('active-proj-name').innerText = name;
       document.getElementById('active-proj-path').innerText = path;
+      if (!window.appInit) window.appInit = {};
+      window.appInit.active_project = { name, path };
+      renderHome();
+      if (recentProjectsAll.length) paintRecentProjects();
     }
 
     async function createNewLectureProject() {
@@ -3154,7 +3495,7 @@
           const res = await window.pywebview.api.create_lecture_project(name);
           btn.innerHTML = `<span>تم الإنشاء بنجاح!</span>`;
           setTimeout(() => {
-            btn.innerHTML = `<span>إنشاء وتجهيز المشروع فوراً</span>`;
+            btn.innerHTML = `<span>أنشئ مشروعي</span>`;
             inp.value = '';
           }, 1500);
           selectActiveProject(res.name, res.path);
@@ -3166,22 +3507,24 @@
     }
 
     function openActiveProjectVSCode() {
-      const path = document.getElementById('active-proj-path').innerText;
+      const path = getActiveProjectPath();
+      if (!path) return;
       if (window.pywebview && window.pywebview.api) {
         window.pywebview.api.open_project_in_vscode(path);
       }
     }
 
     async function cleanActiveProject() {
-      const path = document.getElementById('active-proj-path').innerText;
+      const path = getActiveProjectPath();
       const btn = document.getElementById('btn-clean-project');
+      if (!path) return;
       btn.innerHTML = `<span>جاري التنظيف...</span>`;
       if (window.pywebview && window.pywebview.api) {
         try {
           const res = await window.pywebview.api.clean_project(path);
           btn.innerHTML = `<span>تم تنظيف الكاش!</span>`;
           setTimeout(() => {
-            btn.innerHTML = `<span>تنظيف البناء (Clean)</span>`;
+            btn.innerHTML = `<span>تنظيف البناء</span>`;
           }, 1500);
         } catch (e) {
           console.error(e);
@@ -3190,9 +3533,11 @@
     }
 
     function runActiveProjectPhone() {
+      const path = getActiveProjectPath();
+      if (!path) return;
       switchMainView('wizard');
       showStep(3);
-      runRealGradleBuild(activeProjPath);
+      runRealGradleBuild(path);
     }
 
     // ========================================================

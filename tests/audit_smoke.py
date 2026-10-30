@@ -78,6 +78,11 @@ def static_checks() -> None:
     assert "def hot_reload_save" in app_src
     assert 'id="tab-hotreload"' in html_src, "hot reload pane must stay reachable"
     assert "switchCompanionTab('hotreload')" in html_src, "hot reload must be reachable from More"
+    assert 'id="hr-quick-text"' in html_src, "guided hot reload needs a simple text field"
+    assert "function applyQuickHotReloadText" in html_src, "guided hot reload must edit real code"
+    assert 'id="doctor-all-details"' in html_src, "full doctor checks must stay available in details"
+    assert 'id="doctor-ok-note"' in html_src, "doctor must confirm when everything is healthy"
+    assert 'id="btn-proj-hotreload"' in html_src, "active project must link to hot reload"
     assert 'id="btn-tab-home"' in html_src, "Home must be the first destination"
     assert html_src.count('class="comp-tab-btn active"') + html_src.count('class="comp-tab-btn"') == 4, "exactly 3 primary tabs plus More"
     assert 'id="hr-editor"' in html_src
@@ -323,7 +328,7 @@ def ui_checks() -> None:
         # 1) Doctor score: zero must render zero, not the falsy default 100.
         page.evaluate("renderDoctorReport({score: 0, items: []})")
         assert page.locator("#doctor-score-display").inner_text().strip() == "0%"
-        assert "غير مكتملة" in page.locator("#doctor-score-subtitle").inner_text()
+        assert "تعذر قراءة" in page.locator("#doctor-score-subtitle").inner_text()
 
         # 2) Healthy score remains 100%.
         page.evaluate("renderDoctorReport({score: 100, items: []})")
@@ -346,12 +351,15 @@ def ui_checks() -> None:
             "path": r"C:\Users\O'Brien\proj",
         }
         page.evaluate("switchMainView('companion'); switchCompanionTab('projects');")
-        page.evaluate("renderRecentProjects(" + json.dumps([xss_project]) + ")")
+        xss_second = {"name": "safe_project", "path": r"C:\Users\O'Brien\proj2"}
+        page.evaluate("activeProjPath = null")
+        page.evaluate("renderRecentProjects(" + json.dumps([xss_project, xss_second]) + ")")
         assert page.evaluate("window.__fw_xss || 0") == 0
         assert page.locator("#recent-projects-list img").count() == 0
         assert "O'Brien" in page.locator("#recent-projects-list").inner_text()
-        page.locator("#recent-projects-list button").first.click()
         assert page.evaluate("activeProjPath") == r"C:\Users\O'Brien\proj"
+        page.locator("#recent-projects-list button").first.click()
+        assert page.evaluate("activeProjPath") == r"C:\Users\O'Brien\proj2"
 
         # 2d) Keyboard, focus, text selection, and dialog semantics.
         page.evaluate("switchMainView('wizard'); showStep(1);")
@@ -398,6 +406,25 @@ def ui_checks() -> None:
         assert page.locator("#benchmark-card").is_visible()
         assert "Test Phone" in page.locator("#benchmark-head-text").inner_text()
         assert page.locator("#stat-size").inner_text().strip() == "12.3 MB"
+
+        # 5b) Guided hot reload must replace the first Text literal.
+        quick = page.evaluate("""() => {
+            document.getElementById('hr-auto').checked = false;
+            const ed = document.getElementById('hr-editor');
+            ed.value = "class A { const Text('قديم'); }";
+            hrRunning = true;
+            syncHotReloadQuickText();
+            const input = document.getElementById('hr-quick-text');
+            const seeded = input.value;
+            input.value = 'جديد';
+            applyQuickHotReloadText();
+            const updated = ed.value;
+            hrRunning = false;
+            return { seeded, updated };
+        }""")
+        assert quick["seeded"] == "قديم", "quick editor must prefill the current text"
+        assert "'جديد'" in quick["updated"], "quick editor must rewrite lib/main.dart"
+        page.evaluate("document.getElementById('hr-editor').value = ''; syncHotReloadQuickText();")
 
         # 6) Disconnecting the phone must reset the device card.
         page.evaluate("handleDeviceResponse({success: true, devices: []})")

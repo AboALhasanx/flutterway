@@ -173,20 +173,34 @@ def main() -> int:
                 before_path.write_bytes(before_png)
                 report["screens"].append({"name": "03_device_before", "note": "شاشة الهاتف قبل التعديل", "path": str(before_path)})
 
-            # Ensure the editor was populated by the app.
+            # Ensure the editor was populated by the app, then expose advanced tools.
+            page.evaluate("document.getElementById('hr-advanced').open = true")
             original = page.input_value("#hr-editor")
             if "const Text(" not in original:
                 finding("high", "Editor", "المحرر لم يحمّل lib/main.dart.")
                 return 7
+            quick_seed = ""
+            quick_enabled = False
+            if page.locator("#hr-quick-text").count():
+                quick_seed = page.input_value("#hr-quick-text")
+                quick_enabled = page.locator("#hr-quick-text").is_enabled()
+            report["quick_text_seed"] = quick_seed
+            if not quick_seed:
+                finding("medium", "Hot Reload", "حقل التغيير السريع لم يُملأ من ملف المشروع.")
+
             marker = "HOT_RELOAD_UI_" + datetime.now().strftime("%H%M%S")
-            updated_js = """(marker) => {
-                const ed = document.getElementById('hr-editor');
-                const updated = ed.value.replace(/(const Text\\(\\s*\\n\\s*')[^']+(')/, `$1${marker}$2`);
-                ed.value = updated;
-                ed.dispatchEvent(new Event('input', { bubbles: true }));
-                return updated;
-            }"""
-            page.evaluate(updated_js, marker)
+            method = "editor"
+            if quick_seed and quick_enabled:
+                method = "quick"
+                page.fill("#hr-quick-text", marker)
+            else:
+                page.evaluate("""(marker) => {
+                    const ed = document.getElementById('hr-editor');
+                    const updated = ed.value.replace(/(const Text\\(\\s*\\n\\s*')[^']+(')/, `$1${marker}$2`);
+                    ed.value = updated;
+                    ed.dispatchEvent(new Event('input', { bubbles: true }));
+                }""", marker)
+            report["edit_method"] = method
             reload_ms = None
             reload_log = ""
             deadline = time.time() + 40
@@ -201,6 +215,11 @@ def main() -> int:
             report["reload_log"] = reload_log
             if not reload_ms:
                 finding("high", "Hot Reload", "لم يظهر أي Reload بعد تعديل المحرر.")
+            report["editor_has_marker"] = page.evaluate(
+                "(marker) => document.getElementById('hr-editor').value.includes(marker)", marker
+            )
+            if method == "quick" and not report["editor_has_marker"]:
+                finding("high", "Hot Reload", "التعديل السريع لم يكتب القيمة في lib/main.dart.")
             page.wait_for_timeout(2200)
             shot("03_after_reload", "بعد التعديل والـ Hot Reload التلقائي")
 
@@ -223,8 +242,11 @@ def main() -> int:
                 report["screens"].append({"name": "04_device_after_reload", "note": "شاشة الهاتف بعد التحديث", "path": str(image_path)})
 
             # Restore the original code and wait for the automatic reload.
-            page.evaluate("(original) => { const ed = document.getElementById('hr-editor'); ed.value = original; ed.dispatchEvent(new Event('input', {bubbles:true})); }", original)
-            page.wait_for_timeout(2500)
+            if method == "quick":
+                page.fill("#hr-quick-text", quick_seed)
+            else:
+                page.evaluate("(original) => { const ed = document.getElementById('hr-editor'); ed.value = original; ed.dispatchEvent(new Event('input', {bubbles:true})); }", original)
+            page.wait_for_timeout(2800)
 
             # Stop the session.
             page.click("#btn-hr-stop")
