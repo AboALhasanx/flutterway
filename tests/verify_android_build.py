@@ -45,9 +45,11 @@ def main() -> int:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     data = Path(tempfile.mkdtemp(prefix="fw-ci-data-"))
     os.environ["FLUTTERWAY_DATA_DIR"] = str(data)
-    # Force our own SDK root instead of the one preinstalled on the runner.
-    for name in ("ANDROID_SDK_ROOT", "ANDROID_HOME"):
-        os.environ.pop(name, None)
+    # Force our own SDK root instead of the legacy/preinstalled one on the runner.
+    isolated_sdk = data / "android-sdk"
+    isolated_sdk.mkdir(parents=True, exist_ok=True)
+    os.environ["ANDROID_SDK_ROOT"] = str(isolated_sdk)
+    os.environ["ANDROID_HOME"] = str(isolated_sdk)
     java_home = _ensure_java()
     print("JAVA_HOME:", java_home, flush=True)
     if not java_home:
@@ -68,7 +70,7 @@ def main() -> int:
     os.environ["PATH"] = str(flutter_root / "bin") + os.pathsep + os.environ.get("PATH", "")
 
     print("installing Android SDK...", flush=True)
-    expected_root = str((data / "android-sdk").resolve())
+    expected_root = str(isolated_sdk.resolve())
     sdk = android_sdk.install_android_sdk(persist=False)
     print("sdk success:", sdk.get("success"), "root:", sdk.get("sdk_root"), flush=True)
     if not sdk.get("success"):
