@@ -34,6 +34,7 @@ try:
     from gui import android_sdk
     from gui import android_apk
     from gui import dev_reset
+    from gui import managed
     from gui import hot_reload
     from gui import diagnostics
 except ImportError:
@@ -1064,6 +1065,7 @@ class OnboardingApi:
 
         if os.path.exists(pubspec):
             companion_service.ensure_vscode_launch(project_path)
+            managed.write_marker(project_path, "starter_project")
             return True
 
         flutter_bat = paths.flutter_bat()
@@ -1127,6 +1129,7 @@ class OnboardingApi:
 
         if os.path.exists(pubspec):
             companion_service.ensure_vscode_launch(project_path)
+            managed.write_marker(project_path, "starter_project")
             return True
         if not self.state.get("starter_project_error"):
             self.state["starter_project_error"] = "لم يُنشأ pubspec.yaml بعد flutter create."
@@ -1269,6 +1272,21 @@ class OnboardingApi:
         if not dev_mode_enabled():
             return {"success": False, "logs": [], "error": "أدوات المطور غير مفعّلة."}
         return dev_reset.run(action, include_legacy=include_legacy, confirm=confirm)
+
+    def quarantine_list(self):
+        if not dev_mode_enabled():
+            return {"success": False, "error": "أدوات المطور غير مفعّلة.", "items": []}
+        return dev_reset.quarantine_list()
+
+    def quarantine_restore(self, item_id, destination=None):
+        if not dev_mode_enabled():
+            return {"success": False, "error": "أدوات المطور غير مفعّلة."}
+        return dev_reset.quarantine_restore(item_id, destination)
+
+    def quarantine_purge(self, item_id, confirmation):
+        if not dev_mode_enabled():
+            return {"success": False, "error": "أدوات المطور غير مفعّلة."}
+        return dev_reset.quarantine_purge(item_id, confirmation)
 
     def set_build_mode(self, mode):
         """Choose the test-app build mode: release (small), profile, or debug (large, hot reload)."""

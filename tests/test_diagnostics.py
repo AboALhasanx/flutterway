@@ -62,7 +62,7 @@ class DiagnosticsTests(unittest.TestCase):
             extra={"path": r"C:\Users\gokoq\proj"},
         )
         self.assertEqual(report["schema"], 2)
-        self.assertEqual(report["build"]["version"], "1.0.0")
+        self.assertEqual(report["build"]["version"], diagnostics.__version__)
         self.assertNotIn("gokoq", json.dumps(report, ensure_ascii=False))
         self.assertNotIn("logs", report)
         url = diagnostics.github_issue_url(report)

@@ -13,10 +13,12 @@ import subprocess
 try:
     from gui.vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     from gui import paths
+    from gui import managed
     from gui import android_sdk as sdk_bootstrap
 except ImportError:
     from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     import paths
+    import managed
     import android_sdk as sdk_bootstrap
 
 def get_adb_path():
@@ -593,6 +595,7 @@ class _LectureHomePageState extends State<LectureHomePage> {{
         return {"success": False, "error": "تعذر إنشاء مشروع المحاضرة. تأكد من تثبيت Flutter SDK ثم أعد المحاولة."}
 
     ensure_vscode_launch(project_dir)
+    managed.write_marker(project_dir, "lecture_project")
     save_recent_project(clean_name, project_dir, f"مشروع محاضرة جديد تم إنشاؤه بنجاح")
     return {
         "success": True,

@@ -16,9 +16,11 @@ import time
 from datetime import datetime
 
 try:
-    from gui import paths
+    from gui import managed, paths, quarantine
 except ImportError:
-    import paths
+    import managed  # type: ignore
+    import paths  # type: ignore
+    import quarantine  # type: ignore
 
 LEGACY_FLUTTER = r"C:\flutter"
 LEGACY_ANDROID = r"C:\Android"
@@ -224,13 +226,49 @@ def _delete(path: str, allowed_roots: list[str], logs: list[str]) -> bool:
 
 
 def reset_projects(logs: list[str]) -> None:
-    # A folder name is not proof of ownership. Keep projects until a signed
-    # marker plus quarantine/restore workflow exists (see B3).
-    logs.append(
-        "لم يُحذف أي مشروع: لا يوجد إثبات ملكية موثوق بعد. "
-        "احذف المشروع يدوياً أو استخدم أداة الحجر عند توفرها."
-    )
-    logs.append("أُبقي سجل المشاريع الحديثة كما هو.")
+    """Quarantine only projects FlutterWay can prove it created.
+
+    A matching folder name is not proof of ownership.  Unverified folders are
+    listed and left untouched so the student can decide manually.
+    """
+    desktop = os.path.expandvars(r"%USERPROFILE%\Desktop")
+    candidates = [
+        os.path.join(desktop, "my_first_app"),
+        os.path.join(desktop, "اول_تطبيق_فلاتر"),
+    ]
+    lectures = paths.lecture_projects_dir()
+    if os.path.isdir(lectures):
+        candidates.extend(os.path.join(lectures, name) for name in os.listdir(lectures))
+
+    for candidate in candidates:
+        if not os.path.isdir(candidate):
+            continue
+        if not managed.is_managed(candidate):
+            logs.append(
+                f"لم نلمس {candidate}: لا يوجد إثبات ملكية. انقله يدوياً إن أردت."
+            )
+            continue
+        result = quarantine.quarantine(
+            candidate, "dev_reset_projects", [desktop, lectures]
+        )
+        if result.get("success"):
+            logs.append(f"حُجر المشروع: {candidate} → {result.get('id')} (يمكن استعادته)")
+        else:
+            logs.append(f"تعذر حجر {candidate}: {result.get('error')}")
+    logs.append("سجل المشاريع الحديثة لم يُحذف.")
+
+
+def quarantine_list() -> dict:
+    items = quarantine.list_items()
+    return {"success": True, "items": items}
+
+
+def quarantine_restore(item_id: str, destination: str | None = None) -> dict:
+    return quarantine.restore(item_id, destination)
+
+
+def quarantine_purge(item_id: str, confirmation: str) -> dict:
+    return quarantine.purge(item_id, confirmation)
 
 
 def _managed_download_paths() -> list[str]:

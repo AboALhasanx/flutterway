@@ -2,6 +2,10 @@
 > **النواة الهندسية لنظام الإعداد الذكي والتشخيص لبيئة Flutter & Android على Windows**
 > **Architecture & Systems Design Specification (v1.0)**
 
+> ⚠️ **هذا الملف رؤية مستقبلية، وليس وصفاً للكود الحالي.**
+> التطبيق المنفّذ هو Python + pywebview في `gui/`، وليس محرك Go ولا `fway.exe` ولا manifest ديناميكي.
+> راجع `README.md` و`docs/ERROR_REPORTING.md` للحالة الفعلية.
+
 ---
 
 ## 1. الفلسفة الهندسية (Engineering Philosophy)

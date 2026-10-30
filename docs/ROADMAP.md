@@ -1,6 +1,9 @@
 # خارطة طريق مشروع FlutterWay (Engineering Roadmap)
 > **مراحل دورة حياة تطوير وتوزيع الأداة (SDLC Implementation Phases)**
 
+> ⚠️ **رؤية مستقبلية:** بعض البنود هنا (محرك Go، `fway.exe`، manifest ديناميكي) غير منفّذة.
+> الحالة الفعلية في `STATUS` داخل خطة التحصين و`README.md`.
+
 ---
 
 ## المرحلة الأولى: بناء المحرك الأساسي (Core Engine in Go) - [الحالية]
