@@ -536,16 +536,34 @@ def dev_reset_environment(mode="soft"):
     except Exception as e:
         logs.append(f"تعذر إلغاء التثبيت من الهاتف: {e}")
 
-    # 2. Wipe Desktop test projects
+    # 2. Project cleaning based on mode:
     desktop = os.path.expandvars(r"%USERPROFILE%\Desktop")
-    for proj_name in ["my_first_app", "اول_تطبيق_فلاتر"]:
-        target = os.path.join(desktop, proj_name)
-        if os.path.exists(target):
+    proj_path = os.path.join(desktop, "my_first_app")
+    if mode == "soft":
+        # In soft reset, we wipe the build folder and dart_tool so Gradle compiles completely from scratch
+        build_dir = os.path.join(proj_path, "build")
+        if os.path.exists(build_dir):
             try:
-                shutil.rmtree(target, ignore_errors=True)
-                logs.append(f"تم حذف مجلد المشروع التجريبي: {proj_name}")
+                shutil.rmtree(build_dir, ignore_errors=True)
+                logs.append("تم مسح مجلد كاش البناء (build) بالكامل لإعادة البناء من الصفر")
             except Exception as e:
-                logs.append(f"تعذر حذف {proj_name}: {e}")
+                logs.append(f"تعذر حذف build: {e}")
+        dart_tool = os.path.join(proj_path, ".dart_tool")
+        if os.path.exists(dart_tool):
+            try:
+                shutil.rmtree(dart_tool, ignore_errors=True)
+                logs.append("تم مسح كاش .dart_tool")
+            except Exception as e:
+                logs.append(f"تعذر حذف .dart_tool: {e}")
+    else: # mode == "full"
+        for proj_name in ["my_first_app", "اول_تطبيق_فلاتر"]:
+            target = os.path.join(desktop, proj_name)
+            if os.path.exists(target):
+                try:
+                    shutil.rmtree(target, ignore_errors=True)
+                    logs.append(f"تم حذف مجلد المشروع التجريبي بالكامل: {proj_name}")
+                except Exception as e:
+                    logs.append(f"تعذر حذف {proj_name}: {e}")
 
     # Also clean demo lecture projects
     lecture_folder = os.path.join(desktop, "FlutterProjects")
@@ -565,7 +583,7 @@ def dev_reset_environment(mode="soft"):
         except Exception as e:
             logs.append(f"تعذر مسح سجل المشاريع: {e}")
 
-    # 4. Clean Gradle Locks & Zombie Processes
+    # 4. Clean Gradle Locks & Stop Zombie Daemons
     try:
         run_silent(["taskkill", "/f", "/im", "java.exe"])
         for base in [r"C:\g", os.path.expandvars(r"%USERPROFILE%\.gradle")]:
@@ -580,7 +598,7 @@ def dev_reset_environment(mode="soft"):
                                         os.remove(os.path.join(root, f))
                                     except Exception:
                                         pass
-        logs.append("تم إنهاء عمليات الجافا المعلقة وتصفية أقفال كاش الجرادل")
+        logs.append("تم إيقاف دواليب Gradle Daemons وتصفية ملفات الأقفال (.lock)")
     except Exception as e:
         logs.append(f"تنبيه كاش الجرادل: {e}")
 
@@ -618,5 +636,5 @@ def dev_reset_environment(mode="soft"):
         "success": True,
         "mode": mode,
         "logs": logs,
-        "message": "تمت إعادة تعيين بيئة الاختبار بنجاح! بإمكانك الآن إعادة تجربة واختبار كل خطوات التطبيق من البداية."
+        "message": "تمت إعادة تعيين بيئة الاختبار بنجاح! بإمكانك الآن إعادة تجربة واختبار البناء من الصفر."
     }

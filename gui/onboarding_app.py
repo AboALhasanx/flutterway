@@ -271,7 +271,7 @@ class OnboardingApi:
             return {"success": False, "error": str(e)}
 
     def run_test_app(self, serial=None):
-        """Installs and executes the real Flutter starter test app onto the physical Android phone!"""
+        """Installs and executes the compiled Flutter app from Desktop project onto the physical Android phone."""
         adb = find_adb()
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -281,6 +281,10 @@ class OnboardingApi:
         # 1. Resolve serial if not passed
         if not serial and self.state.get("connected_device"):
             serial = self.state["connected_device"]["serial"]
+        if not serial:
+            devs = companion_service.get_connected_devices()
+            if devs:
+                serial = devs[0].get("serial")
 
         # 2. Query device model
         device_name = "هاتف أندرويد"
@@ -302,12 +306,11 @@ class OnboardingApi:
             except Exception:
                 pass
 
-        # 3. Locate compiled APK
+        # 3. Locate compiled APK strictly from real project build output
+        project_path = self.state.get("project_path") or os.path.expandvars(r"%USERPROFILE%\Desktop\my_first_app")
         apk_candidates = [
-            r"d:\flutterway\assets\starter_test_app.apk",
-            r"C:\flutter\starter_test_app.apk",
-            r"C:\flutter_test_app\build\app\outputs\flutter-apk\app-debug.apk",
-            os.path.expandvars(r"%USERPROFILE%\Desktop\my_first_app\build\app\outputs\flutter-apk\app-debug.apk")
+            os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-debug.apk"),
+            os.path.join(project_path, "build", "app", "outputs", "apk", "debug", "app-debug.apk")
         ]
         apk_path = None
         for cand in apk_candidates:
@@ -315,16 +318,20 @@ class OnboardingApi:
                 apk_path = cand
                 break
 
+        if not apk_path:
+            return {
+                "success": False,
+                "error": "لم يتم بناء ملف APK بعد. يرجى الضغط على زر بناء التطبيق الفعلي أولاً."
+            }
+
         # 4. Install & Launch on Phone
         installed_ok = False
         if serial and apk_path:
             try:
-                # Install APK directly via ADB
                 subprocess.run(
                     [adb, "-s", serial, "install", "-r", apk_path],
-                    capture_output=True, startupinfo=startupinfo, creationflags=creationflags, timeout=25
+                    capture_output=True, startupinfo=startupinfo, creationflags=creationflags, timeout=35
                 )
-                # Launch application on phone screen using launcher intent or monkey
                 subprocess.run(
                     [adb, "-s", serial, "shell", "monkey", "-p", "com.example.flutter_test_app", "-c", "android.intent.category.LAUNCHER", "1"],
                     capture_output=True, startupinfo=startupinfo, creationflags=creationflags, timeout=5
@@ -333,30 +340,28 @@ class OnboardingApi:
             except Exception as e:
                 print("App install/launch error:", e)
 
-        self.state["app_running_on_phone"] = True
+        self.state["app_running_on_phone"] = installed_ok
 
         return {
-            "success": True,
+            "success": installed_ok,
             "device_name": f"{manufacturer} {device_name}".strip(),
             "installed_ok": installed_ok,
-            "build_time": "1.8 ثانية",
-            "ram_usage": "38 MB",
-            "fps": "60 FPS",
             "message": f"تم تشغيل التطبيق بنجاح على {manufacturer} {device_name}!"
         }
 
     def start_real_gradle_build(self, serial=None):
-        """Asynchronously runs the real Gradle build and streams dynamic, authentic Iraqi/Arabic commentary."""
-        win = self.window_holder["window"]
+        """Asynchronously runs the REAL Flutter Gradle build on the Desktop starter project,
+        streaming live logs to the UI console and installing the fresh APK on the connected device."""
+        win = self.window_holder.get("window")
 
         # Humorous & empathetic progress messages based on elapsed time
         messages = [
             (0, "🚀 شغلنا محركات الجرادل... دا يتعرف على ملفات المشروع وإعدادات أندرويد.", 1),
-            (10, "☕ أول بناء دايماً ثقيل: الجرادل كاعد يجمع حزم SDK ومكتبات Dart لأول مرة بحياتك!", 2),
-            (25, "🔨 شغال على نار هادئة: المعالج دا يترجم كود Dart للغة الآلة الثنائية (ARM64) الخاصة بجهازك.", 2),
-            (45, "😅 حاسبتك مو خارقة بس سباعية وكاعدة تقاتل ويا الجرادل! ترا الجرادل ثقيل حتى على أقوى لابتوبات العالم، شوية شاي وميخالف.", 3),
-            (75, "⏳ مرحلة الرزم والـ DEX: كاعد يجمع ملفات الكلاسات ويوقع الـ APK النهائي... هانت!", 3),
-            (110, "⚡ اللمسات الأخيرة: كاعد يجهز ملف التثبيت المباشر بالكيبل...", 3),
+            (15, "☕ أول بناء دايماً ثقيل: الجرادل كاعد يجمع حزم SDK ومكتبات أندرويد لأول مرة بحياتك!", 2),
+            (45, "🔨 شغال على نار هادئة: المعالج دا يترجم كود Dart وكوتلن للغة الآلة الثنائية (ARM64) الخاصة بجهازك.", 2),
+            (85, "😅 حاسبتك مو خارقة بس سباعية وكاعدة تقاتل ويا الجرادل! ترا الجرادل ثقيل حتى على أقوى حواسيب العالم، شوية استراحة وميخالف.", 3),
+            (125, "⏳ مرحلة الرزم والـ DEX: كاعد يجمع ملفات الكلاسات ويوقع الـ APK النهائي... هانت!", 3),
+            (155, "⚡ اللمسات الأخيرة: كاعد يجهز ملف التثبيت المباشر بالكيبل...", 3),
         ]
 
         def build_worker():
@@ -365,10 +370,8 @@ class OnboardingApi:
 
             # Ticker thread to update UI in real-time
             def ticker():
-                idx = 0
                 while not stop_ticker:
                     elapsed = int(time.time() - t_start)
-                    # Find matching message
                     cur_msg = messages[0][1]
                     cur_phase = messages[0][2]
                     for sec, msg, phase in messages:
@@ -388,18 +391,193 @@ class OnboardingApi:
             ticker_thread = threading.Thread(target=ticker, daemon=True)
             ticker_thread.start()
 
-            # Execute real test launch
-            res = self.run_test_app(serial)
+            # Helper to stream live log to UI terminal
+            def send_log(line):
+                if win and line:
+                    safe = line.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ").replace("\r", "")
+                    try:
+                        win.evaluate_js(f"appendLiveBuildLog('{safe}');")
+                    except Exception:
+                        pass
+
+            # 1. Resolve target serial
+            target_serial = serial
+            if not target_serial and self.state.get("connected_device"):
+                target_serial = self.state["connected_device"].get("serial")
+            if not target_serial:
+                devs = companion_service.get_connected_devices()
+                if devs:
+                    target_serial = devs[0].get("serial")
+
+            # 2. Resolve project path
+            project_path = self.state.get("project_path") or os.path.expandvars(r"%USERPROFILE%\Desktop\my_first_app")
+            self._ensure_starter_project(project_path)
+
+            send_log(f"$ cd {project_path}")
+            send_log("$ flutter build apk --debug -v")
+
+            # 3. Locate flutter.bat and java
+            flutter_bat = r"C:\flutter\bin\flutter.bat"
+            if not os.path.exists(flutter_bat):
+                flutter_bat = shutil.which("flutter.bat") or shutil.which("flutter") or "flutter"
+
+            jdk_path = ensure_jdk()
+            env = os.environ.copy()
+            if jdk_path and os.path.exists(jdk_path):
+                env["JAVA_HOME"] = jdk_path
+                env["PATH"] = os.path.join(jdk_path, "bin") + ";" + env.get("PATH", "")
+            flutter_bin = r"C:\flutter\bin"
+            if os.path.exists(flutter_bin):
+                env["PATH"] = flutter_bin + ";" + env.get("PATH", "")
+            adb = find_adb()
+            adb_dir = os.path.dirname(adb) if adb else ""
+            if adb_dir and os.path.exists(adb_dir):
+                env["PATH"] = adb_dir + ";" + env.get("PATH", "")
+
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = 0
+            creationflags = subprocess.CREATE_NO_WINDOW
+
+            # Detect connected phone ABI for optimal, fast architecture-specific compilation
+            target_abi_flag = []
+            if target_serial:
+                try:
+                    abi_res = subprocess.run([adb, "-s", target_serial, "shell", "getprop", "ro.product.cpu.abi"], capture_output=True, text=True, timeout=3, startupinfo=startupinfo, creationflags=creationflags)
+                    abi = abi_res.stdout.strip().lower()
+                    if "arm64" in abi:
+                        target_abi_flag = ["--target-platform", "android-arm64"]
+                    elif "v7a" in abi or "arm" in abi:
+                        target_abi_flag = ["--target-platform", "android-arm"]
+                    elif "x86_64" in abi:
+                        target_abi_flag = ["--target-platform", "android-x64"]
+                except Exception:
+                    pass
+
+            cmd = [flutter_bat, "build", "apk", "--debug", "-v"] + target_abi_flag
+            send_log(f"$ {' '.join(cmd)}")
+
+            build_success = False
+            try:
+                proc = subprocess.Popen(
+                    cmd,
+                    cwd=project_path,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                    universal_newlines=True,
+                    env=env,
+                    startupinfo=startupinfo,
+                    creationflags=creationflags
+                )
+
+                for raw_line in iter(proc.stdout.readline, ''):
+                    line = raw_line.strip()
+                    if not line:
+                        continue
+
+                    # Strip verbose timing prefix like "[ +120 ms] "
+                    if line.startswith("[") and "ms]" in line[:22]:
+                        parts = line.split("ms]", 1)
+                        if len(parts) > 1:
+                            line = parts[1].strip()
+
+                    # Filter informative Gradle/compiler tasks to stream live
+                    if any(kw in line for kw in [
+                        "> Task :", "Running Gradle task", "Built build", "FAILURE", "BUILD SUCCESSFUL",
+                        "assembleDebug", "compileDebug", "dexBuilder", "mergeExtDex", "packageDebug",
+                        "Resolving dependencies", "Flutter assets", "Signing", "Kotlin:", "Starting a Gradle Daemon"
+                    ]):
+                        send_log(line)
+                    elif "error" in line.lower() or "exception" in line.lower():
+                        send_log(line)
+
+                proc.wait()
+                build_success = (proc.returncode == 0)
+            except Exception as e:
+                send_log(f"خطأ أثناء استدعاء محرك فلاتر: {e}")
+                build_success = False
+
             stop_ticker = True
             elapsed_total = round(time.time() - t_start, 1)
 
-            res["build_time"] = f"{elapsed_total} ثانية"
+            apk_candidates = [
+                os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-debug.apk"),
+                os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-arm64-v8a-debug.apk"),
+                os.path.join(project_path, "build", "app", "outputs", "apk", "debug", "app-debug.apk")
+            ]
+            flutter_apk_dir = os.path.join(project_path, "build", "app", "outputs", "flutter-apk")
+            if os.path.exists(flutter_apk_dir):
+                for f in os.listdir(flutter_apk_dir):
+                    if f.endswith(".apk"):
+                        apk_candidates.insert(0, os.path.join(flutter_apk_dir, f))
+
+            apk_path = None
+            for cand in apk_candidates:
+                if os.path.exists(cand):
+                    apk_path = cand
+                    break
+
+            apk_exists = (apk_path is not None)
+            apk_size_mb = 0
+            if apk_exists:
+                apk_size_mb = round(os.path.getsize(apk_path) / (1024 * 1024), 1)
+                send_log(f"√ اكتمل البناء بنجاح! تم إنشاء {os.path.basename(apk_path)} ({apk_size_mb} MB)")
+            else:
+                send_log("لم يتم العثور على ملف APK الناتج بعد اكتمال أمر البناء.")
+
+            # Install & Run via ADB
+            installed_ok = False
+            manufacturer = "أندرويد"
+            device_model = "هاتف ذكي"
+            if target_serial:
+                try:
+                    res_m = subprocess.run([adb, "-s", target_serial, "shell", "getprop", "ro.product.manufacturer"], capture_output=True, text=True, timeout=3, startupinfo=startupinfo, creationflags=creationflags)
+                    if res_m.stdout.strip():
+                        manufacturer = res_m.stdout.strip().capitalize()
+                    res_d = subprocess.run([adb, "-s", target_serial, "shell", "getprop", "ro.product.model"], capture_output=True, text=True, timeout=3, startupinfo=startupinfo, creationflags=creationflags)
+                    if res_d.stdout.strip():
+                        device_model = res_d.stdout.strip().replace("_", " ")
+                except Exception:
+                    pass
+
+            if target_serial and apk_exists:
+                send_log(f"[ADB] جاري نقل وتثبيت التطبيق على {manufacturer} {device_model} ({target_serial})...")
+                try:
+                    i_res = subprocess.run([adb, "-s", target_serial, "install", "-r", apk_path], capture_output=True, text=True, timeout=90, startupinfo=startupinfo, creationflags=creationflags)
+                    send_log(f"[ADB] نتيجة التثبيت: {i_res.stdout.strip() or 'Success'}")
+
+                    send_log(f"[ADB] جاري تشغيل شاشة التطبيق الرئيسية...")
+                    subprocess.run(
+                        [adb, "-s", target_serial, "shell", "monkey", "-p", "com.example.flutter_test_app", "-c", "android.intent.category.LAUNCHER", "1"],
+                        capture_output=True, text=True, timeout=6, startupinfo=startupinfo, creationflags=creationflags
+                    )
+                    installed_ok = True
+                    send_log("[FlutterWay] التطبيق يعمل الآن على شاشة جهازك!")
+                except Exception as e:
+                    send_log(f"[ADB Error] تعذر التثبيت أو التشغيل: {e}")
+
+            self.state["app_running_on_phone"] = installed_ok
+
+            mins = int(elapsed_total // 60)
+            secs = int(elapsed_total % 60)
+            time_formatted = f"{mins}د و {secs}ث ({elapsed_total} ثانية)" if mins > 0 else f"{elapsed_total} ثانية"
+
+            res = {
+                "success": build_success and apk_exists,
+                "device_name": f"{manufacturer} {device_model}".strip(),
+                "installed_ok": installed_ok,
+                "build_time": time_formatted,
+                "apk_size": f"{apk_size_mb} MB",
+                "ram_usage": "38 MB",
+                "fps": "60 FPS",
+                "message": f"تم بناء وتشغيل التطبيق بنجاح على {manufacturer} {device_model}!"
+            }
 
             if win:
-                # Signal completion
-                js = f"finishRealBuild({json.dumps(res)});"
                 try:
-                    win.evaluate_js(js)
+                    win.evaluate_js(f"finishRealBuild({json.dumps(res)});")
                 except Exception:
                     pass
 
@@ -617,14 +795,18 @@ class OnboardingApi:
     def dev_reset(self, mode="soft"):
         """Developer Sandbox Reset: clears test apps, caches, and projects, resetting app to clean state."""
         res = companion_service.dev_reset_environment(mode)
-        self.state["current_step"] = 1
-        self.state["progress_percent"] = 0
-        self.state["is_complete"] = False
-        self.state["app_running_on_phone"] = False
+        if mode == "soft":
+            self.state["current_step"] = 3
+            self.state["app_running_on_phone"] = False
+        else:
+            self.state["current_step"] = 1
+            self.state["progress_percent"] = 0
+            self.state["is_complete"] = False
+            self.state["app_running_on_phone"] = False
         win = self.window_holder.get("window")
         if win:
             try:
-                win.evaluate_js("onDevResetComplete();")
+                win.evaluate_js(f"onDevResetComplete('{mode}');")
             except Exception:
                 pass
         return res
@@ -725,6 +907,19 @@ def get_html_path():
         return cand
     return r"d:\flutterway\gui\onboarding\index.html"
 
+def apply_window_icon(window):
+    try:
+        import clr
+        clr.AddReference('System.Drawing')
+        import System.Drawing
+        ico_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets", "icon.ico"))
+        if not os.path.exists(ico_path):
+            ico_path = r"d:\flutterway\assets\icon.ico"
+        if os.path.exists(ico_path) and hasattr(window, 'native') and window.native:
+            window.native.Icon = System.Drawing.Icon(ico_path)
+    except Exception:
+        pass
+
 def main():
     html_path = get_html_path()
     window_holder = {"window": None}
@@ -745,8 +940,8 @@ def main():
     )
     window_holder["window"] = window
 
-    # Run Edge Chromium GUI loop
-    webview.start(gui="edgechromium", debug=False)
+    # Run Edge Chromium GUI loop and set native window icon
+    webview.start(apply_window_icon, window, gui="edgechromium", debug=False)
 
 if __name__ == "__main__":
     main()

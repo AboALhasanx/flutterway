@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FlutterWay — بيئة فلاتر للمبتدئين ورفيق الطالب</title>
+  <link rel="icon" type="image/png" href="flutter_logo.png">
+  <link rel="shortcut icon" href="flutter_logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1254,13 +1256,8 @@
   <!-- Header with Brand, Mode Switcher, and Theme Toggle -->
   <header>
     <div class="brand">
-      <div class="brand-logo">
-        <svg viewBox="0 0 256 256" width="22" height="22">
-          <polygon points="134,31 204,31 73,162 3,162" fill="#54C5F8"/>
-          <polygon points="134,103 204,103 143,164 73,164" fill="#54C5F8"/>
-          <polygon points="73,164 108,129 143,164 108,199" fill="#29B6F6"/>
-          <polygon points="143,164 108,199 134,225 204,225" fill="#01579B"/>
-        </svg>
+      <div class="brand-logo" style="overflow: hidden; padding: 2px;">
+        <img src="flutter_logo.png" style="width: 100%; height: 100%; object-fit: contain;" alt="FlutterWay Logo">
       </div>
       <div>
         <div class="brand-title">FlutterWay</div>
@@ -1955,6 +1952,17 @@
                 <span>تثبيت وتشغيل التطبيق على شاشة الهاتف</span>
               </div>
             </div>
+
+            <!-- Live Real Gradle Terminal Output -->
+            <div style="margin-top: 14px; background: rgba(0, 0, 0, 0.45); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-family: 'Consolas', 'Fira Code', monospace; font-size: 11px; text-align: left; direction: ltr;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; color: var(--text-muted); font-size: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">
+                <span style="font-weight: 700;">REAL GRADLE BUILD STREAM (STDOUT)</span>
+                <span id="build-task-active" style="color: var(--accent); font-weight: 700;">Compiling...</span>
+              </div>
+              <div id="build-terminal-lines" style="max-height: 125px; overflow-y: auto; color: #38bdf8; display: flex; flex-direction: column; gap: 3px; word-break: break-all;">
+                <div style="color: #64748b;">$ flutter build apk --debug -v</div>
+              </div>
+            </div>
           </div>
 
           <!-- Celebration Benchmark Card -->
@@ -2117,17 +2125,17 @@
             </button>
           </div>
 
-          <!-- Card 2: Soft Reset (Device & Projects Only) -->
+          <!-- Card 2: Soft Reset (Device & Build Cache Only) -->
           <div class="dev-action-box">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <span style="font-size: 13px; font-weight: 800; color: var(--text);">2. إعادة تعيين الهاتف ومشاريع التجربة فقط</span>
-              <span class="level-badge" style="margin: 0;">إعادة اختبار الهاتف</span>
+              <span style="font-size: 13px; font-weight: 800; color: var(--text);">2. مسح كاش البناء وتطبيق الهاتف (Soft Reset)</span>
+              <span class="level-badge" style="margin: 0;">إعادة تجربة البناء الحقيقي</span>
             </div>
             <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px;">
-              يحذف التطبيق من التابلت ويمسح مشاريع التجربة فقط، مع الإبقاء على مسار Flutter في الويندوز، لإعادة تجربة المستوى الثالث (وحش البناء الفعلي).
+              يحذف التطبيق التجريبي من التابلت ويمسح مجلد كاش البناء (build) بالكامل وملفات .dart_tool، وينهي عمليات Gradle، لإعادة تجربة البناء الفعلي الحقيقي من الصفر واختبار المدة الطبيعية.
             </div>
             <button id="btn-dev-soft-reset" class="btn-secondary" style="font-size: 12px; padding: 6px 16px;" onclick="executeDevReset('soft')">
-              <span>مسح الهاتف ومشاريع التجربة فقط</span>
+              <span>مسح كاش البناء والهاتف (إعادة تجربة البناء)</span>
             </button>
           </div>
         </div>
@@ -2717,6 +2725,28 @@
       }
     }
 
+    function appendLiveBuildLog(line) {
+      const container = document.getElementById('build-terminal-lines');
+      const taskActive = document.getElementById('build-task-active');
+      if (!container) return;
+      const div = document.createElement('div');
+      div.innerText = line;
+      if (line.includes('> Task')) {
+        div.style.color = '#a78bfa';
+        if (taskActive) taskActive.innerText = line.replace('> Task ', '');
+      } else if (line.includes('Built build') || line.includes('Success') || line.includes('SUCCESSFUL')) {
+        div.style.color = '#34d399';
+        if (taskActive) taskActive.innerText = 'Build Succeeded';
+      } else if (line.includes('Error') || line.includes('FAILED') || line.includes('Exception')) {
+        div.style.color = '#f87171';
+        if (taskActive) taskActive.innerText = 'Build Error';
+      } else {
+        div.style.color = '#38bdf8';
+      }
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
     function finishRealBuild(res) {
       const consoleBox = document.getElementById('build-console');
       const benchmarkCard = document.getElementById('benchmark-card');
@@ -2788,7 +2818,7 @@
 
           setTimeout(() => {
             closeDevModal();
-            onDevResetComplete();
+            onDevResetComplete(mode);
           }, 1600);
         } catch (e) {
           linesBox.innerHTML += `> [ERROR] ${e}\n`;
@@ -2797,33 +2827,50 @@
         linesBox.innerHTML += `> [SIMULATION] تم إلغاء تثبيت التطبيق، وحذف المشاريع، وتصفية PATH.\n`;
         setTimeout(() => {
           closeDevModal();
-          onDevResetComplete();
+          onDevResetComplete(mode);
         }, 1200);
       }
     }
 
-    function onDevResetComplete() {
-      switchMainView('wizard');
-      showStep(1);
-      currentProgress = 0;
-      updateProgress(0, 'جاري فحص إعدادات اللابتوب وتوفير أفضل مسار...', 1);
+    function onDevResetComplete(mode) {
       const benchCard = document.getElementById('benchmark-card');
       const consoleBox = document.getElementById('build-console');
       const btnRun = document.getElementById('btn-run-test');
-      if (benchCard) benchCard.style.display = 'none';
-      if (consoleBox) consoleBox.style.display = 'none';
-      if (btnRun) btnRun.style.display = 'none';
-      const chkBanner = document.getElementById('banner-check');
-      const diagResult = document.getElementById('diag-result-box');
-      if (chkBanner) chkBanner.style.display = 'flex';
-      if (diagResult) diagResult.style.display = 'none';
-
       const btnFull = document.getElementById('btn-dev-full-reset');
       const btnSoft = document.getElementById('btn-dev-soft-reset');
-      if (btnFull) btnFull.innerText = 'مسح كل شيء والبدء كطالب جديد من الصفر';
-      if (btnSoft) btnSoft.innerText = 'مسح الهاتف ومشاريع التجربة فقط';
 
-      alert("تمت إعادة ضبط البيئة بنجاح! تم حذف التطبيق من التابلت ومسح المشاريع وتصفية المسارات. بإمكانك الآن اختبار ومتابعة خطوات التجهيز والتحميل بالكامل من البداية.");
+      if (btnFull) btnFull.innerText = 'مسح كل شيء والبدء كطالب جديد من الصفر';
+      if (btnSoft) btnSoft.innerText = 'مسح كاش البناء والهاتف (إعادة تجربة البناء)';
+
+      if (benchCard) benchCard.style.display = 'none';
+      if (consoleBox) consoleBox.style.display = 'none';
+
+      const termLines = document.getElementById('build-terminal-lines');
+      if (termLines) {
+        termLines.innerHTML = '<div style="color: #64748b;">$ flutter build apk --debug -v</div>';
+      }
+
+      if (mode === 'soft') {
+        switchMainView('wizard');
+        showStep(3);
+        if (btnRun) btnRun.style.display = 'inline-flex';
+        const guideBox = document.getElementById('device-guide-box');
+        const ctrlBtns = document.getElementById('device-ctrl-btns');
+        if (guideBox) guideBox.style.display = 'block';
+        if (ctrlBtns) ctrlBtns.style.display = 'flex';
+        alert("تم مسح كاش البناء (build) والـ .dart_tool وإلغاء تثبيت التطبيق من الهاتف بنجاح! بإمكانك الآن الضغط على زر البناء لإعادة تجربة البناء الفعلي كاملاً من الصفر.");
+      } else {
+        switchMainView('wizard');
+        showStep(1);
+        currentProgress = 0;
+        updateProgress(0, 'جاري فحص إعدادات اللابتوب وتوفير أفضل مسار...', 1);
+        if (btnRun) btnRun.style.display = 'none';
+        const chkBanner = document.getElementById('banner-check');
+        const diagResult = document.getElementById('diag-result-box');
+        if (chkBanner) chkBanner.style.display = 'flex';
+        if (diagResult) diagResult.style.display = 'none';
+        alert("تمت إعادة ضبط البيئة بالكامل كطالب جديد من الصفر! تم تصفية المتغيرات وإعدادات VS Code والمشاريع السابقة.");
+      }
     }
 
     // Auto-Initialization
