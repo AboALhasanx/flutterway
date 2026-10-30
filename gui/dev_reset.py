@@ -23,7 +23,8 @@ except ImportError:
 LEGACY_FLUTTER = r"C:\flutter"
 LEGACY_ANDROID = r"C:\Android"
 LEGACY_GRADLE = r"C:\g"
-LEGACY_PROJECT_NAMES = ["my_first_app", "اول_تطبيق_فلاتر"]
+# Legacy project folder names are kept for display/inventory only. They are no
+# longer deleted automatically: a folder name is not proof of ownership.
 
 
 def _size_mb(path: str, max_files: int = 4000) -> float | None:
@@ -223,11 +224,13 @@ def _delete(path: str, allowed_roots: list[str], logs: list[str]) -> bool:
 
 
 def reset_projects(logs: list[str]) -> None:
-    desktop = os.path.expandvars(r"%USERPROFILE%\Desktop")
-    for name in LEGACY_PROJECT_NAMES:
-        _delete(os.path.join(desktop, name), [os.path.join(desktop, name)], logs)
-    _delete(paths.lecture_projects_dir(), [paths.lecture_projects_dir()], logs)
-    _delete(paths.recent_projects_file(), [paths.recent_projects_file()], logs)
+    # A folder name is not proof of ownership. Keep projects until a signed
+    # marker plus quarantine/restore workflow exists (see B3).
+    logs.append(
+        "لم يُحذف أي مشروع: لا يوجد إثبات ملكية موثوق بعد. "
+        "احذف المشروع يدوياً أو استخدم أداة الحجر عند توفرها."
+    )
+    logs.append("أُبقي سجل المشاريع الحديثة كما هو.")
 
 
 def _managed_download_paths() -> list[str]:

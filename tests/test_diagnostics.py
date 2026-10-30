@@ -10,6 +10,7 @@ import unittest
 import urllib.parse
 import zipfile
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -60,8 +61,10 @@ class DiagnosticsTests(unittest.TestCase):
             include_logs=False,
             extra={"path": r"C:\Users\gokoq\proj"},
         )
-        self.assertEqual(report["version"], "1.0.0")
+        self.assertEqual(report["schema"], 2)
+        self.assertEqual(report["build"]["version"], "1.0.0")
         self.assertNotIn("gokoq", json.dumps(report, ensure_ascii=False))
+        self.assertNotIn("logs", report)
         url = diagnostics.github_issue_url(report)
         parsed = urllib.parse.urlparse(url)
         query = urllib.parse.parse_qs(parsed.query)
@@ -69,21 +72,41 @@ class DiagnosticsTests(unittest.TestCase):
         self.assertIn("Build failed", query["title"][0])
         self.assertIn("pressed build", query["body"][0])
         self.assertLess(len(url), 12000, "GitHub issue URL must stay manageable")
+        self.assertIn("التنقية آلية", query["body"][0])
 
-    def test_zip_contains_report_and_log(self):
-        diagnostics.log("hello from test")
-        report = diagnostics.build_report("boom", include_logs=True)
-        path = diagnostics.save_report_zip(report)
-        self.assertTrue(Path(path).exists())
-        with zipfile.ZipFile(path) as archive:
-            names = set(archive.namelist())
-        self.assertIn("report.json", names)
-        self.assertIn("report.md", names)
-        self.assertIn("flutterway.log", names)
+    def test_zip_never_contains_raw_log_even_if_requested(self):
+        secret = "SYNTHETIC_LOCAL_LOG_CANARY_123"
+        diagnostics.log(secret)
+        for include_logs in (True, False):
+            with self.subTest(include_logs=include_logs):
+                report = diagnostics.build_report("boom", include_logs=include_logs)
+                path = diagnostics.save_report_zip(report)
+                with zipfile.ZipFile(path) as archive:
+                    self.assertNotIn("flutterway.log", archive.namelist())
+                    for name in archive.namelist():
+                        self.assertNotIn(secret.encode(), archive.read(name))
+                self.assertNotIn(secret, diagnostics.report_markdown(report))
+                self.assertNotIn(secret, diagnostics.github_issue_url(report))
+
+        # Defend the output boundary against legacy report objects, too.
+        legacy = {"message": "legacy", "logs": secret, "raw_log": secret}
+        with zipfile.ZipFile(diagnostics.save_report_zip(legacy)) as archive:
+            for name in archive.namelist():
+                self.assertNotIn(secret.encode(), archive.read(name))
+        self.assertNotIn(secret, diagnostics.github_issue_url(legacy))
+
+    def test_browser_false_is_not_reported_as_success(self):
+        with patch.object(diagnostics.webbrowser, "open", return_value=False):
+            result = diagnostics.open_github_issue({"message": "test"})
+        self.assertFalse(result["opened"])
+        self.assertTrue(result["url"].startswith(diagnostics.GITHUB_REPO))
+
+        with patch.object(diagnostics.webbrowser, "open", return_value=True):
+            self.assertTrue(diagnostics.open_github_issue({"message": "test"})["opened"])
 
     def test_client_error_is_local_jsonl(self):
         diagnostics.capture_client_error({"message": "js boom", "stack": "at x", "phase": "home"})
-        path = diagnostics.logs_dir() / "client-errors.jsonl"
+        path = diagnostics.client_errors_path()
         self.assertTrue(path.exists())
         self.assertIn("js boom", path.read_text(encoding="utf-8"))
 
@@ -91,7 +114,7 @@ class DiagnosticsTests(unittest.TestCase):
         api = onboarding_app.OnboardingApi({})
         original_save = diagnostics.save_report_zip
         original_open = diagnostics.open_github_issue
-        diagnostics.save_report_zip = lambda report: str(self.data / "report.zip")
+        diagnostics.save_report_zip = lambda report: self.fail("Opening GitHub must not save a ZIP")
         diagnostics.open_github_issue = lambda report: True
         try:
             result = api.open_error_report({
@@ -105,9 +128,28 @@ class DiagnosticsTests(unittest.TestCase):
             diagnostics.open_github_issue = original_open
         self.assertTrue(result["success"])
         self.assertTrue(result["opened"])
+        self.assertEqual(result["zip_path"], "")
         self.assertTrue(result["github_url"].startswith(diagnostics.GITHUB_REPO))
         query = urllib.parse.parse_qs(urllib.parse.urlparse(result["github_url"]).query)
         self.assertIn("pressed start", query["body"][0])
+
+    def test_api_preview_lists_what_will_be_shared(self):
+        api = onboarding_app.OnboardingApi({})
+        preview = api.get_report_preview({"message": "Crash", "phase": "build"})
+        self.assertTrue(preview["success"])
+        self.assertIn("report.json", preview["manifest"])
+        self.assertNotIn("events.jsonl", preview["manifest"])
+        self.assertNotIn("flutterway.log", preview["markdown"])
+        self.assertTrue(preview["warnings"])
+
+    def test_save_report_honours_events_opt_in(self):
+        api = onboarding_app.OnboardingApi({})
+        without_events = api.save_error_report({"message": "x", "include_events": False})
+        with zipfile.ZipFile(without_events["zip_path"]) as archive:
+            self.assertNotIn("events.jsonl", archive.namelist())
+        with_events = api.save_error_report({"message": "x", "include_events": True})
+        with zipfile.ZipFile(with_events["zip_path"]) as archive:
+            self.assertIn("events.jsonl", archive.namelist())
 
 
 if __name__ == "__main__":
