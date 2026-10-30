@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import logging
 import sys
 import tempfile
 import unittest
@@ -12,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from gui import onboarding_app as app  # noqa: E402
+from gui import diagnostics, onboarding_app as app  # noqa: E402
 
 
 class FakeCreateProcess:
@@ -34,11 +35,22 @@ class PortableJdkTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
+        self.addCleanup(self._close_test_logger)
         self.data = Path(self.temp.name)
         self.real_data_dir = app.paths.data_dir
         self.real_min = app.JDK_MIN_ZIP_BYTES
         app.paths.data_dir = lambda: str(self.data)
         app.JDK_MIN_ZIP_BYTES = 0
+
+    @staticmethod
+    def _close_test_logger():
+        """Close the file handler before TemporaryDirectory removes its files."""
+        logger = logging.getLogger("flutterway")
+        for handler in list(logger.handlers):
+            handler.close()
+            logger.removeHandler(handler)
+        diagnostics._logger = None
+        diagnostics._log_path = None
 
     def tearDown(self):
         app.paths.data_dir = self.real_data_dir

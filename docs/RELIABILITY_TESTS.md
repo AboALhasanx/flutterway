@@ -7,6 +7,14 @@
 
 ## 1. التشغيل
 
+### عزل بيانات الاختبار
+
+اختبارات الوحدة التي تحتاج مجلد بيانات FlutterWay يمكنها استخدام
+`FLUTTERWAY_DATA_DIR` لتوجيه السجلات والتقارير إلى مجلد مؤقت بدلاً من
+`%LOCALAPPDATA%\FlutterWay`. لا تغيّر القيمة الافتراضية عند عدم تعيين المتغير.
+المساعدات المشتركة موجودة في `tests/support.py`، واختبار السلوك في
+`tests/test_paths_data_dir.py`.
+
 ```powershell
 python tests/reliability_faults.py
 python tests/test_build_guard.py
@@ -15,7 +23,7 @@ python tests/audit_smoke.py
 python tests/student_journey.py
 ```
 
-- `reliability_faults.py` — 36 فحصاً في Chromium مع جسر pywebview وهمي؛ **بدون جهاز وبدون بناء حقيقي**.
+- `reliability_faults.py` — 70 فحصاً في Chromium مع جسر pywebview وهمي؛ **بدون جهاز وبدون بناء حقيقي**.
 - `test_build_guard.py` — يمنع بناءين/تجهيزين متزامنين في الباك إند.
 - `test_pnp_filter.py` — يمنع تنبيه تعريف USB الكاذب.
 - `audit_smoke.py` — ثوابت وواجهة.
@@ -66,7 +74,7 @@ python tests/student_journey.py
 
 ## 4. نتيجة التشغيل
 
-- `reliability_faults.py`: **48/48 نجحت**.
+- `reliability_faults.py`: **70/70 نجحت** (آخر تحقق: 2026-10-31).
 - `test_build_guard.py`: **2/2 نجحت**.
 - `test_pnp_filter.py`: **3/3 نجحت**.
 - `test_portable_jdk.py`: **2/2 نجحت**.

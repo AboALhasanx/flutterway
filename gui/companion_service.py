@@ -585,7 +585,7 @@ class _LectureHomePageState extends State<LectureHomePage> {{
     if not os.path.exists(os.path.join(project_dir, "pubspec.yaml")):
         # Fallback to flutter create
         try:
-            run_silent([paths.flutter_bat(), "create", "--org", "com.university.student", "--platforms", "android", "--overwrite", clean_name], cwd=target_parent)
+            run_silent([paths.flutter_bat(), "create", "--org", "com.university.flutterway", "--platforms", "android", "--overwrite", clean_name], cwd=target_parent)
         except Exception as e:
             return {"success": False, "error": f"تعذر تشغيل Flutter لإنشاء المشروع: {e}"}
 

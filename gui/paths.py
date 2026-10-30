@@ -46,6 +46,12 @@ def resource_path(*parts: str) -> str:
 
 def data_dir() -> str:
     """Per-user writable directory for SDKs, caches, and backups."""
+    override = _clean(os.environ.get("FLUTTERWAY_DATA_DIR"))
+    if override:
+        path = os.path.abspath(os.path.expandvars(os.path.expanduser(override)))
+        os.makedirs(path, exist_ok=True)
+        return path
+
     base = _clean(os.environ.get("LOCALAPPDATA")) or os.path.expanduser("~")
     path = os.path.join(base, APP_NAME)
     try:
