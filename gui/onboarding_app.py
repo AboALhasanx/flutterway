@@ -28,11 +28,13 @@ try:
     from gui import companion_service
     from gui import paths
     from gui import android_sdk
+    from gui import dev_reset
 except ImportError:
     from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     import companion_service
     import paths
     import android_sdk
+    import dev_reset
 
 def _broadcast_environment_change():
     try:
@@ -839,7 +841,8 @@ class OnboardingApi:
                 "has_setup": has_setup,
                 "theme": self.state.get("theme", "dark"),
                 "doctor_report": report,
-                "recent_projects": companion_service.load_recent_projects()
+                "recent_projects": companion_service.load_recent_projects(),
+                "dev_mode": dev_mode_enabled()
             }
         except Exception as e:
             return {
@@ -913,7 +916,7 @@ class OnboardingApi:
         return {"success": True, "message": "تم إرسال إشارة تنشيط الشاشة بنجاح!"}
 
     def dev_reset(self, mode="soft"):
-        """Developer Sandbox Reset: clears test apps, caches, and projects, resetting app to clean state."""
+        """Legacy developer reset entry point used by the two original cards."""
         res = companion_service.dev_reset_environment(mode)
         if mode == "soft":
             self.state["current_step"] = 3
@@ -930,6 +933,14 @@ class OnboardingApi:
             except Exception:
                 pass
         return res
+
+    def get_dev_reset_status(self):
+        """Read-only inventory of everything the granular dev reset can remove."""
+        return dev_reset.status()
+
+    def dev_reset_action(self, action, include_legacy=False, confirm=""):
+        """Run one granular developer reset action and return its log."""
+        return dev_reset.run(action, include_legacy=include_legacy, confirm=confirm)
 
 # --- Agent Testing Harness for Modern Onboarding UI ---
 def start_harness(api, window_holder):
@@ -993,7 +1004,11 @@ def start_harness(api, window_holder):
                         "btn-doctor-heal-all", "btn-create-lecture-proj", "btn-clean-project", "btn-open-proj-vscode",
                         "btn-rescue-gradle", "btn-rescue-licenses", "btn-rescue-adb", "btn-rescue-longpaths", "btn-rescue-network",
                         "btn-device-ping", "btn-device-screenshot",
-                        "btn-dev-modal-toggle", "btn-dev-soft-reset", "btn-dev-full-reset"
+                        "btn-dev-modal-toggle", "btn-dev-soft-reset", "btn-dev-full-reset",
+                        "btn-dev-scan", "btn-dev-ui-reset", "btn-dev-projects-reset",
+                        "btn-dev-downloads-reset", "btn-dev-downloads-all", "btn-dev-env-reset",
+                        "btn-dev-vscode-reset", "btn-dev-device-reset", "btn-dev-build-reset",
+                        "btn-dev-all-reset"
                     ]
                     if target in allowed_targets:
                         if win:
@@ -1026,6 +1041,15 @@ def apply_window_icon(window):
             window.native.Icon = System.Drawing.Icon(ico_path)
     except Exception:
         pass
+
+def dev_mode_enabled():
+    """Developer tools are visible in source runs and in packaged runs launched with --dev."""
+    return (
+        not getattr(sys, "frozen", False)
+        or os.environ.get("FLUTTERWAY_DEV") == "1"
+        or "--dev" in sys.argv[1:]
+    )
+
 
 def harness_enabled():
     """Enable the localhost agent harness only when explicitly requested."""

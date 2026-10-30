@@ -11,6 +11,7 @@ a = Analysis(
     hiddenimports=[
         'gui.android_sdk',
         'gui.companion_service',
+        'gui.dev_reset',
         'gui.paths',
         'gui.vscode_integration',
         'psutil',

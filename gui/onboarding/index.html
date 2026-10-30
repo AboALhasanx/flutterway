@@ -57,6 +57,26 @@
       user-select: none;
     }
 
+    svg {
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+    }
+
+    .icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
     #build-terminal-lines,
     #setup-error-text,
     #dev-console-lines,
@@ -233,7 +253,9 @@
       border: 1px solid var(--card-border);
       border-radius: 16px;
       width: 90%;
-      max-width: 620px;
+      max-width: 720px;
+      max-height: 88vh;
+      overflow-y: auto;
       padding: 24px;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
       text-align: right;
@@ -1314,7 +1336,7 @@
     </div>
 
     <div class="header-actions">
-      <button id="btn-dev-modal-toggle" class="dev-toggle-btn" onclick="openDevModal()" title="أدوات المطور والمختبر (إعادة الضبط الشاملة)">
+      <button id="btn-dev-modal-toggle" class="dev-toggle-btn" style="display: none;" onclick="openDevModal()" title="أدوات المطور والمختبر (إعادة الضبط الشاملة)">
         <span class="icon" style="width: 12px; height: 12px;">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
         </span>
@@ -2138,37 +2160,74 @@
           هذه اللوحة مخصصة لاختبار سلوك التطبيق كطالب جديد: تحذف كل ما قام البرنامج بتهيئته ومساعدته لك (حذف التطبيق من التابلت، إزالة مسار PATH، إلغاء ضبط VS Code، وحذف المشاريع التجريبية) لنرى بصدق وشفافية كيف يقوم فلاتر-واي بالتهيئة خطوة بخطوة من البداية.
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
-          <!-- Card 1: Full Factory Reset -->
-          <div class="dev-action-box" style="border-color: var(--danger); background: rgba(239, 68, 68, 0.04);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <span style="font-size: 13px; font-weight: 800; color: var(--danger);">1. إعادة ضبط المصنع الشاملة (Full Clean Slate)</span>
-              <span class="level-badge" style="background: var(--danger-bg); color: var(--danger); border-color: var(--danger); margin: 0;">كطالب جديد تماماً</span>
-            </div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px;">
-              • إزالة Flutter من متغيرات الويندوز (PATH)<br>
-              • إلغاء ربط وإعدادات محرر VS Code<br>
-              • حذف التطبيق التجريبي من الهاتف أو التابلت عبر ADB<br>
-              • حذف مشروع my_first_app ومشاريع المحاضرات من سطح المكتب<br>
-              • تصفية أقفال كاش الجرادل وإرجاع الواجهة للمستوى 1
-            </div>
-            <button id="btn-dev-full-reset" class="btn-primary" style="background: var(--danger); font-size: 12px; padding: 8px 18px;" onclick="executeDevReset('full')">
-              <span>مسح كل شيء والبدء كطالب جديد من الصفر</span>
-            </button>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+          <button id="btn-dev-scan" class="btn-secondary" style="font-size: 12px; padding: 6px 14px;" onclick="refreshDevResetStatus()">فحص ما يمكن حذفه</button>
+          <span id="dev-status-summary" style="font-size: 11px; color: var(--text-muted);">اضغط الفحص لمعاينة الملفات قبل الحذف</span>
+        </div>
+        <div id="dev-status-box" style="display: none; background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 11px; line-height: 1.6;"></div>
+
+        <div style="font-size: 11px; color: var(--warning); line-height: 1.6; margin-bottom: 12px;">
+          ⚠️ هذه الأدوات للمطور فقط. الحذف نهائي. مسارات C:\flutter و C:\Android و C:\g لا تُحذف إلا بعد كتابة DELETE.
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+          <div class="dev-action-box">
+            <div style="font-size: 12px; font-weight: 800; color: var(--text);">1. واجهة الطالب فقط</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">ترجع الواجهة للمستوى 1 وتصفّر التقدم والأخطاء بدون لمس أي ملف.</div>
+            <button id="btn-dev-ui-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('ui')">إعادة الواجهة</button>
           </div>
 
-          <!-- Card 2: Soft Reset (Device & Build Cache Only) -->
           <div class="dev-action-box">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <span style="font-size: 13px; font-weight: 800; color: var(--text);">2. مسح كاش البناء وتطبيق الهاتف (Soft Reset)</span>
-              <span class="level-badge" style="margin: 0;">إعادة تجربة البناء الحقيقي</span>
+            <div style="font-size: 12px; font-weight: 800; color: var(--text);">2. مشاريع الاختبار</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف my_first_app ومشاريع المحاضرات وسجل المشاريع الحديثة.</div>
+            <button id="btn-dev-projects-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('projects')">حذف المشاريع</button>
+          </div>
+
+          <div class="dev-action-box">
+            <div style="font-size: 12px; font-weight: 800; color: var(--text);">3. تحميلات FlutterWay</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف Flutter/JDK/Android SDK/Gradle الموجودين تحت LOCALAPPDATA فقط.</div>
+            <button id="btn-dev-downloads-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('downloads')">حذف التحميلات</button>
+          </div>
+
+          <div class="dev-action-box" style="border-color: var(--danger);">
+            <div style="font-size: 12px; font-weight: 800; color: var(--danger);">4. التحميلات القديمة</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف C:\flutter و C:\Android و C:\g أيضاً. يتطلب تأكيد DELETE.</div>
+            <button id="btn-dev-downloads-all" class="btn-primary" style="background: var(--danger); font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('downloads_all')">حذف الكل</button>
+          </div>
+
+          <div class="dev-action-box">
+            <div style="font-size: 12px; font-weight: 800; color: var(--text);">5. PATH والبيئة</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يزيل مسارات Flutter/JDK/SDK ومتغيرات JAVA_HOME وANDROID_HOME مع نسخة احتياطية.</div>
+            <button id="btn-dev-env-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('environment')">إزالة إعدادات البيئة</button>
+          </div>
+
+          <div class="dev-action-box">
+            <div style="font-size: 12px; font-weight: 800; color: var(--text);">6. إعدادات VS Code</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يزيل مفاتيح dart.* فقط، بدون حذف الإضافات أو إعداداتك الأخرى.</div>
+            <button id="btn-dev-vscode-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('vscode')">إزالة إعدادات Flutter</button>
+          </div>
+
+          <div class="dev-action-box">
+            <div style="font-size: 12px; font-weight: 800; color: var(--text);">7. تطبيقات الهاتف</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يلغي تثبيت com.example.flutter_test_app وcom.university.flutterway.* من الأجهزة المتصلة.</div>
+            <button id="btn-dev-device-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('device')">إلغاء تثبيت التطبيقات</button>
+          </div>
+
+          <div class="dev-action-box">
+            <div style="font-size: 12px; font-weight: 800; color: var(--text);">8. كاش البناء</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف build و.dart_tool من المشاريع فقط، لإعادة تجربة زمن البناء.</div>
+            <button id="btn-dev-build-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('build')">حذف كاش البناء</button>
+          </div>
+
+          <div class="dev-action-box" style="grid-column: 1 / -1; border-color: var(--danger); background: rgba(239, 68, 68, 0.04);">
+            <div style="font-size: 12px; font-weight: 800; color: var(--danger);">9. مسح شامل (كل ما سبق)</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">الهاتف + المشاريع + PATH + VS Code + التحميلات المنسّقة. فعّل الخيار لحذف مسارات C:\flutter و C:\Android و C:\g أيضاً.</div>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <label style="font-size: 11px; color: var(--danger); display: flex; gap: 6px; align-items: center;">
+                <input type="checkbox" id="chk-dev-legacy-all"> احذف المسارات القديمة أيضاً
+              </label>
+              <button id="btn-dev-all-reset" class="btn-primary" style="background: var(--danger); font-size: 11px; padding: 6px 14px;" onclick="executeDevAction('all')">مسح شامل</button>
             </div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px;">
-              يحذف التطبيق التجريبي من التابلت ويمسح مجلد كاش البناء (build) بالكامل وملفات .dart_tool، وينهي عمليات Gradle، لإعادة تجربة البناء الفعلي الحقيقي من الصفر واختبار المدة الطبيعية.
-            </div>
-            <button id="btn-dev-soft-reset" class="btn-secondary" style="font-size: 12px; padding: 6px 16px;" onclick="executeDevReset('soft')">
-              <span>مسح كاش البناء والهاتف (إعادة تجربة البناء)</span>
-            </button>
           </div>
         </div>
 
@@ -2941,6 +3000,7 @@
         modal.style.display = 'flex';
         const closeBtn = modal.querySelector('.modal-close-btn');
         if (closeBtn) closeBtn.focus();
+        refreshDevResetStatus();
       }
     }
 
@@ -2990,6 +3050,147 @@
       }
     }
 
+    function appendDevLog(line) {
+      const linesBox = document.getElementById('dev-console-lines');
+      if (!linesBox) return;
+      const row = document.createElement('div');
+      row.textContent = `> ${line}`;
+      linesBox.appendChild(row);
+      linesBox.scrollTop = linesBox.scrollHeight;
+    }
+
+    async function refreshDevResetStatus() {
+      const box = document.getElementById('dev-status-box');
+      const summary = document.getElementById('dev-status-summary');
+      if (!box) return;
+      box.style.display = 'block';
+      box.textContent = 'جاري فحص المسارات والحزم...';
+      if (!window.pywebview || !window.pywebview.api) {
+        box.textContent = 'الفحص التفصيلي متاح داخل التطبيق فقط.';
+        return;
+      }
+      try {
+        const status = await window.pywebview.api.get_dev_reset_status();
+        box.textContent = '';
+        let existing = 0;
+        (status.targets || []).forEach(target => {
+          if (target.exists) existing += 1;
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex; justify-content:space-between; gap:10px; padding:3px 0; border-bottom:1px solid var(--card-border);';
+          const label = document.createElement('span');
+          label.textContent = target.label;
+          if (target.danger === 'high') label.style.color = 'var(--danger)';
+          const meta = document.createElement('span');
+          const size = target.size_mb != null ? `${target.size_mb} MB` : (target.exists ? 'موجود' : 'غير موجود');
+          meta.textContent = `${size} — ${target.path}`;
+          meta.style.cssText = 'color:var(--text-muted); font-size:10px; direction:ltr; text-align:left;';
+          row.appendChild(label);
+          row.appendChild(meta);
+          box.appendChild(row);
+        });
+        const envRow = document.createElement('div');
+        envRow.style.cssText = 'padding-top:6px; color:var(--text-muted); font-size:10px;';
+        const envKeys = Object.keys(status.env?.variables || {});
+        envRow.textContent = `متغيرات البيئة: ${envKeys.length ? envKeys.join(', ') : 'لا شيء'} | VS Code keys: ${(status.vscode?.keys || []).length}`;
+        box.appendChild(envRow);
+        const deviceRow = document.createElement('div');
+        deviceRow.style.cssText = 'padding-top:4px; color:var(--warning); font-size:10px;';
+        deviceRow.textContent = `تطبيقات تجريبية على الهاتف: ${(status.device_packages || []).length}`;
+        box.appendChild(deviceRow);
+        if (summary) summary.textContent = `${existing} مسار موجود — راجع القائمة قبل الحذف`;
+      } catch (e) {
+        box.textContent = `تعذر الفحص: ${e}`;
+      }
+    }
+
+    function resetStudentUi() {
+      selectedMode = 'usb';
+      activeProjPath = null;
+      switchMainView('wizard');
+      showStep(1);
+      resetSetupError();
+      updateProgress(0, 'جاري فحص إعدادات اللابتوب وتوفير أفضل مسار...', 0);
+      selectChoice('usb');
+      handleDeviceResponse({ success: true, devices: [] });
+      const buildConsole = document.getElementById('build-console');
+      const benchmark = document.getElementById('benchmark-card');
+      const btnRun = document.getElementById('btn-run-test');
+      const ctrlBtns = document.getElementById('device-ctrl-btns');
+      const name = document.getElementById('active-proj-name');
+      const path = document.getElementById('active-proj-path');
+      if (buildConsole) buildConsole.style.display = 'none';
+      if (benchmark) benchmark.style.display = 'none';
+      if (btnRun) btnRun.style.display = 'none';
+      if (ctrlBtns) ctrlBtns.style.display = 'flex';
+      if (name) name.innerText = 'لم يتم اختيار مشروع';
+      if (path) path.innerText = 'اختر مشروعاً من القائمة أو أنشئ مشروعاً جديداً';
+      for (let i = 1; i <= 4; i++) {
+        const item = document.getElementById(`bstep-${i}`);
+        if (item) item.className = 'build-step-row';
+      }
+      const term = document.getElementById('build-terminal-lines');
+      if (term) {
+        term.textContent = '';
+        const line = document.createElement('div');
+        line.style.color = '#64748b';
+        line.textContent = '$ flutter build apk --debug -v';
+        term.appendChild(line);
+      }
+    }
+
+    async function executeDevAction(action) {
+      const consoleBox = document.getElementById('dev-console-box');
+      if (!consoleBox) return;
+      consoleBox.style.display = 'block';
+      document.getElementById('dev-console-lines').textContent = '';
+      appendDevLog(`[DEV] الإجراء: ${action}`);
+
+      if (!window.pywebview || !window.pywebview.api) {
+        appendDevLog('التنفيذ متاح داخل التطبيق فقط.');
+        return;
+      }
+
+      const destructive = ['projects', 'downloads', 'environment', 'vscode', 'device', 'build', 'all'];
+      if (destructive.includes(action)) {
+        if (!window.confirm('تنفيذ هذا الإجراء؟ قد يحذف ملفات أو إعدادات.')) {
+          appendDevLog('تم الإلغاء.');
+          return;
+        }
+      }
+
+      let includeLegacy = false;
+      let confirmToken = '';
+      if (action === 'downloads_all') {
+        includeLegacy = true;
+        confirmToken = window.prompt('اكتب DELETE لتأكيد حذف C:\\flutter و C:\\Android و C:\\g') || '';
+        if (confirmToken !== 'DELETE') {
+          appendDevLog('تم الإلغاء: تأكيد DELETE غير صحيح.');
+          return;
+        }
+      } else if (action === 'all') {
+        includeLegacy = !!document.getElementById('chk-dev-legacy-all')?.checked;
+        if (includeLegacy) {
+          confirmToken = window.prompt('اكتب DELETE لتأكيد حذف المسارات القديمة أيضاً') || '';
+          if (confirmToken !== 'DELETE') {
+            appendDevLog('تم الإلغاء: تأكيد DELETE غير صحيح.');
+            return;
+          }
+        }
+      }
+
+      try {
+        const res = await window.pywebview.api.dev_reset_action(action, includeLegacy, confirmToken);
+        (res.logs || []).forEach(appendDevLog);
+        appendDevLog(`[COMPLETED] ${res.message || res.error || ''}`);
+        if (action === 'ui') resetStudentUi();
+        if (action === 'projects') loadRecentProjectsList();
+        if (action === 'device') checkDeviceNow();
+        if (['all', 'downloads', 'downloads_all', 'projects'].includes(action)) refreshDevResetStatus();
+      } catch (e) {
+        appendDevLog(`[ERROR] ${e}`);
+      }
+    }
+
     function onDevResetComplete(mode) {
       const benchCard = document.getElementById('benchmark-card');
       const consoleBox = document.getElementById('build-console');
@@ -3036,6 +3237,8 @@
       if (window.pywebview && window.pywebview.api) {
         try {
           const init = await window.pywebview.api.get_initial_app_state();
+          const devBtn = document.getElementById('btn-dev-modal-toggle');
+          if (devBtn) devBtn.style.display = init.dev_mode ? 'inline-flex' : 'none';
           if (init.has_setup) {
             switchMainView('companion');
           } else {

@@ -51,7 +51,11 @@ def get_application_id(project_path):
     return "com.example.flutter_test_app"
 
 def set_application_id(project_path, app_id):
-    """Give a copied lecture project its own Android applicationId/namespace."""
+    """Give a copied lecture project its own Android applicationId.
+
+    Only applicationId is changed. The namespace and Kotlin package stay on the
+    template value so the existing MainActivity still resolves at runtime.
+    """
     gradle_file = _android_gradle_file(project_path)
     if not gradle_file:
         return False
@@ -62,8 +66,6 @@ def set_application_id(project_path, app_id):
         for pattern, replacement in (
             (r'(applicationId\s*=\s*")[^"]+(")', rf'\g<1>{app_id}\g<2>'),
             (r'(applicationId\s+")[^"]+(")', rf'\g<1>{app_id}\g<2>'),
-            (r'(namespace\s*=\s*")[^"]+(")', rf'\g<1>{app_id}\g<2>'),
-            (r'(namespace\s+")[^"]+(")', rf'\g<1>{app_id}\g<2>'),
         ):
             content = re.sub(pattern, replacement, content)
         if content != original:
