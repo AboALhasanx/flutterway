@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import json
 import logging
 import sys
 import tempfile
@@ -39,8 +40,11 @@ class PortableJdkTests(unittest.TestCase):
         self.data = Path(self.temp.name)
         self.real_data_dir = app.paths.data_dir
         self.real_min = app.JDK_MIN_ZIP_BYTES
+        self.real_checksum = app._adoptium_checksum
         app.paths.data_dir = lambda: str(self.data)
         app.JDK_MIN_ZIP_BYTES = 0
+        # Offline by default: no metadata request during tests.
+        app._adoptium_checksum = lambda: None
 
     @staticmethod
     def _close_test_logger():
@@ -55,6 +59,7 @@ class PortableJdkTests(unittest.TestCase):
     def tearDown(self):
         app.paths.data_dir = self.real_data_dir
         app.JDK_MIN_ZIP_BYTES = self.real_min
+        app._adoptium_checksum = self.real_checksum
 
     def test_extracts_portable_jdk_without_admin(self):
         cache = self.data / "cache"
@@ -67,6 +72,52 @@ class PortableJdkTests(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue((self.data / "jdk-21" / "bin" / "java.exe").exists())
         self.assertFalse((cache / "jdk_extract").exists())
+
+    def _cached_zip(self) -> Path:
+        cache = self.data / "cache"
+        cache.mkdir(parents=True, exist_ok=True)
+        zip_path = cache / "temurin21.zip"
+        with zipfile.ZipFile(zip_path, "w") as archive:
+            archive.writestr("jdk-21.0.1/bin/java.exe", b"fake")
+            archive.writestr("jdk-21.0.1/release", "JAVA_VERSION=21")
+        return zip_path
+
+    def test_checksum_mismatch_rejects_archive(self):
+        zip_path = self._cached_zip()
+        app._adoptium_checksum = lambda: "0" * 64
+        self.assertIsNone(app._install_portable_jdk())
+        self.assertFalse(zip_path.exists(), "a rejected archive must be deleted")
+        self.assertFalse((self.data / "jdk-21").exists())
+
+    def test_checksum_match_extracts(self):
+        import hashlib
+        zip_path = self._cached_zip()
+        digest = hashlib.sha256(zip_path.read_bytes()).hexdigest()
+        app._adoptium_checksum = lambda: digest
+        self.assertIsNotNone(app._install_portable_jdk())
+        self.assertTrue((self.data / "jdk-21" / "bin" / "java.exe").exists())
+
+    def test_checksum_metadata_parsing(self):
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self):
+                return json.dumps([
+                    {"binary": {"package": {"checksum": "a" * 64}}},
+                    {"binary": {"package": {"checksum": "b" * 64}}},
+                ]).encode("utf-8")
+
+        real_urlopen = app.urllib.request.urlopen
+        app._adoptium_checksum = self.real_checksum
+        app.urllib.request.urlopen = lambda *a, **k: FakeResponse()
+        try:
+            self.assertEqual(app._adoptium_checksum(), "a" * 64)
+        finally:
+            app.urllib.request.urlopen = real_urlopen
 
     def test_starter_project_failure_keeps_real_error(self):
         api = app.OnboardingApi({})

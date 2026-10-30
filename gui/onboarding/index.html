@@ -3189,6 +3189,7 @@
             <div style="font-size: 12px; font-weight: 800; color: var(--text);">2. مشاريع الاختبار</div>
             <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">ينقل مشاريع FlutterWay الموثّقة (بعلامة ملكية) إلى الحجر، ويمكن استعادتها. المشاريع غير الموثّقة لا تُمَس.</div>
             <button id="btn-dev-projects-reset" class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="executeDevAction('projects')">احجر المشاريع الموثّقة</button>
+            <button id="btn-dev-adopt" class="btn-secondary" style="font-size: 12px; padding: 5px 12px; margin-inline-start: 8px;" onclick="adoptExistingProject()">اعتمد مشروعاً قديماً</button>
           </div>
 
           <div class="dev-action-box">
@@ -4274,6 +4275,18 @@
     // EMERGENCY RESCUE FRONTEND ENGINE
     // ========================================================
     async function executeRescueRemedy(fixId) {
+      const impacts = {
+        fix_gradle_cache: 'سيُنهي عمليات Gradle/Kotlin فقط، ويحذف ملفات القفل. البناء الجاري قد يتوقف.',
+        fix_licenses: 'سيوافق تلقائياً على تراخيص Android SDK نيابةً عنك. راجع الشروط إن أردت.',
+        fix_adb: 'سيوقف adb server ويعيد تشغيله. أي عملية تثبيت جارية ستنقطع.',
+        fix_long_paths: 'سيعدّل مفتاح LongPathsEnabled في سجل ويندوز (يتطلب صلاحيات مدير).',
+        fix_network: 'سيفرّغ كاش DNS ويزيل متغيرات البروكسي من هذه العملية فقط.'
+      };
+      const impact = impacts[fixId];
+      if (impact && !window.confirm(`${impact}\n\nهل تريد المتابعة؟`)) {
+        showRescueToast('تم الإلغاء — لم يتغيّر شيء.', false);
+        return;
+      }
       showRescueToast("جاري تنفيذ المعالجة الفورية في الخلفية...", true);
       if (window.pywebview && window.pywebview.api) {
         try {
@@ -4283,6 +4296,15 @@
           showRescueToast(`حدث خطأ أثناء المعالجة: ${e}`, false);
         }
       }
+    }
+
+    async function adoptExistingProject() {
+      const path = window.prompt('اكتب مسار مشروع Flutter قديم أنشأه FlutterWay (لن نعدّل ملفاته):');
+      if (!path) return;
+      if (!window.pywebview || !window.pywebview.api || !window.pywebview.api.adopt_project) return;
+      const res = await window.pywebview.api.adopt_project(path.trim().replace(/^"|"$/g, ''));
+      const lines = document.getElementById('dev-console-lines');
+      if (lines) lines.innerText += `\n> ${res.success ? res.message : res.error}`;
     }
 
     function showRescueToast(msg, isSuccess) {

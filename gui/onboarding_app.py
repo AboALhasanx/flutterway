@@ -35,6 +35,7 @@ try:
     from gui import android_apk
     from gui import dev_reset
     from gui import managed
+    from gui import downloads
     from gui import hot_reload
     from gui import diagnostics
 except ImportError:
@@ -44,6 +45,8 @@ except ImportError:
     import android_sdk
     import android_apk
     import dev_reset
+    import managed
+    import downloads
     import hot_reload
     import diagnostics
 
@@ -120,6 +123,28 @@ def _jdk_report(progress, message):
         pass
 
 
+JDK_API_URL = (
+    "https://api.adoptium.net/v3/assets/latest/21/hotspot"
+    "?architecture=x64&image_type=jdk&os=windows&vendor=eclipse"
+)
+
+
+def _adoptium_checksum() -> str | None:
+    """Fetch the official SHA-256 for the Temurin 21 Windows x64 JDK."""
+    try:
+        request = urllib.request.Request(JDK_API_URL, headers={"User-Agent": "FlutterWay/1.1"})
+        with urllib.request.urlopen(request, timeout=20) as response:
+            assets = json.loads(response.read().decode("utf-8"))
+        for asset in assets or []:
+            package = ((asset or {}).get("binary") or {}).get("package") or {}
+            checksum = str(package.get("checksum") or "").strip().lower()
+            if len(checksum) == 64:
+                return checksum
+    except Exception as exc:
+        print("Adoptium metadata error:", exc)
+    return None
+
+
 def _install_portable_jdk(progress=None):
     """Download and extract a user-scoped Temurin JDK, no UAC required."""
     target = os.path.join(paths.data_dir(), "jdk-21")
@@ -162,13 +187,28 @@ def _install_portable_jdk(progress=None):
             print("Portable JDK download error:", exc)
             return None
 
+    expected = _adoptium_checksum()
+    if expected:
+        check = downloads.verify_file(zip_path, expected, JDK_MIN_ZIP_BYTES)
+        if not check.get("ok"):
+            print("Portable JDK checksum rejected:", check)
+            _jdk_report(progress, "ملف Java لا يطابق البصمة الرسمية — نحذفه ونعيد المحاولة لاحقاً.")
+            try:
+                os.remove(zip_path)
+            except Exception:
+                pass
+            return None
+    else:
+        print("Adoptium checksum unavailable; falling back to size check only.")
+
     _jdk_report(progress, "نفكّ ضغط Java 21...")
     extract_dir = os.path.join(cache, "jdk_extract")
     try:
         if os.path.isdir(extract_dir):
             shutil.rmtree(extract_dir, ignore_errors=True)
-        with zipfile.ZipFile(zip_path, "r") as archive:
-            archive.extractall(extract_dir)
+        extraction = downloads.safe_extract_zip(zip_path, extract_dir)
+        if not extraction.get("ok"):
+            raise RuntimeError(f"ملف Java غير آمن أو تالف: {extraction.get('reason')}")
         found = None
         for root, _dirs, files in os.walk(extract_dir):
             if "java.exe" in files and os.path.basename(root).lower() == "bin":
@@ -1287,6 +1327,11 @@ class OnboardingApi:
         if not dev_mode_enabled():
             return {"success": False, "error": "أدوات المطور غير مفعّلة."}
         return dev_reset.quarantine_purge(item_id, confirmation)
+
+    def adopt_project(self, path):
+        if not dev_mode_enabled():
+            return {"success": False, "error": "أدوات المطور غير مفعّلة."}
+        return dev_reset.adopt_project(path)
 
     def set_build_mode(self, mode):
         """Choose the test-app build mode: release (small), profile, or debug (large, hot reload)."""

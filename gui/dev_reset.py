@@ -271,6 +271,31 @@ def quarantine_purge(item_id: str, confirmation: str) -> dict:
     return quarantine.purge(item_id, confirmation)
 
 
+def adopt_project(path: str) -> dict:
+    """Explicitly adopt a pre-marker project the student says FlutterWay made.
+
+    Never called automatically: the student confirms the path.  No project
+    files are modified; only the ownership marker is added.
+    """
+    target = os.path.abspath(str(path or "").strip().strip('"'))
+    if not target or not os.path.isdir(target):
+        return {"success": False, "error": "المجلد غير موجود."}
+    if managed.is_managed(target):
+        return {"success": False, "error": "هذا المشروع موثّق مسبقاً."}
+    if not os.path.exists(os.path.join(target, "pubspec.yaml")):
+        return {"success": False, "error": "لا يبدو مشروع Flutter (لا يوجد pubspec.yaml)."}
+    lectures = os.path.abspath(paths.lecture_projects_dir())
+    try:
+        is_lecture = os.path.commonpath([target, lectures]) == lectures
+    except ValueError:
+        is_lecture = False
+    kind = "lecture_project" if is_lecture else "starter_project"
+    if not managed.write_marker(target, kind, source="user_confirmed"):
+        return {"success": False, "error": "تعذر كتابة علامة الملكية."}
+    return {"success": True, "path": target, "kind": kind,
+            "message": "اعتُمد المشروع. لن يُحجر تلقائياً إلا عند طلبك."}
+
+
 def _managed_download_paths() -> list[str]:
     data = paths.data_dir()
     result = [

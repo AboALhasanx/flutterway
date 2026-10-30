@@ -126,6 +126,36 @@ class QuarantineTests(unittest.TestCase):
             self.assertFalse(api.quarantine_list()["success"])
             self.assertFalse(api.quarantine_restore("x")["success"])
             self.assertFalse(api.quarantine_purge("x", "DELETE x")["success"])
+            self.assertFalse(api.adopt_project("x")["success"])
+
+    def test_adopt_legacy_project(self):
+        project = make_project(self.root / "legacy", "old_app", marker=False)
+        result = dev_reset.adopt_project(str(project))
+        self.assertTrue(result["success"], result)
+        self.assertTrue(managed.is_managed(str(project)))
+        marker = managed.read_marker(str(project))
+        self.assertEqual(marker["source"], "user_confirmed")
+        # No project files were changed.
+        self.assertEqual((project / "lib" / "main.dart").read_text(encoding="utf-8"), "void main() {}")
+
+    def test_adopt_refuses_managed_or_non_flutter(self):
+        managed_project = make_project(self.root / "projects")
+        self.assertFalse(dev_reset.adopt_project(str(managed_project))["success"])
+        plain = self.root / "plain"
+        plain.mkdir()
+        self.assertFalse(dev_reset.adopt_project(str(plain))["success"])
+        self.assertFalse(dev_reset.adopt_project(str(self.root / "missing"))["success"])
+
+    def test_adopted_project_can_be_quarantined(self):
+        lectures = self.root / "desktop" / "FlutterProjects"
+        project = make_project(lectures, "legacy_app", marker=False)
+        self.assertTrue(dev_reset.adopt_project(str(project))["success"])
+        with patch.object(dev_reset.paths, "lecture_projects_dir", return_value=str(lectures)), \
+             patch.object(dev_reset.os.path, "expandvars", return_value=str(lectures.parent)):
+            logs: list[str] = []
+            dev_reset.reset_projects(logs)
+        self.assertFalse(project.exists())
+        self.assertEqual(len(quarantine.list_items()), 1)
 
 
 if __name__ == "__main__":

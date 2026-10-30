@@ -45,8 +45,8 @@ def is_managed(path: str) -> bool:
     return bool(data and data.get("kind") in KINDS)
 
 
-def write_marker(path: str, kind: str) -> bool:
-    """Write a marker only for a folder FlutterWay just created."""
+def write_marker(path: str, kind: str, source: str = "created") -> bool:
+    """Write a marker for a folder FlutterWay created (or the user adopted)."""
     if kind not in KINDS or not os.path.isdir(path):
         return False
     target = marker_path(path)
@@ -56,6 +56,7 @@ def write_marker(path: str, kind: str) -> bool:
         "app": "FlutterWay",
         "schema": SCHEMA,
         "kind": kind,
+        "source": str(source or "created"),
         "created_at": datetime.now().isoformat(timespec="seconds"),
         "app_version": __version__,
         "path": os.path.abspath(path),
