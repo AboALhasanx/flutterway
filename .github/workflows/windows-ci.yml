@@ -1,0 +1,72 @@
+name: Windows CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      download_flutter:
+        description: "Download the pinned Flutter archive and verify its SHA-256 (slow)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Unit tests (clean Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pywebview pythonnet psutil pillow playwright
+      - name: Run safe unit tests
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          python -m unittest discover -s tests -p "test_*.py" -v
+      - name: Resolve the live Flutter release manifest
+        run: |
+          python -c "from gui import toolchain; r=toolchain.resolve_flutter_release('stable'); print('release=', r); assert r and len(r.sha256)==64"
+
+  build:
+    name: Build Windows package
+    runs-on: windows-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pywebview pythonnet psutil pillow pyinstaller
+      - name: Build
+        run: python -m PyInstaller --clean --noconfirm FlutterWayNative.spec
+      - name: Verify bundle contents
+        run: |
+          python -c "from pathlib import Path; p=Path('dist/FlutterWayNative/FlutterWayNative.exe'); assert p.exists(), 'exe missing'; print('exe bytes', p.stat().st_size)"
+          python -c "from pathlib import Path; files=list(Path('dist/FlutterWayNative').rglob('flutter_releases_windows.json')); assert files, 'bundled manifest missing'; print('manifest copies', len(files))"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlutterWay-windows-x64
+          path: dist/FlutterWayNative/**
+
+  flutter-download:
+    name: Verify pinned Flutter download
+    if: github.event_name == 'workflow_dispatch' && inputs.download_flutter
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Download and verify the pinned archive
+        run: python tests/verify_flutter_download.py
