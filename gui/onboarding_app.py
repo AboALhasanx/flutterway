@@ -824,6 +824,7 @@ class OnboardingApi:
         os.makedirs(project_path, exist_ok=True)
         pubspec = os.path.join(project_path, "pubspec.yaml")
         if os.path.exists(pubspec):
+            companion_service.ensure_vscode_launch(project_path)
             return True
 
         src_template = paths.starter_template_dir()
@@ -834,6 +835,7 @@ class OnboardingApi:
                 print("Starter template copy error:", e)
 
         if os.path.exists(pubspec):
+            companion_service.ensure_vscode_launch(project_path)
             return True
 
         flutter_bat = paths.flutter_bat()
@@ -857,7 +859,10 @@ class OnboardingApi:
             )
         except Exception as e:
             print("flutter create error:", e)
-        return os.path.exists(pubspec)
+        if os.path.exists(pubspec):
+            companion_service.ensure_vscode_launch(project_path)
+            return True
+        return False
 
     def open_vscode(self):
         print("[Onboarding] Opening VS Code with starter project...")

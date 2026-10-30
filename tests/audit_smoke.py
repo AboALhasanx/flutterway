@@ -97,6 +97,7 @@ def static_checks() -> None:
     assert "flutter_bins" in companion_src, "full reset must match Flutter PATH exactly"
     assert "android-sdk-license" in companion_src, "license check must verify the real license file"
     assert "get_application_id(project_path)" in app_src, "APK launch must use the real applicationId"
+    assert "def ensure_vscode_launch" in companion_src
     assert "set_application_id(project_dir" in companion_src, "lecture projects need unique applicationIds"
     assert '"monkey", "-p", "com.example' not in app_src
     assert "def get_connected_devices" in companion_src, "device discovery must exist"
@@ -219,6 +220,16 @@ def python_checks() -> None:
     assert not dev_reset.run("jdk").get("success"), "JDK removal must require DELETE"
     assert not dev_reset.run("not-a-real-action").get("success")
     assert app.dev_mode_enabled() is True, "source runs must expose developer tools"
+
+    launch_tmp = tempfile.mkdtemp(prefix="fw_launch_")
+    try:
+        assert companion_service.ensure_vscode_launch(launch_tmp)
+        launch_file = os.path.join(launch_tmp, ".vscode", "launch.json")
+        assert os.path.exists(launch_file)
+        with open(launch_file, "r", encoding="utf-8") as handle:
+            assert "--use-application-binary" in handle.read()
+    finally:
+        shutil.rmtree(launch_tmp, ignore_errors=True)
 
     temp_project = tempfile.mkdtemp(prefix="fw_appid_")
     try:

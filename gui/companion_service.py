@@ -83,6 +83,39 @@ def run_silent(cmd_args, **kwargs):
     creationflags = subprocess.CREATE_NO_WINDOW
     return subprocess.run(cmd_args, capture_output=True, text=True, startupinfo=startupinfo, creationflags=creationflags, **kwargs)
 
+def ensure_vscode_launch(project_path):
+    """Add a VS Code launch profile that reuses the stripped debug APK when present."""
+    vscode_dir = os.path.join(project_path, ".vscode")
+    launch_path = os.path.join(vscode_dir, "launch.json")
+    if os.path.exists(launch_path):
+        return False
+    data = {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "FlutterWay — سريع (APK مصغّر)",
+                "request": "launch",
+                "type": "dart",
+                "args": [
+                    "--use-application-binary",
+                    "build/app/outputs/flutter-apk/app-debug.signed.apk",
+                ],
+            },
+            {
+                "name": "Flutter — تشغيل عادي (قد يكون أبطأ أول مرة)",
+                "request": "launch",
+                "type": "dart",
+            },
+        ],
+    }
+    try:
+        os.makedirs(vscode_dir, exist_ok=True)
+        with open(launch_path, "w", encoding="utf-8") as handle:
+            json.dump(data, handle, ensure_ascii=False, indent=2)
+        return True
+    except Exception:
+        return False
+
 def get_connected_devices():
     """Return attached Android devices with serial, status, and model."""
     adb = get_adb_path()
@@ -442,6 +475,7 @@ def create_lecture_project(name, custom_parent_folder=None):
 
     if os.path.exists(project_dir):
         if os.path.exists(os.path.join(project_dir, "pubspec.yaml")):
+            ensure_vscode_launch(project_dir)
             save_recent_project(clean_name, project_dir, "مشروع محاضرة موجود مسبقاً")
             return {"success": True, "path": project_dir, "name": clean_name, "message": "المشروع موجود مسبقاً وجاهز للفتح!"}
         return {"success": False, "error": "المجلد موجود لكنه ليس مشروع فلاتر مكتملاً. اختر اسماً آخر أو أصلح المجلد."}
@@ -558,6 +592,7 @@ class _LectureHomePageState extends State<LectureHomePage> {{
     if not os.path.exists(os.path.join(project_dir, "pubspec.yaml")):
         return {"success": False, "error": "تعذر إنشاء مشروع المحاضرة. تأكد من تثبيت Flutter SDK ثم أعد المحاولة."}
 
+    ensure_vscode_launch(project_dir)
     save_recent_project(clean_name, project_dir, f"مشروع محاضرة جديد تم إنشاؤه بنجاح")
     return {
         "success": True,
