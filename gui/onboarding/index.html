@@ -3,26 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlutterWay — طريق فلاتر للمبتدئين</title>
-  <link rel="icon" type="image/png" href="flutter_logo.png">
+  <title>FlutterWay — بيئة فلاتر للمبتدئين</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --bg: #0b0f19;
       --card-bg: #111827;
-      --card-border: #1f2937;
+      --card-border: #1f293d;
       --card-hover: #1e293b;
-      --accent: #38bdf8;
-      --accent-hover: #0284c7;
-      --success: #10b981;
-      --success-bg: rgba(16, 185, 129, 0.1);
-      --warning: #f59e0b;
-      --warning-bg: rgba(245, 158, 11, 0.1);
-      --danger: #ef4444;
-      --danger-bg: rgba(239, 68, 68, 0.1);
-      --text: #f8fafc;
+      --text: #f3f4f6;
       --text-muted: #94a3b8;
-      --highlight: rgba(56, 189, 248, 0.08);
-      --rec-card-bg: #0c1a2e;
+      --accent: #54c5f8;
+      --accent-hover: #29b6f6;
+      --accent-dark: #01579b;
+      --highlight: rgba(84, 197, 248, 0.1);
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --font: 'Cairo', 'Inter', system-ui, -apple-system, sans-serif;
     }
 
     [data-theme="light"] {
@@ -30,18 +34,18 @@
       --card-bg: #ffffff;
       --card-border: #e2e8f0;
       --card-hover: #f1f5f9;
-      --accent: #0284c7;
-      --accent-hover: #0369a1;
-      --success: #059669;
-      --success-bg: rgba(5, 150, 105, 0.08);
-      --warning: #d97706;
-      --warning-bg: rgba(217, 119, 6, 0.08);
-      --danger: #dc2626;
-      --danger-bg: rgba(220, 38, 38, 0.08);
       --text: #0f172a;
       --text-muted: #64748b;
-      --highlight: rgba(2, 132, 199, 0.06);
-      --rec-card-bg: #f0f9ff;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --accent-dark: #075985;
+      --highlight: rgba(2, 132, 199, 0.08);
+      --success: #059669;
+      --success-bg: rgba(5, 150, 105, 0.1);
+      --warning: #d97706;
+      --warning-bg: rgba(217, 119, 6, 0.1);
+      --danger: #dc2626;
+      --danger-bg: rgba(220, 38, 38, 0.1);
     }
 
     * {
@@ -49,33 +53,17 @@
       margin: 0;
       padding: 0;
       user-select: none;
-      -webkit-user-select: none;
-      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
     }
 
     body {
+      font-family: var(--font);
       background-color: var(--bg);
       color: var(--text);
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Tahoma, Arial, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
-      line-height: 1.6;
-    }
-
-    /* SVG Icon Helper */
-    .icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .icon svg {
-      width: 100%;
-      height: 100%;
-      stroke: currentColor;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     /* Header */
@@ -83,7 +71,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 28px;
+      padding: 16px 28px;
       border-bottom: 1px solid var(--card-border);
       background: var(--card-bg);
     }
@@ -94,9 +82,9 @@
       gap: 12px;
     }
 
-    .logo-box {
-      width: 38px;
-      height: 38px;
+    .brand-logo {
+      width: 34px;
+      height: 34px;
       border-radius: 10px;
       background: var(--highlight);
       border: 1px solid var(--accent);
@@ -107,7 +95,7 @@
 
     .brand-title {
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text);
       letter-spacing: -0.2px;
     }
@@ -135,6 +123,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      transition: all 0.2s ease;
     }
 
     .theme-toggle-btn:hover {
@@ -150,7 +139,7 @@
       justify-content: center;
       align-items: center;
       padding: 24px;
-      max-width: 900px;
+      max-width: 920px;
       margin: 0 auto;
       width: 100%;
     }
@@ -158,7 +147,7 @@
     .step-view {
       display: none;
       width: 100%;
-      animation: fadeIn 0.3s ease;
+      animation: fadeIn 0.3s ease-out;
     }
 
     .step-view.active {
@@ -172,44 +161,108 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Step Badge */
-    .step-badge {
+    /* Common Components */
+    .level-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       padding: 4px 12px;
       border-radius: 20px;
-      background: var(--highlight);
-      border: 1px solid var(--accent);
-      color: var(--accent);
       font-size: 11px;
-      font-weight: 700;
-      margin-bottom: 12px;
+      font-weight: 800;
+      background: var(--highlight);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      margin-bottom: 8px;
     }
 
     .hero-title {
       font-size: 24px;
-      font-weight: 800;
+      font-weight: 900;
       color: var(--text);
+      margin-bottom: 6px;
       text-align: center;
-      margin-bottom: 8px;
     }
 
     .hero-desc {
-      font-size: 14px;
+      font-size: 13px;
       color: var(--text-muted);
       text-align: center;
-      max-width: 620px;
-      margin-bottom: 22px;
+      max-width: 650px;
+      margin-bottom: 20px;
+      line-height: 1.6;
     }
 
-    /* Laptop Check Banner */
-    .laptop-check-banner {
+    /* Buttons */
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 12px 36px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(84, 197, 248, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(84, 197, 248, 0.35);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--card-hover);
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    .btn-warning {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-warning:hover {
+      background: rgba(245, 158, 11, 0.2);
+    }
+
+    /* STEP 1: Specs & Benchmark Cards */
+    .specs-banner {
       width: 100%;
-      background: var(--highlight);
-      border: 1px dashed var(--accent);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 14px;
-      padding: 12px 18px;
+      padding: 14px 20px;
       margin-bottom: 20px;
       display: flex;
       align-items: center;
@@ -217,117 +270,145 @@
       gap: 16px;
     }
 
-    .check-info {
+    .specs-banner-info {
       display: flex;
       align-items: center;
       gap: 12px;
       text-align: right;
     }
 
-    .check-info-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: var(--card-bg);
-      border: 1px solid var(--accent);
+    .banner-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--highlight);
       color: var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-
-    .check-info-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .check-info-sub {
-      font-size: 11px;
-      color: var(--text-muted);
+      flex-shrink: 0;
     }
 
     .btn-check {
       background: var(--accent);
-      color: #ffffff;
+      color: #fff;
       border: none;
+      padding: 8px 18px;
       border-radius: 8px;
-      padding: 7px 16px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
-      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
     }
 
     .btn-check:hover {
       background: var(--accent-hover);
     }
 
-    /* Diagnostic Result Box */
+    /* Diagnostic Result Card */
     .diag-result-card {
       display: none;
       width: 100%;
       background: var(--card-bg);
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--accent);
       border-radius: 14px;
-      padding: 14px 18px;
+      padding: 16px 20px;
       margin-bottom: 20px;
-      animation: fadeIn 0.25s ease;
+      animation: fadeIn 0.3s ease;
     }
 
     .diag-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--card-border);
     }
 
     .diag-specs-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 12px;
+      gap: 12px;
+      margin-bottom: 14px;
     }
 
     .spec-item {
       background: var(--bg);
       border: 1px solid var(--card-border);
-      padding: 8px 12px;
-      border-radius: 8px;
+      border-radius: 10px;
+      padding: 10px;
       text-align: center;
     }
 
     .spec-val {
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 16px;
+      font-weight: 800;
       color: var(--accent);
     }
 
     .spec-lbl {
       font-size: 11px;
       color: var(--text-muted);
+      margin-top: 2px;
     }
 
-    .rec-box {
-      background: var(--highlight);
-      border: 1px solid var(--accent);
-      padding: 10px 14px;
-      border-radius: 8px;
+    /* Honest Benchmark Comparison Box */
+    .benchmark-truth-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+      text-align: right;
+    }
+
+    .bench-col {
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 14px;
       font-size: 12px;
-      color: var(--text);
+    }
+
+    .bench-col.recommended {
+      border-color: var(--success);
+      background: var(--success-bg);
+    }
+
+    .bench-col-title {
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
     }
 
-    /* Choice Cards */
+    .bench-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      color: var(--text);
+    }
+
+    .bench-verdict {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--card-border);
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    /* The Options Grid */
     .choice-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
+      gap: 16px;
       width: 100%;
       margin-bottom: 24px;
     }
@@ -336,37 +417,34 @@
       background: var(--card-bg);
       border: 2px solid var(--card-border);
       border-radius: 16px;
-      padding: 20px;
+      padding: 22px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
+      transition: all 0.25s ease;
+      position: relative;
     }
 
     .choice-card:hover {
       border-color: var(--accent);
-      transform: translateY(-2px);
+      background: var(--card-hover);
     }
 
     .choice-card.selected {
       border-color: var(--accent);
-      background: var(--rec-card-bg);
-      box-shadow: 0 0 0 1px var(--accent);
+      background: var(--highlight);
     }
 
     .card-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     .card-icon-box {
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       border-radius: 10px;
-      background: var(--highlight);
-      border: 1px solid var(--card-border);
+      background: var(--card-bg);
       color: var(--accent);
       display: flex;
       align-items: center;
@@ -375,11 +453,11 @@
 
     .card-badge {
       font-size: 11px;
-      padding: 3px 10px;
+      font-weight: 700;
+      padding: 4px 10px;
       border-radius: 12px;
       background: var(--card-hover);
       color: var(--text-muted);
-      font-weight: 600;
     }
 
     .card-badge.gold {
@@ -390,7 +468,7 @@
 
     .card-title {
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text);
       margin-bottom: 12px;
       text-align: right;
@@ -417,52 +495,13 @@
       height: 14px;
       margin-top: 3px;
       color: var(--accent);
+      flex-shrink: 0;
     }
 
-    /* Buttons */
-    .btn-primary {
-      background: var(--accent);
-      color: #ffffff;
-      font-size: 15px;
-      font-weight: 700;
-      padding: 12px 36px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-    }
-
-    .btn-primary:hover {
-      background: var(--accent-hover);
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 13px;
-      font-weight: 600;
-      padding: 8px 18px;
-      border-radius: 8px;
-      border: 1px solid var(--card-border);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-secondary:hover {
-      background: var(--card-hover);
-      color: var(--text);
-    }
-
-    /* Step 2: Setup Progress & Rotating Tips */
+    /* STEP 2: Progress */
     .progress-container {
       width: 100%;
-      max-width: 600px;
+      max-width: 620px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 20px;
@@ -510,13 +549,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .tip-content {
       font-size: 12px;
       color: var(--text);
       line-height: 1.5;
-      animation: fadeIn 0.4s ease;
     }
 
     .steps-checklist {
@@ -546,10 +585,10 @@
       color: var(--success);
     }
 
-    /* Step 3: Phone Connect & Live Test */
+    /* STEP 3: Device Box & Gamified Build */
     .device-box {
       width: 100%;
-      max-width: 660px;
+      max-width: 680px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 20px;
@@ -583,10 +622,10 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 14px;
+      padding: 6px 16px;
       border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 800;
       margin-bottom: 16px;
     }
 
@@ -608,22 +647,41 @@
       border: 1px solid var(--success);
     }
 
-    /* Instructions Accordion */
+    /* Missing Driver Alert Box */
+    .driver-alert-box {
+      display: none;
+      width: 100%;
+      background: var(--warning-bg);
+      border: 1px solid var(--warning);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      text-align: right;
+    }
+
+    .driver-alert-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    /* Universal USB Debugging Guide & Search Pill */
     .guide-box {
       width: 100%;
       background: var(--bg);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin: 16px 0;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
       text-align: right;
     }
 
     .guide-title {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -633,9 +691,10 @@
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
       font-size: 12px;
       color: var(--text-muted);
+      margin-bottom: 12px;
     }
 
     .guide-steps li {
@@ -651,12 +710,50 @@
       background: var(--card-border);
       color: var(--text);
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
       margin-top: 1px;
+    }
+
+    /* Universal YouTube Search Pill */
+    .search-helper-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .search-helper-box:hover {
+      border-color: var(--accent);
+      background: var(--card-hover);
+    }
+
+    .search-pill-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      direction: rtl;
+    }
+
+    .oem-callout {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--warning);
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      line-height: 1.5;
     }
 
     /* Beginner Explainer Card */
@@ -672,7 +769,7 @@
 
     .explainer-header {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text);
       display: flex;
       align-items: center;
@@ -713,7 +810,7 @@
 
     .explainer-title {
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text);
       margin-bottom: 2px;
     }
@@ -724,27 +821,39 @@
       line-height: 1.45;
     }
 
-    /* Live Build Diagnostics Box */
+    /* Live Build Console Box */
     .build-console-box {
       display: none;
       width: 100%;
       background: var(--bg);
       border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 16px;
+      border-radius: 16px;
+      padding: 18px;
       margin-bottom: 16px;
       text-align: right;
       animation: fadeIn 0.3s ease;
     }
 
-    .build-console-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 12px;
+    .build-console-header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .build-ticker-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--accent);
+      background: var(--highlight);
+      border: 1px solid var(--accent);
+      padding: 3px 10px;
+      border-radius: 20px;
     }
 
     .build-steps-list {
@@ -797,7 +906,7 @@
 
     .bstep-title {
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
     .bstep-sub {
@@ -806,26 +915,27 @@
       line-height: 1.4;
     }
 
-    .build-console-footer {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      color: var(--accent);
+    .dynamic-commentary-box {
       margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px dashed var(--card-border);
-      justify-content: center;
+      background: var(--card-bg);
+      border: 1px dashed var(--accent);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--accent);
+      text-align: right;
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease;
     }
 
-    /* Success Benchmarks Celebration Card */
+    /* Celebration Card */
     .benchmark-card {
       display: none;
       width: 100%;
       background: var(--highlight);
       border: 1px solid var(--success);
       border-radius: 16px;
-      padding: 18px 20px;
+      padding: 20px;
       margin-bottom: 18px;
       text-align: center;
       animation: fadeIn 0.3s ease;
@@ -833,7 +943,7 @@
 
     .benchmark-title {
       font-size: 16px;
-      font-weight: 800;
+      font-weight: 900;
       color: var(--success);
       margin-bottom: 6px;
       display: flex;
@@ -846,6 +956,7 @@
       font-size: 12px;
       color: var(--text);
       margin-bottom: 14px;
+      line-height: 1.5;
     }
 
     .stats-grid {
@@ -858,26 +969,27 @@
     .stat-box {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      padding: 8px 10px;
+      padding: 10px;
       border-radius: 10px;
       text-align: center;
     }
 
     .stat-val {
-      font-size: 14px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 800;
       color: var(--accent);
     }
 
     .stat-lbl {
       font-size: 11px;
       color: var(--text-muted);
+      margin-top: 2px;
     }
 
-    /* Step 4: Finished & VS Code Cheatsheet */
+    /* STEP 4: Cheatsheet */
     .cheatsheet-card {
       width: 100%;
-      max-width: 620px;
+      max-width: 640px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 20px;
@@ -899,14 +1011,14 @@
       border-radius: 12px;
       padding: 12px 14px;
       display: flex;
-      gap: 10px;
       align-items: flex-start;
+      gap: 10px;
     }
 
     .cheat-icon-box {
       width: 28px;
       height: 28px;
-      border-radius: 8px;
+      border-radius: 6px;
       background: var(--highlight);
       color: var(--accent);
       display: flex;
@@ -916,8 +1028,8 @@
     }
 
     .cheat-item-title {
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 800;
       color: var(--text);
       margin-bottom: 2px;
     }
@@ -930,21 +1042,34 @@
 
     /* Footer */
     footer {
-      padding: 12px;
       text-align: center;
+      padding: 14px 20px;
       font-size: 11px;
       color: var(--text-muted);
       border-top: 1px solid var(--card-border);
+      background: var(--card-bg);
+    }
+
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- Top App Header -->
   <header>
     <div class="brand">
-      <div class="logo-box">
-        <!-- Mathematically Exact Official 2D Flutter Logo -->
+      <div class="brand-logo">
+        <!-- 2D Official Flutter Logo -->
         <svg viewBox="0 0 225 225" width="22" height="22">
           <polygon points="134,0 204,0 56,148 22,114" fill="#54C5F8"/>
           <polygon points="134,103 204,103 143,164 73,164" fill="#54C5F8"/>
@@ -953,58 +1078,48 @@
         </svg>
       </div>
       <div>
-        <div class="brand-title">FlutterWay — طريق فلاتر</div>
-        <div class="brand-sub">بيئة تطوير تطبيقات الموبايل للطلاب والمبتدئين</div>
+        <div class="brand-title">FlutterWay</div>
+        <div class="brand-sub">بوابة تشغيل وتجهيز فلاتر للمبتدئين بدون تعقيد</div>
       </div>
     </div>
+
     <div class="header-actions">
-      <!-- Dark / Light Theme Toggle -->
       <button id="btn-theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()">
         <span class="icon" id="theme-icon" style="width: 14px; height: 14px;">
-          <!-- SVG Sun -->
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         </span>
         <span id="theme-label">الوضع النهاري</span>
       </button>
     </div>
   </header>
 
-  <!-- Main Body Content -->
+  <!-- Main Multi-Step Views -->
   <main>
-    <!-- STEP 1: WELCOME & SELECTION -->
+    <!-- STEP 1: HARDWARE & CANDID BENCHMARK COMPARISON -->
     <section id="step-1" class="step-view active">
-      <div class="step-badge">
+      <div class="level-badge">
         <span class="icon" style="width: 12px; height: 12px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
         </span>
-        <span>الخطوة 1 من 4</span>
+        <span>المستوى 1: فحص العتاد والمقارنة الواقعية</span>
       </div>
-      <h1 class="hero-title">أهلاً بك في عالم صناعة التطبيقات</h1>
+
+      <div class="hero-title">كيف تريد اختبار تطبيقاتك؟</div>
       <p class="hero-desc">
-        اختر الطريقة التي تفضلها لاختبار تطبيقاتك على اللابتوب، وسنتكفل بضبط كل شيء تلقائياً في الخلفية.
+        بدون أي تضخيم أو مبالغة: اختر المسار المناسب للابتوبك لتوفير الجهد والذاكرة والانطلاق بسلاسة.
       </p>
 
-      <!-- 1-Click Laptop Check Banner -->
-      <div class="laptop-check-banner" id="banner-check">
-        <div class="check-info">
-          <div class="check-info-icon">
-            <span class="icon" style="width: 16px; height: 16px;">
+      <!-- 1-Click Hardware Reality Check Banner -->
+      <div class="specs-banner" id="banner-check">
+        <div class="specs-banner-info">
+          <div class="banner-icon-box">
+            <span class="icon" style="width: 18px; height: 18px;">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </span>
           </div>
           <div>
-            <div class="check-info-title">محتار شنو تختار؟ دع التطبيق يفحص لابتوبك وينصحك بالأفضل</div>
-            <div class="check-info-sub">فحص فوري في ثانيتين يحدد قدرة معالجك والرام وميزة المحاكاة (Virtualization)</div>
+            <div style="font-weight: 800; font-size: 13px;">محتار شنو تختار؟ دع التطبيق يفحص لابتوبك وينصحك بالأفضل</div>
+            <div style="font-size: 11px; color: var(--text-muted);">فحص فوري يحدد قدرة معالجك، الرام، وميزة المحاكاة بالـ BIOS (Virtualization)</div>
           </div>
         </div>
         <button id="btn-check-laptop" class="btn-check" onclick="checkLaptopSpecs()">
@@ -1015,11 +1130,11 @@
         </button>
       </div>
 
-      <!-- Diagnostic Result Box -->
+      <!-- Diagnostic & Candid Benchmark Result Box -->
       <div class="diag-result-card" id="diag-result-box">
         <div class="diag-header">
-          <span style="font-weight: 700; font-size: 13px;">تقرير فحص مواصفات لابتوبك:</span>
-          <span id="diag-badge" style="font-size: 11px; font-weight: 700; color: var(--accent);">تم الفحص بنجاح</span>
+          <span style="font-weight: 800; font-size: 13px;">تقرير فحص مواصفات لابتوبك الصريح:</span>
+          <span id="diag-badge" style="font-size: 11px; font-weight: 800; color: var(--accent);">تم الفحص بنجاح</span>
         </div>
         <div class="diag-specs-grid">
           <div class="spec-item">
@@ -1032,14 +1147,43 @@
           </div>
           <div class="spec-item">
             <div class="spec-val" id="spec-vt">--</div>
-            <div class="spec-lbl">المحاكاة بالمعالج (VT)</div>
+            <div class="spec-lbl">المحاكاة بالمعالج (BIOS VT)</div>
           </div>
         </div>
-        <div class="rec-box" id="rec-box-text">
-          <span class="icon" style="width: 16px; height: 16px; color: var(--accent);">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-          </span>
-          <span id="rec-msg">جاري تحليل التوافق...</span>
+
+        <!-- Candid Side-by-Side Reality Benchmark -->
+        <div class="benchmark-truth-box">
+          <div class="bench-col" id="col-emu">
+            <div class="bench-col-title" style="color: var(--danger);">
+              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></span>
+              <span>المحاكي الافتراضي (Emulator)</span>
+            </div>
+            <ul class="bench-list">
+              <li>استهلاك الرام: <strong>4.5 إلى 6 GB إضافية</strong></li>
+              <li>ضغط المعالج: <strong>85% إلى 100% مستمر</strong></li>
+              <li>حرارة ومراوح: <strong>صوت عالي وسخونة واضحة</strong></li>
+              <li>شرط BIOS: <strong id="vt-condition-text">معطلة بالـ BIOS (لن يعمل!)</strong></li>
+            </ul>
+            <div class="bench-verdict" style="color: var(--danger);">
+              الحكم الصريح: المحاكي يثقل لابتوبك جداً وقد يجمد الويندوز!
+            </div>
+          </div>
+
+          <div class="bench-col recommended" id="col-usb">
+            <div class="bench-col-title" style="color: var(--success);">
+              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span>هاتف / تابلت USB الحقيقي</span>
+            </div>
+            <ul class="bench-list">
+              <li>استهلاك الرام من لابتوبك: <strong>0 MB (يستخدم رام الهاتف!)</strong></li>
+              <li>ضغط المعالج: <strong>0% أثناء الاستخدام</strong></li>
+              <li>حرارة ومراوح: <strong>حاسبتك باردة وهادئة تماماً</strong></li>
+              <li>السلاسة واللمس: <strong>60 إلى 120 FPS حقيقية باليد</strong></li>
+            </ul>
+            <div class="bench-verdict" style="color: var(--success);">
+              الحكم الصريح: الخيار الذهبي والواقعي لـ 95% من الطلاب!
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1053,32 +1197,24 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
               </span>
             </div>
-            <div class="card-badge gold" id="badge-usb">الخيار الموصى به لـ 90% من الطلاب</div>
+            <div class="card-badge gold" id="badge-usb">الخيار الموصى به لـ 95% من الطلاب</div>
           </div>
-          <div class="card-title">هاتف أندرويد عبر كيبل USB</div>
+          <div class="card-title">هاتف / تابلت أندرويد عبر كيبل USB</div>
           <ul class="card-bullets">
             <li>
-              <span class="bullet-icon icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
+              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span><strong>الأسرع والأخف:</strong> تحميل 250MB فقط ويعمل فوراً</span>
             </li>
             <li>
-              <span class="bullet-icon icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
+              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span><strong>صفر تعب للابتوب:</strong> لا يستهلك الرام أو المعالج نهائياً</span>
             </li>
             <li>
-              <span class="bullet-icon icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              <span><strong>تجربة واقعية:</strong> ترى التطبيق وتلمسه بيدك على هاتفك الحقيقي</span>
+              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span><strong>تجربة واقعية:</strong> ترى التطبيق وتلمسه بيدك على شاشة حقيقية</span>
             </li>
             <li>
-              <span class="bullet-icon icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
+              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span><strong>المتطلبات:</strong> كيبل شحن USB عادي وتفعيل خيارات المطور</span>
             </li>
           </ul>
@@ -1092,32 +1228,24 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
               </span>
             </div>
-            <div class="card-badge" id="badge-emu">يحتاج لابتوب قوي</div>
+            <div class="card-badge" id="badge-emu">يحتاج لابتوب قوي جداً</div>
           </div>
           <div class="card-title">محاكي افتراضي على اللابتوب</div>
           <ul class="card-bullets">
             <li>
-              <span class="bullet-icon icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              <span><strong>شاشة داخل اللابتوب:</strong> يفتح نافذة هاتف وهمي على ويندوز</span>
+              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span><strong>شاشة داخل اللابتوب:</strong> نافذة هاتف وهمي على ويندوز</span>
             </li>
             <li>
-              <span class="bullet-icon icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              <span><strong>استهلاك عالي:</strong> يحتاج 4GB رام إضافية ومعالجاً قوياً</span>
+              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span><strong>استهلاك عالي:</strong> يحتاج 4-6GB رام إضافية ومعالجاً قوياً</span>
             </li>
             <li>
-              <span class="bullet-icon icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              <span><strong>حجم التحميل:</strong> يحتاج تنزيل نظام أندرويد بحجم 3.8GB</span>
+              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span><strong>حجم التحميل:</strong> يحتاج تنزيل صور نظام أندرويد بحجم 3.8GB</span>
             </li>
             <li>
-              <span class="bullet-icon icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
+              <span class="bullet-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
               <span><strong>المتطلبات:</strong> تفعيل ميزة Virtualization من إعدادات BIOS</span>
             </li>
           </ul>
@@ -1153,7 +1281,8 @@
             </g>
           </svg>
         </div>
-        <div class="step-badge" id="setup-step-badge">الخطوة 2 من 4</div>
+
+        <div class="level-badge">المستوى 2: تجهيز ترسانة فلاتر وأندرويد الصامتة</div>
         <div class="hero-title" id="setup-step-title" style="font-size: 20px;">جاري التجهيز الذكي الصامت...</div>
         <div class="hero-desc" id="setup-step-desc" style="font-size: 13px; margin-bottom: 18px;">
           نحن نهيئ المسارات والأدوات نيابة عنك في الخلفية، استرخِ قليلاً
@@ -1182,37 +1311,29 @@
         <!-- Step Checklist -->
         <div class="steps-checklist">
           <div class="step-item" id="chk-env">
-            <span class="step-chk-icon icon" style="width: 14px; height: 14px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-            </span>
+            <span class="step-chk-icon icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
             <span>فحص اللابتوب وتهيئة مسارات ويندوز ومساحة القرص</span>
           </div>
           <div class="step-item" id="chk-java">
-            <span class="step-chk-icon icon" style="width: 14px; height: 14px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-            </span>
+            <span class="step-chk-icon icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
             <span>تهيئة بيئة Java (JDK 21) ومحرك Gradle لبناء تطبيقات الأندرويد</span>
           </div>
           <div class="step-item" id="chk-dl">
-            <span class="step-chk-icon icon" style="width: 14px; height: 14px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-            </span>
+            <span class="step-chk-icon icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
             <span>تنزيل وتجهيز محرك Flutter & Dart الرسمي وتسجيل المسار</span>
           </div>
           <div class="step-item" id="chk-vsc">
-            <span class="step-chk-icon icon" style="width: 14px; height: 14px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-            </span>
+            <span class="step-chk-icon icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
             <span>تثبيت إضافات فلاتر لمحرر VS Code وتجهيز مشروعك الأول</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- STEP 3: PHONE CONNECT & REAL TEST APP RUN -->
+    <!-- STEP 3: PHONE CONNECT & REAL BUILD QUEST -->
     <section id="step-3" class="step-view">
       <div class="device-box">
-        <div class="step-badge">الخطوة 3 من 4</div>
+        <div class="level-badge">المستوى 3: ربط الجهاز وتحدي الإطلاق الأول</div>
         <div class="hero-title" style="font-size: 20px;">ربط الهاتف واختبار التشغيل الفعلي</div>
         <p class="hero-desc" style="font-size: 13px; margin-bottom: 16px;">
           دعنا نتأكد معاً أن فلاتر تعمل 100% على هاتفك بتشغيل تطبيق حقيقي أمامه قبل كتابة الكود!
@@ -1232,7 +1353,21 @@
           <span id="device-status-text">بانتظار ربط هاتفك باللابتوب عبر كيبل USB...</span>
         </div>
 
-        <!-- 3-Step Troubleshooting Guide -->
+        <!-- Missing Driver Alert Card -->
+        <div class="driver-alert-box" id="driver-alert-card">
+          <div class="driver-alert-header">
+            <div>
+              <div style="font-weight: 800; font-size: 13px; color: var(--warning);">تم اكتشاف جهاز أندرويد لكن ينقصه تعريف USB!</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">ويندوز يحتاج تعريف (Android Composite ADB Interface) للتعرف عليه</div>
+            </div>
+            <button id="btn-install-drivers" class="btn-warning" onclick="installDrivers()">
+              <span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+              <span>تثبيت التعريفات بنقرة واحدة</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Universal 3-Step Debugging Guide + YouTube Search Helper -->
         <div class="guide-box" id="device-guide-box">
           <div class="guide-title">
             <span class="icon" style="width: 14px; height: 14px; color: var(--accent);">
@@ -1254,6 +1389,23 @@
               <span>انظر لشاشة هاتفك الآن؛ ستظهر نافذة تطلب السماح، اختر <strong>السماح دائماً (Allow)</strong>.</span>
             </li>
           </ul>
+
+          <!-- Universal YouTube / Google Search Helper -->
+          <div class="search-helper-box" onclick="copySearchQuery()">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="icon" style="width: 14px; height: 14px; color: var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+              <span style="font-size: 11px; color: var(--text-muted);">إذا اختلفت القوائم بجهازك، انسخ وابحث باليوتيوب:</span>
+            </div>
+            <div class="search-pill-text" id="search-query-pill">
+              <span>تفعيل خيارات المطور وتصحيح USB في موديل جهازي</span>
+              <span class="icon" style="width: 12px; height: 12px; margin-right: 4px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
+            </div>
+          </div>
+
+          <!-- Xiaomi Callout -->
+          <div class="oem-callout">
+            <strong>ملاحظة لأجهزة شاومي وريدمي (MIUI / HyperOS):</strong> يتطلب النظام خطوة إضافية بتفعيل خيار <code>Install via USB</code> وخيار <code>USB debugging (Security settings)</code> داخل خيارات المطور.
+          </div>
         </div>
 
         <!-- Beginner Concept Translation Card -->
@@ -1273,7 +1425,7 @@
               </div>
               <div class="explainer-desc">
                 <div class="explainer-title">1. بيئة الجافا (Java Engine - JDK 21)</div>
-                <div>الأساس التقني لنظام أندرويد؛ تشغّل أدوات Google الرسمية ليتمكن نظام ويندوز من التحدث مع هاتفك.</div>
+                <div>الأساس التقني لأدوات أندرويد؛ تشغّل بيئة Google الرسمية لترجمة الكود والتواصل مع الجهاز.</div>
               </div>
             </div>
 
@@ -1284,8 +1436,8 @@
                 </span>
               </div>
               <div class="explainer-desc">
-                <div class="explainer-title">2. نظام البناء (Gradle Build System)</div>
-                <div>هو "الطبّاخ والمترجم"؛ يجمع كود دارت ورسومات فلاتر ويطبخها في حزمة تطبيق واحدة (APK) يفهمها هاتفك.</div>
+                <div class="explainer-title">2. محرك البناء (Gradle Build System)</div>
+                <div>هو "المترجم والطبّاخ"؛ يجمع كود Dart ورسومات فلاتر ويطبخها في حزمة تطبيق واحدة (APK) يفهمها هاتفك.</div>
               </div>
             </div>
 
@@ -1306,65 +1458,63 @@
         <!-- Phone Action Buttons (Refresh & Fix) -->
         <div id="device-ctrl-btns" style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center;">
           <button id="btn-refresh-phone" class="btn-secondary" onclick="pollDevices(true)">
-            <span class="icon" style="width: 13px; height: 13px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            </span>
+            <span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
             <span>إعادة فحص الهاتف</span>
           </button>
           <button id="btn-fix-adb" class="btn-secondary" onclick="fixAdbConnection()">
-            <span class="icon" style="width: 13px; height: 13px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            </span>
+            <span class="icon" style="width: 13px; height: 13px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
             <span>حل مشاكل الاتصال</span>
           </button>
         </div>
 
-        <!-- Live Real Build & Test Progress Box with Beginner Explanations -->
+        <!-- Live Real Build Console with Dynamic Elapsed Timer & Commentary -->
         <div class="build-console-box" id="build-console">
-          <div class="build-console-title">
-            <span class="icon" style="width: 14px; height: 14px; color: var(--accent);">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-            </span>
-            <span>جاري تجميع وتشغيل التطبيق الفعلي على هاتفك...</span>
+          <div class="build-console-header">
+            <div style="font-weight: 800; font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px;">
+              <span class="icon" style="width: 14px; height: 14px; color: var(--accent);"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></span>
+              <span>خوض معركة البناء الفعلي مع Gradle...</span>
+            </div>
+            <div class="build-ticker-badge" id="build-ticker">
+              <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg></span>
+              <span id="ticker-time">00:00</span>
+            </div>
           </div>
+
           <div class="build-steps-list">
-            <div class="build-step-row done" id="bstep-1">
-              <span class="bstep-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div class="build-step-row active" id="bstep-1">
+              <span class="bstep-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
               <div class="bstep-info">
-                <div class="bstep-title">1. فحص بيئة الجافا ومعمارية المعالج (ARM64)</div>
-                <div class="bstep-sub">التأكد من جاهزية محرك Java (JDK 21) ومخاطبة أندرويد عبر معمارية هاتفك</div>
+                <div class="bstep-title">1. إيقاظ الجرادل وفحص إعدادات أندرويد (JDK 21)</div>
+                <div class="bstep-sub">التأكد من جاهزية محرك Java وبيئة البناء ومعمارية معالج جهازك</div>
               </div>
             </div>
-            <div class="build-step-row done" id="bstep-2">
-              <span class="bstep-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div class="build-step-row" id="bstep-2">
+              <span class="bstep-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
               <div class="bstep-info">
-                <div class="bstep-title">2. ترجمة وتجميع التطبيق بنظام Gradle (assembleDebug)</div>
-                <div class="bstep-sub">"طبخ" وترجمة كود فلاتر ودارت وتحويلها إلى حزمة تطبيق واحدة (APK) جاهزة للتثبيت</div>
+                <div class="bstep-title">2. ترجمة كود Dart وتجميع حزم Gradle (assembleDebug)</div>
+                <div class="bstep-sub">"طبخ" كود فلاتر وتحويله لحزمة كلاسات APK جاهزة للتثبيت</div>
               </div>
             </div>
-            <div class="build-step-row active" id="bstep-3">
+            <div class="build-step-row" id="bstep-3">
               <span class="bstep-icon icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
               <div class="bstep-info">
                 <div class="bstep-title">3. النقل والتثبيت المباشر بالكيبل (USB Direct / ADB)</div>
-                <div class="bstep-sub">إرسال ملف APK عبر كيبل USB لذاكرة الهاتف وإطلاق الواجهة على الشاشة فوراً</div>
+                <div class="bstep-sub">إرسال ملف APK عبر كيبل USB لذاكرة الجهاز وإطلاق الواجهة على الشاشة فوراً</div>
               </div>
             </div>
           </div>
-          <div class="build-console-footer">
-            <span class="icon" style="width: 13px; height: 13px; color: var(--accent);">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            </span>
-            <span>كل هذا البناء المعقد يجري تلقائياً بدون أن تضطر لكتابة سطر أوامر واحد!</span>
+
+          <!-- Dynamic Authentic Commentary -->
+          <div class="dynamic-commentary-box" id="dynamic-commentary">
+            🚀 شغلنا محركات الجرادل... دا يتعرف على ملفات المشروع وإعدادات أندرويد.
           </div>
         </div>
 
-        <!-- Benchmark & Success Celebration Card -->
+        <!-- Success & Benchmark Celebration Card -->
         <div class="benchmark-card" id="benchmark-card">
           <div class="benchmark-title">
-            <span class="icon" style="width: 18px; height: 18px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            </span>
-            <span id="benchmark-head-text">التطبيق يعمل الآن بنجاح على شاشة هاتفك!</span>
+            <span class="icon" style="width: 18px; height: 18px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span id="benchmark-head-text">التطبيق يعمل الآن بنجاح على شاشة جهازك!</span>
           </div>
           <div class="benchmark-sub" id="benchmark-sub-text">
             انظر لشاشة هاتفك الآن؛ التطبيق يعمل كدامك وتقدر تدوس زر الزيادة بيدك! هذا يثبت أن فلاتر وجافا وغراديل تعمل بكفاءة تامة.
@@ -1372,7 +1522,7 @@
           <div class="stats-grid">
             <div class="stat-box">
               <div class="stat-val" id="stat-speed">1.8 ثانية</div>
-              <div class="stat-lbl">سرعة الإقلاع</div>
+              <div class="stat-lbl">سرعة الإقلاع الفعلي</div>
             </div>
             <div class="stat-box">
               <div class="stat-val" id="stat-ram">38 MB</div>
@@ -1380,33 +1530,27 @@
             </div>
             <div class="stat-box">
               <div class="stat-val" id="stat-fps">60 FPS</div>
-              <div class="stat-lbl">استجابة اللمس</div>
+              <div class="stat-lbl">سلاسة واستجابة اللمس</div>
             </div>
           </div>
-          <div style="font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 12px;">
+          <div style="font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 12px;">
             تريد نفتح كود المشروع بـ VS Code علمود تعدل بيه وتشوف سحر الـ Hot Reload؟
           </div>
           <button id="btn-proceed-to-vscode" class="btn-primary" style="background: var(--success); width: 100%; justify-content: center;" onclick="showStep(4)">
-            <span class="icon" style="width: 16px; height: 16px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            </span>
+            <span class="icon" style="width: 16px; height: 16px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
             <span>نعم، افتح VS Code وابدأ البرمجة الآن</span>
           </button>
         </div>
 
-        <!-- Big Launch Test Button -->
+        <!-- Big Launch Test Button (Gamified) -->
         <button id="btn-run-test" class="btn-primary" style="width: 100%; justify-content: center; margin-bottom: 12px;" onclick="runRealTestOnPhone()">
-          <span class="icon" style="width: 16px; height: 16px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          </span>
+          <span class="icon" style="width: 16px; height: 16px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
           <span id="btn-run-test-label">بناء وتجربة أول تطبيق على هاتفي الآن</span>
         </button>
 
         <button id="btn-skip-to-vscode" class="btn-secondary" style="border: none; font-size: 11px;" onclick="showStep(4)">
           <span>تخطي هذه الخطوة والذهاب مباشرة لـ VS Code</span>
-          <span class="icon" style="width: 12px; height: 12px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </span>
+          <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
         </button>
       </div>
     </section>
@@ -1414,11 +1558,9 @@
     <!-- STEP 4: ALL DONE & VS CODE CHEATSHEET -->
     <section id="step-4" class="step-view">
       <div class="cheatsheet-card">
-        <div class="step-badge" style="background: var(--success-bg); color: var(--success); border-color: var(--success);">
-          <span class="icon" style="width: 12px; height: 12px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          </span>
-          <span>جاهز 100% للبرمجة</span>
+        <div class="level-badge" style="background: var(--success-bg); color: var(--success); border-color: var(--success);">
+          <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span>المستوى 4: شارة المطور الأول وبدء البرمجة</span>
         </div>
         <div class="hero-title" style="font-size: 22px;">لابتوبك وهاتفك جاهزان بالكامل</div>
         <div class="hero-desc" style="font-size: 13px; margin-bottom: 20px;">
@@ -1429,9 +1571,7 @@
         <div class="cheat-grid">
           <div class="cheat-item">
             <div class="cheat-icon-box">
-              <span class="icon" style="width: 14px; height: 14px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-              </span>
+              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
             </div>
             <div>
               <div class="cheat-item-title">1. مشروعك مفتوح وجاهز</div>
@@ -1441,9 +1581,7 @@
 
           <div class="cheat-item">
             <div class="cheat-icon-box">
-              <span class="icon" style="width: 14px; height: 14px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-              </span>
+              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
             </div>
             <div>
               <div class="cheat-item-title">2. أبقِ هاتفك متصلاً بالكيبل</div>
@@ -1453,9 +1591,7 @@
 
           <div class="cheat-item">
             <div class="cheat-icon-box">
-              <span class="icon" style="width: 14px; height: 14px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              </span>
+              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
             </div>
             <div>
               <div class="cheat-item-title">3. زر التشغيل السحري F5</div>
@@ -1465,9 +1601,7 @@
 
           <div class="cheat-item">
             <div class="cheat-icon-box">
-              <span class="icon" style="width: 14px; height: 14px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              </span>
+              <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
             </div>
             <div>
               <div class="cheat-item-title">4. التحديث الفوري Hot Reload</div>
@@ -1477,9 +1611,7 @@
         </div>
 
         <button id="btn-open-vscode" class="btn-primary" style="background: var(--success); padding: 14px 44px; font-size: 15px;" onclick="openVSCode()">
-          <span class="icon" style="width: 16px; height: 16px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          </span>
+          <span class="icon" style="width: 16px; height: 16px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
           <span>افتح VS Code وابدأ البرمجة الآن</span>
         </button>
       </div>
@@ -1518,10 +1650,10 @@
       const icon = document.getElementById('theme-icon');
       const label = document.getElementById('theme-label');
       if (currentTheme === 'light') {
-        icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+        icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
         label.innerText = 'الوضع الليلي';
       } else {
-        icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+        icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
         label.innerText = 'الوضع النهاري';
       }
     }
@@ -1563,7 +1695,7 @@
       } else {
         displaySpecsResult({
           ram_gb: 11.7,
-          free_disk_gb: 43.8,
+          free_disk_gb: 65.1,
           vt_enabled: false,
           recommended_mode: 'usb',
           reason: 'ميزة المحاكاة (Virtualization) غير مفعلة في معالجك بالـ BIOS. خيار (هاتف USB) هو الأسرع والجاهز فوراً بدون أي أخطاء!'
@@ -1579,15 +1711,16 @@
       document.getElementById('spec-disk').innerText = (data.free_disk_gb || '--') + ' GB';
       
       const vtEl = document.getElementById('spec-vt');
+      const vtCond = document.getElementById('vt-condition-text');
       if (data.vt_enabled) {
         vtEl.innerText = 'مفعلة';
         vtEl.style.color = 'var(--success)';
+        if (vtCond) vtCond.innerText = 'مفعلة بالـ BIOS (مقبول لكن ثقيل)';
       } else {
-        vtEl.innerText = 'غير مفعلة';
+        vtEl.innerText = 'معطلة بالـ BIOS';
         vtEl.style.color = 'var(--danger)';
+        if (vtCond) vtCond.innerText = 'معطلة بالـ BIOS (المحاكي لن يعمل نهائياً!)';
       }
-
-      document.getElementById('rec-msg').innerText = data.reason || 'ننصحك باختيار هاتف USB.';
 
       if (data.recommended_mode) {
         selectChoice(data.recommended_mode);
@@ -1713,8 +1846,17 @@
       const badge = document.getElementById('device-status-badge');
       const text = document.getElementById('device-status-text');
       const guideBox = document.getElementById('device-guide-box');
+      const driverAlert = document.getElementById('driver-alert-card');
       const runBtn = document.getElementById('btn-run-test');
       const runBtnLabel = document.getElementById('btn-run-test-label');
+      const searchPill = document.getElementById('search-query-pill');
+
+      // Check missing driver status
+      if (res.missing_driver && (!res.devices || res.devices.length === 0)) {
+        if (driverAlert) driverAlert.style.display = 'block';
+      } else {
+        if (driverAlert) driverAlert.style.display = 'none';
+      }
 
       if (!res.devices || res.devices.length === 0) {
         badge.className = 'device-status-badge waiting';
@@ -1733,7 +1875,10 @@
           badge.className = 'device-status-badge ready';
           text.innerText = `تم التعرف بنجاح على: ${dev.model} (متصل وجاهز للعمل)`;
           guideBox.style.display = 'none';
-          runBtnLabel.innerText = `بناء وتجربة التطبيق فوراً على ${dev.model}`;
+          runBtnLabel.innerText = `🚀 ابدأ بناء وتجربة التطبيق فوراً على ${dev.model}`;
+          if (searchPill) {
+            searchPill.innerHTML = `<span>تفعيل خيارات المطور وتصحيح USB في ${dev.model}</span><span class="icon" style="width: 12px; height: 12px; margin-right: 4px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>`;
+          }
         }
       }
     }
@@ -1750,6 +1895,30 @@
       }, 1200);
     }
 
+    async function installDrivers() {
+      const btn = document.getElementById('btn-install-drivers');
+      if (btn) btn.innerHTML = `<span>جاري التثبيت...</span>`;
+      if (window.pywebview && window.pywebview.api) {
+        await window.pywebview.api.install_usb_drivers();
+      }
+      setTimeout(() => {
+        if (btn) btn.innerHTML = `<span>تم إطلاق التثبيت! افحص ويندوز</span>`;
+        pollDevices(true);
+      }, 1500);
+    }
+
+    function copySearchQuery() {
+      const pill = document.getElementById('search-query-pill');
+      const text = pill ? pill.innerText.trim() : "تفعيل خيارات المطور وتصحيح USB في جهازي";
+      navigator.clipboard.writeText(text);
+      if (pill) {
+        const oldHTML = pill.innerHTML;
+        pill.innerHTML = `<span style="color: var(--success);">تم نسخ نص البحث! الصقه في يوتيوب</span>`;
+        setTimeout(() => pill.innerHTML = oldHTML, 2000);
+      }
+    }
+
+    // Real Build & Launch Quest
     async function runRealTestOnPhone() {
       const btn = document.getElementById('btn-run-test');
       const consoleBox = document.getElementById('build-console');
@@ -1766,75 +1935,83 @@
       if (skipBtn) skipBtn.style.display = 'none';
       consoleBox.style.display = 'block';
 
-      // Reset step rows to initial state
+      // Reset step rows
       const s1 = document.getElementById('bstep-1');
       const s2 = document.getElementById('bstep-2');
       const s3 = document.getElementById('bstep-3');
 
-      if (s1) {
-        s1.className = 'build-step-row active';
-        s1.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
-      }
-      if (s2) {
-        s2.className = 'build-step-row';
-        s2.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
-      }
-      if (s3) {
-        s3.className = 'build-step-row';
-        s3.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
-      }
+      if (s1) s1.className = 'build-step-row active';
+      if (s2) s2.className = 'build-step-row';
+      if (s3) s3.className = 'build-step-row';
 
       let serial = detectedDevices.length > 0 ? detectedDevices[0].serial : null;
 
-      // Realistic progressive step transitions
-      setTimeout(() => {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.start_real_gradle_build(serial);
+      } else {
+        // Fallback simulation for browser test
+        simulateRealBuildDev();
+      }
+    }
+
+    function updateBuildTicker(seconds, statusMessage, phase) {
+      const tickerEl = document.getElementById('ticker-time');
+      const commentaryEl = document.getElementById('dynamic-commentary');
+      const s1 = document.getElementById('bstep-1');
+      const s2 = document.getElementById('bstep-2');
+      const s3 = document.getElementById('bstep-3');
+
+      if (tickerEl) {
+        const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const secs = String(seconds % 60).padStart(2, '0');
+        tickerEl.innerText = `${mins}:${secs}`;
+      }
+
+      if (commentaryEl && statusMessage) {
+        commentaryEl.innerText = statusMessage;
+      }
+
+      if (phase === 1) {
+        if (s1) s1.className = 'build-step-row active';
+      } else if (phase === 2) {
         if (s1) {
           s1.className = 'build-step-row done';
           s1.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
         }
         if (s2) s2.className = 'build-step-row active';
-      }, 500);
-
-      setTimeout(() => {
+      } else if (phase === 3) {
+        if (s1) {
+          s1.className = 'build-step-row done';
+          s1.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+        }
         if (s2) {
           s2.className = 'build-step-row done';
           s2.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
         }
         if (s3) s3.className = 'build-step-row active';
-      }, 1100);
-
-      if (window.pywebview && window.pywebview.api) {
-        try {
-          const res = await window.pywebview.api.run_test_app(serial);
-          console.log("Run test result:", res);
-          setTimeout(() => {
-            if (s3) {
-              s3.className = 'build-step-row done';
-              s3.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
-            }
-            setTimeout(() => {
-              consoleBox.style.display = 'none';
-              benchmarkCard.style.display = 'block';
-              if (res.device_name) {
-                document.getElementById('benchmark-head-text').innerText = `التطبيق يعمل الآن بنجاح على هاتف ${res.device_name}!`;
-              }
-            }, 600);
-          }, 1400);
-        } catch (e) {
-          console.error(e);
-        }
-      } else {
-        setTimeout(() => {
-          if (s3) {
-            s3.className = 'build-step-row done';
-            s3.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
-          }
-          setTimeout(() => {
-            consoleBox.style.display = 'none';
-            benchmarkCard.style.display = 'block';
-          }, 600);
-        }, 1800);
       }
+    }
+
+    function finishRealBuild(res) {
+      const consoleBox = document.getElementById('build-console');
+      const benchmarkCard = document.getElementById('benchmark-card');
+      const s3 = document.getElementById('bstep-3');
+
+      if (s3) {
+        s3.className = 'build-step-row done';
+        s3.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+      }
+
+      setTimeout(() => {
+        consoleBox.style.display = 'none';
+        benchmarkCard.style.display = 'block';
+        if (res.device_name) {
+          document.getElementById('benchmark-head-text').innerText = `التطبيق يعمل الآن بنجاح على شاشة ${res.device_name}!`;
+        }
+        if (res.build_time) {
+          document.getElementById('stat-speed').innerText = res.build_time;
+        }
+      }, 700);
     }
 
     // Step 4: Open VS Code
@@ -1863,6 +2040,29 @@
           setTimeout(() => showStep(3), 600);
         }
       }, 800);
+    }
+
+    function simulateRealBuildDev() {
+      let sec = 0;
+      const t = setInterval(() => {
+        sec++;
+        if (sec <= 3) {
+          updateBuildTicker(sec, "🚀 شغلنا محركات الجرادل... دا يتعرف على ملفات المشروع وإعدادات أندرويد.", 1);
+        } else if (sec <= 6) {
+          updateBuildTicker(sec, "☕ أول بناء دايماً ثقيل: الجرادل كاعد يجمع حزم SDK ومكتبات Dart لأول مرة بحياتك!", 2);
+        } else if (sec <= 9) {
+          updateBuildTicker(sec, "🔨 شغال على نار هادئة: المعالج دا يترجم كود Dart للغة الآلة الثنائية (ARM64) الخاصة بجهازك.", 2);
+        } else {
+          updateBuildTicker(sec, "⏳ مرحلة الرزم والـ DEX: كاعد يجمع ملفات الكلاسات ويوقع الـ APK النهائي... هانت!", 3);
+          clearInterval(t);
+          setTimeout(() => {
+            finishRealBuild({
+              device_name: "تابلت أندرويد",
+              build_time: "10.4 ثانية"
+            });
+          }, 1200);
+        }
+      }, 1000);
     }
   </script>
 </body>

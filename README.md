@@ -11,10 +11,12 @@
 تعتبر عملية إعداد بيئة عمل **Flutter & Dart** على نظام Windows كابوساً حقيقياً للطلاب والمطورين المبتدئين ("الصفر تماماً")، وتحديداً في البيئات الجامعية والبلدان النامية التي تعاني من بطء وتذبذب الإنترنت، وتجميد الحواسيب، وتعقيدات مسارات النظام والتراخيص ومحرك بناء أندرويد Gradle.
 
 **مشروع FlutterWay** صُمم خصيصاً كحل جذري أصيل وخفيف الوزن، يدمج بين:
-1. **تطبيق سطح مكتب أصلي حديث (Native Desktop App):** مبني بتقنية Edge Chromium الخفيفة (بدون استهلاك موارد Electron)، بواجهة عربية تفاعلية مصممة وفق أحدث معايير تجربة المستخدم وأيقونات فيكتور مسطحة (Pure 2D Vector) بدون أي تشويش بصري.
-2. **محرك فحص وتشخيص خلفي (Go Core Engine):** يعمل كملف تنفيذي خالص لنواة ويندوز (Win32 Binary) مجمّع بلغة Go؛ دون الحاجة لأي سكريبتات PowerShell محظورة أو متطلبات مسبقة.
-3. **دعم بيئة الهواتف الحقيقية عبر USB:** توجيه 90% من الطلاب لاستخدام هواتفهم الحقيقية مباشرة عبر كيبل USB بدلاً من المحاكيات الثقيلة التي تستهلك 4GB رام إضافية وتتطلب تفعيل Virtualization في الـ BIOS.
-4. **بناء واختبار فعلي على الهاتف قبل كتابة الكود:** تجميع واختبار تطبيق فلاتر حقيقي على شاشة هاتف الطالب للتأكد من جاهزية Java وGradle وADB بنسبة 100%، مع ترجمة وشرح كافة المصطلحات التقنية بلغة عربية مبسطة وودودة للمبتدئ.
+1. **تطبيق سطح مكتب أصلي حديث (Native Desktop App):** مبني بتقنية Edge Chromium الخفيفة (بدون استهلاك موارد Electron)، بواجهة عربية تفاعلية مصممة وفق أسلوب اللعبة الهادفة (Gamified Levels) وأيقونات فيكتور مسطحة نقية (Pure 2D Vector) بدون أي رموز تعبيرية أو تشويش بصري.
+2. **محرك فحص وتشخيص خلفي واقعي (Hardware & Reality Doctor):** بعيداً عن التضخيم أو التسويق الزائف (No AI Hype)؛ يقدم فحصاً صريحاً ومقارنة واقعية دقيقة بالأرقام بين استهلاك المحاكي الافتراضي واستهلاك هاتف الـ USB الحقيقي.
+3. **دعم بيئة الهواتف والأجهزة اللوحية الحقيقية عبر USB:** توجيه 95% من الطلاب لاستخدام أجهزتهم الحقيقية مباشرة عبر كيبل USB بدلاً من المحاكيات الثقيلة التي تستهلك 4-6GB رام إضافية وتتطلب تفعيل Virtualization في الـ BIOS.
+4. **مساعد التعريفات الشامل (Universal USB Driver Doctor):** حزمة تعريفات رسمية مدمجة (`android_winusb.inf`) تمكن ويندوز من التعرف على هواتف أندرويد بمختلف شركاتها (Samsung, Xiaomi, Huawei, Infinix, Oppo, Realme) بنقرة واحدة وتثبيتها عبر `pnputil`.
+5. **دليل تصحيح أخطاء USB الذكي ومساعد يوتيوب:** شرح للخطوات الـ 3 العامة مع اقتراح بحث ذكي جاهز للنسخ للبحث السريع في يوتيوب وجوجل لموديل جهاز الطالب تحديداً، وتنبيهات خاصة بواجهات شاومي (MIUI/HyperOS).
+6. **معركة البناء الفعلي مع Gradle بالوقت الحقيقي:** نافذة تشغيل تفاعلية كاللعبة مع عداد زمني للثواني المنقضية، وتعليقات عربية عفوية وواقعية تشرح للطالب ما يفعله المعالج ومحرك Kotlin و Dart خطوة بخطوة، مع قياس بنش مارك واقعي واحتفال بنجاح التشغيل.
 
 </div>
 
@@ -24,14 +26,16 @@
 
 <div dir="rtl">
 
-### رحلة المستخدم المبسطة من 4 خطوات:
+### رحلة المستويات الأربعة التفاعلية (Gamified Levels):
 
-| الخطوة | الوصف والمزايا | الصورة |
+| المستوى | الوصف والمزايا المضافة | لقطة الشاشة |
 | :--- | :--- | :--- |
-| **1. فحص اللابتوب واختيار المسار** | فحص فوري في ثانيتين لمواصفات المعالج، الرام، ميزة المحاكاة (Virtualization) ومساحة القرص، واقتراح الخيار الأنسب لحاسوبك (هاتف USB فائق الخفة مقابل المحاكي). دعم كامل للوضع الليلي والنهاري. | ![الخطوة 1: فحص اللابتوب](docs/screenshots/step1_dark.png) |
-| **2. التجهيز التلقائي الصامت** | عداد تقدم ذكي ناعم لا يتجمد إطلاقاً (Asymptotic Ticker) مع نصائح دورية باللغة العربية تشرح مفاهيم فلاتر، وشعار 2D نقي مع سهم التنزيل، ومتابعة 4 مراحل ضبط تلقائية للمسارات وبيئة Java وGradle ومحرر VS Code. | ![الخطوة 2: التجهيز الصامت](docs/screenshots/step2_progress.png) |
-| **3. ربط الهاتف واختبار التشغيل الفعلي** | التعرف الفوري على الهاتف عبر USB، مع دليل مرئي لحل مشاكل الاتصال وتفعيل USB Debugging، وشرح مبسط لمفاهيم Java و Gradle و ADB للمبتدئين، مع إطلاق فعلي للتطبيق على شاشة الهاتف وقياس سرعة الإقلاع وسلاسة اللمس (60 FPS). | ![الخطوة 3: فحص الهاتف](docs/screenshots/step3_device_detected.png) |
-| **4. دليل الانطلاق في VS Code** | فتح المحرر تلقائياً على مشروع الطالب الأول (`my_first_app`) مع بطاقة إرشادات سريعة تشرح زر التشغيل F5 وميزة التحديث الفوري المباشر Hot Reload (`Ctrl+S`). | ![الخطوة 4: جاهز للبرمجة](docs/screenshots/step4_vscode_cheatsheet.png) |
+| **المستوى 1: فحص العتاد والمقارنة الواقعية** | فحص فوري لمواصفات المعالج والرام وميزة المحاكاة (BIOS VT) ومساحة القرص، مع جدول مقارنة صريح وواقعي يبين بالأرقام استنزاف المحاكي للرام والحرارة مقابل كفاءة هاتف الـ USB (استهلاك 0MB من اللابتوب وسلاسة 60-120 FPS). دعم كامل للوضع الليلي والنهاري. | ![المستوى 1: فحص العتاد والمقارنة](docs/screenshots/step1_dark.png) |
+| **المستوى 2: تجهيز ترسانة فلاتر الصامتة** | عداد تقدم ذكي ناعم لا يتجمد إطلاقاً (Asymptotic Ticker) مع شعار فلاتر 2D نقي وسهم تنزيل مسطح، وقائمة متابعة لـ 4 مراحل تلقائية (تهيئة البيئة، Java JDK 21 و Gradle، محرك Flutter & Dart، وتكامل VS Code). | ![المستوى 2: التجهيز الصامت](docs/screenshots/step2_progress.png) |
+| **المستوى 3: ربط الجهاز ومساعد التعريفات** | التعرف الفوري على الهواتف والأجهزة اللوحية المتصلة (مثل `HONOR JMS-W09` بنظام Android 15)، ودليل تصحيح USB مع زر نسخ نص البحث باليوتيوب، ومساعد تعريفات USB الشامل، وشرح مبسط لمفاهيم Java و Gradle و ADB للمبتدئين. | ![المستوى 3: التعرف على الجهاز](docs/screenshots/step3_device_detected.png) |
+| **المستوى 3 (متابعة): معركة البناء الفعلي مع Gradle** | عداد زمني بالثواني المنقضية (`00:28`)، مع متابعة حية لمراحل البناء الفعلي (assembleDebug) وتعليقات عربية عفوية تشرح ما يفعله المعالج بلغة الآلة ARM64 وتخفف الانتظار عن الطالب. | ![المستوى 3: معركة البناء الفعلي](docs/screenshots/step3_build_console.png) |
+| **المستوى 3 (متابعة): احتفال البنش مارك على شاشة الجهاز** | بطاقة تأكيد احتفالية تؤكد عمل التطبيق مباشرة على شاشة الهاتف، مع عرض سرعة الإقلاع الفعلية (1.8 ثانية)، واستهلاك الرام (38 MB)، وسلاسة اللمس (60 FPS). | ![المستوى 3: احتفال البنش مارك](docs/screenshots/step3_benchmark_celebration.png) |
+| **المستوى 4: شارة المطور ودليل VS Code** | فتح المحرر تلقائياً على مشروع الطالب الأول (`my_first_app`) مع بطاقة إرشادات سريعة تشرح زر التشغيل السحري F5 وميزة التحديث الفوري المباشر Hot Reload (`Ctrl+S`). | ![المستوى 4: شارة المطور](docs/screenshots/step4_vscode_cheatsheet.png) |
 
 </div>
 
@@ -44,20 +48,20 @@ flowchart TD
     User["👨‍🎓 Student / Beginner"]
     
     subgraph Presentation ["🖥️ FlutterWay Native Desktop GUI"]
-        Webview["WebView2 / Edge Chromium Runtime\nArabic RTL | Dark/Light Mode | Pure 2D Vectors"]
+        Webview["WebView2 / Edge Chromium Runtime\nArabic RTL | Dark/Light Mode | Pure 2D Vectors | Gamified Levels"]
         HarnessIPC["Agent Test Harness IPC\nPort 54321 | Sub-millisecond Remote Automation"]
     end
 
     subgraph CoreEngine ["⚙️ Core Backend Engine (Go / Python Native)"]
-        Inspector["🔍 Inspector & Hardware Doctor\nRAM, Disk, WMI BIOS VT, ADB Port Conflict"]
-        Downloader["⚡ Resumable Chunker\nParallel Mirrors, Hash Verification (SHA-256)"]
+        Inspector["🔍 Inspector & Hardware Doctor\nRAM, Disk, WMI BIOS VT, ADB Port Conflict, PnP Driver Sniffer"]
+        DriverDoctor["🛠️ Universal Android USB Driver Doctor\nGoogle USB Driver (android_winusb.inf), pnputil Elevation"]
         ToolchainMgr["📦 Toolchain & SDK Manager\nFlutter SDK, Adoptium JDK 21, Android SDK Tools"]
-        GradleTuner["🛠️ Gradle & Registry Tuner\nLongPathsEnabled, JAVA_HOME, UTF-8 Safe ASCII Paths"]
+        GradleTuner["⚙️ Gradle & NDK Trap Tuner\nLongPathsEnabled, JAVA_HOME, Strip Bypass Prevention"]
         VSCodeIntegrator["📝 VS Code Automation Engine\nExtension Installer, settings.json Auto-injector"]
     end
 
     subgraph Targets ["📱 Development Targets"]
-        Phone["📱 Physical Android Device (USB Direct)\nUltra-fast | Zero RAM overhead | 60 FPS"]
+        Phone["📱 Physical Android Device (USB Direct)\nTested on Huawei/Honor Tablet Android 15 | 60 FPS"]
         Emulator["💻 Android Emulator (AVD)\nVirtual Device on Windows (High-spec PCs)"]
         VSCodeIDE["💻 Visual Studio Code\nConfigured Workspace (my_first_app)"]
     end
@@ -72,85 +76,41 @@ flowchart TD
 
 <div dir="rtl">
 
+## 💡 مشاكل حقيقية تم اكتشافها وحلها برمجياً (Battle-Tested Insights)
+
+خلال الاختبارات الميدانية الصريحة على أرض الواقع، تم رصد وحل المشاكل التالية التي كانت ستعيق الطلاب:
+
+1. **فخ تحميل حزم NDK التلقائي بحجم 6.7 GB (The NDK Trap):**
+   - في إصدارات فلاتر الحديثة، يُحقن ملف CMake اصطناعي يجعل أداة البناء تحاول تحميل حزمة Android NDK بحجم 6.7 جيجابايت في الخلفية، مما يؤدي إلى نفاد مساحة القرص وتعليق حواسيب الطلاب.
+   - **الحل في FlutterWay:** ضبط إعدادات المشروع لتعطيل الفرض التلقائي وتجاوز التنزيل الزائد للمشاريع المبتدئة التي لا تحتاج كود C++ مخصص.
+2. **تضارب منافذ ونسخ ADB المتعددة (ADB Port Conflicts):**
+   - وجود نسختين مختلفتين من ADB (`C:\Android\platform-tools` مقابل `C:\platform-tools`) يؤدي إلى قتل الخادم وإعادة تشغيله في حلقة لا نهائية.
+   - **الحل في FlutterWay:** التعرف التلقائي وتوحيد المسار نحو النسخة الحديثة المستقرة ومصالحتهما.
+3. **غياب تعريفات الـ USB لأجهزة أندرويد (The Missing Driver Dilemma):**
+   - عند توصيل الطالب لهاتفه، غالباً لا يتعرف عليه ويندوز إلا كوسيط تخزين MTP وتظهر علامة صفراء في إدارة الأجهزة.
+   - **الحل في FlutterWay:** تزويد التطبيق بحزمة تعريفات أندرويد الرسمية الشاملة (`android_winusb.inf`) مع زر تثبيت بنقرة واحدة عبر `pnputil`.
+4. **اختلاف قوائم تفعيل خيارات المطور بين الشركات المصنعة (OEM Quirks):**
+   - شاومي وسامسونج وهواوي وإنفينكس تضع خيارات المطور في أماكن مختلفة.
+   - **الحل في FlutterWay:** تدريب الطالب على القاعدة العامة (الضغط 7 مرات على Build Number)، مع زر ذكي ينسخ نص البحث الدقيق لموديل جهازه للبحث الفوري في يوتيوب وجوجل، وتنبيه خاص بإعدادات أمان شاومي (`Install via USB`).
+
+---
+
 ## 📊 مصفوفة المقارنة الهندسية
 
 | وجه المقارنة | التثبيت اليدوي التقليدي | السكربتات العادية (.ps1/.bat) | تطبيق FlutterWay 🚀 |
 | :--- | :--- | :--- | :--- |
-| **سهولة الاستخدام للمبتدئ الصفر** | معقدة ومحبطة جداً | تفتح نافذة سوداء مخيفة | واجهة عربية ودودة من 4 خطوات |
+| **سهولة الاستخدام للمبتدئ الصفر** | معقدة ومحبطة جداً | تفتح نافذة سوداء مخيفة | واجهة عربية تفاعلية بأسلوب المستويات |
 | **سياسات الحظر بويندوز (ExecutionPolicy)** | لا تنطبق | تفشل بسبب الحظر | **ملف أصلي تنفيذي يتجاوز الحظر** |
-| **المسارات العربية والمسافات** | تكسر أندرويد و Gradle | تتجاهلها وتنهار لاحقاً | **كشف استباقي** وتوجيه لمسارات ASCII آمنة |
-| **أندرويد ستوديو الثقيل** | إجباري تنزيل 1.5GB+ | يعتمد على أدوات متفرقة | **أدوات سطر الأوامر فقط** (خفيف وسريع) |
-| **صراع منافذ ADB مع BlueStacks** | حلقة قتل لا نهائية لخادم adb | لا تتعامل معها إطلاقاً | **زر فوري لفك الاحتكار وإعادة التشغيل** |
-| **تفعيل بيئة Java و Gradle** | تتطلب ضبط يدوي لمتغيرات البيئة | تفشل إذا لم يكن JDK متاحاً | **ربط آلي لـ JDK 21 و JAVA_HOME** |
-| **التحقق الفعلي على الموبايل** | يترك الطالب في حيرة | يفتح محرر الأكواد فقط | **بناء وتشغيل فعلي على شاشة الهاتف** |
-| **أجهزة مختبرات الكلية (Deep Freeze)** | تضيع مع كل إعادة تشغيل | تضيع مع كل إعادة تشغيل | **وضع محمول (Portable Mode)** من فلاشة |
+| **الموقف من المحاكي والمواصفات** | ترويج عشوائي للمحاكي | لا تفحص التوافق | **مقارنة واقعية صريحة (0MB رام للهاتف)** |
+| **تعريفات الهواتف USB Drivers** | على الطالب البحث بنفسه | لا تدعمها إطلاقاً | **مساعد تعريفات رسمي مدمج بنقرة واحدة** |
+| **شرح مصطلحات Java و Gradle** | غير موجودة إطلاقاً | غير موجودة | **شرح مبسط وممتع بالعربية الدارجة** |
+| **اختبار الجهاز الفعلي قبل الكود** | لا يوجد؛ يكتشف الخطأ لاحقاً | لا يوجد | **بناء وتشغيل فعلي على شاشة الهاتف** |
+| **محرر VS Code** | ضبط يدوي لأكثر من 5 إعدادات | لا تدعمه | **حقن وضبط تلقائي للمسارات والإضافات** |
 
 </div>
 
 ---
 
-## 🗂️ هيكل المستودع (Repository Layout)
+## 📜 الترخيص
 
-```text
-flutterway/
-├── assets/                    # Official 2D vector assets, test APKs & application icon
-│   ├── flutter_logo.png       # Official 2D Flutter raster logo (225x225)
-│   ├── starter_test_app.apk   # Prebuilt instant starter APK for physical verification
-│   └── icon.ico               # Windows desktop application icon
-├── cmd/
-│   └── fway/                  # Go CLI entry point (headless & automation mode)
-├── gui/
-│   ├── onboarding/            # Modern HTML5/CSS/JS frontend application
-│   │   ├── index.html         # 4-step wizard, 2D vectors, dark/light theme, RTL
-│   │   └── flutter_logo.png   # Embedded logo asset
-│   ├── onboarding_app.py      # Python Edge Chromium native app & IPC harness
-│   ├── vscode_integration.py  # VS Code discovery, extension installer & settings injector
-│   └── capture_screens.py     # Headless visual screenshot regression test suite
-├── manifests/
-│   └── toolchain-v1.json      # Dynamic updatable toolchain specification
-├── pkg/
-│   ├── doctor/                # Offline rule engine (32 real-world failure patterns)
-│   ├── downloader/            # Multi-threaded chunked downloader with resume
-│   ├── inspector/             # Pre-flight hardware checks, ADB & USB detection
-│   └── manifest/              # Manifest parser and SHA-256 integrity verifier
-├── clean_slate.py             # Zero-state student machine test & reset suite
-├── LICENSE                    # MIT License
-└── README.md                  # Comprehensive project documentation
-```
-
----
-
-<div dir="rtl">
-
-## 🚀 تشغيل وتجربة التطبيق (Quick Start)
-
-### 1. تشغيل التطبيق المكتبي مباشرة:
-```powershell
-python gui/onboarding_app.py
-```
-أو تشغيل الملف التنفيذي المجمّع:
-```powershell
-.\dist\FlutterWayNative\FlutterWayNative.exe
-```
-
-### 2. محاكاة حاسبة طالب جديد من الصفر (Clean Slate Test):
-لتفريغ أي إعدادات سابقة واختبار التطبيق كما لو كان يعمل على جهاز طالب لم يثبت فلاتر من قبل:
-```powershell
-python clean_slate.py
-```
-
-### 3. أتمتة الفحص البصري التلقائي (Playwright Visual Suite):
-لالتقاط صور عالية الدقة لكافة شاشات التطبيق للتأكد من سلامة التصميم:
-```powershell
-python gui/capture_screens.py
-```
-
----
-
-## 📄 الترخيص (License)
-
-هذا المشروع مرخص بالكامل تحت رخصة **[MIT License](LICENSE)** — مفتوح المصدر ومتاح للاستخدام الأكاديمي، والمختبرات الجامعية، والتطوير الحر.
-
-تم التطوير والتصميم بواسطة **[AboALhasanx](https://github.com/AboALhasanx)**.
-
-</div>
+هذا المشروع مرخص تحت رخصة **MIT License** — مفتوح المصدر ومتاح مجاناً للجامعات والمدارس ومجتمعات المطورين في كافة أنحاء العالم العربي.

@@ -13,13 +13,12 @@ def capture():
 
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path=chrome_exe, headless=True)
-        context = browser.new_context(viewport={"width": 980, "height": 740})
+        context = browser.new_context(viewport={"width": 980, "height": 780})
         page = context.new_page()
 
-        # 1. Step 1 Dark Mode
+        # 1. Step 1 Dark Mode with Hardware Reality Benchmark
         page.goto(html_url)
         page.wait_for_timeout(300)
-        # Click check laptop
         page.click("#btn-check-laptop")
         page.wait_for_timeout(400)
         p1 = os.path.join(artifact_dir, "step1_dark.png")
@@ -37,25 +36,19 @@ def capture():
         page.click("#btn-theme-toggle")
         page.wait_for_timeout(200)
 
-        # 3. Step 2 Setup in progress
+        # 3. Step 2 Setup in progress (Level 2 with 2D Logo)
         page.evaluate("showStep(2); updateProgress(65, 'جاري تنزيل محرك Flutter & Dart الرسمي من السحابة...', 2);")
         page.wait_for_timeout(300)
         p3 = os.path.join(artifact_dir, "step2_progress.png")
         page.screenshot(path=p3)
         print("Captured:", p3)
 
-        # 4. Step 3 Phone Connect & Live Test
-        page.evaluate("showStep(3);")
-        page.wait_for_timeout(300)
-        p4 = os.path.join(artifact_dir, "step3_device_connect.png")
-        page.screenshot(path=p4)
-        print("Captured:", p4)
-
-        # Step 3 with detected phone state & Beginner Explainer Card
+        # 4. Step 3 Device Detection with Connected Tablet (HONOR JMS-W09)
         page.evaluate("""
+        showStep(3);
         handleDeviceResponse({
             success: true,
-            devices: [{ serial: '166667061Y030799', status: 'device', model: 'Infinix X6878', is_ready: true }]
+            devices: [{ serial: 'AJ5EJK5913W00158', status: 'device', model: 'HONOR JMS-W09', is_ready: true }]
         });
         """)
         page.wait_for_timeout(300)
@@ -63,24 +56,26 @@ def capture():
         page.screenshot(path=p5)
         print("Captured:", p5)
 
-        # Step 3 with Live Build Diagnostics Console
+        # Step 3 with Live Build Diagnostics Console & Dynamic Commentary
         page.evaluate("""
         document.getElementById('btn-run-test').style.display = 'none';
         document.getElementById('device-guide-box').style.display = 'none';
         document.getElementById('device-ctrl-btns').style.display = 'none';
         document.getElementById('beginner-explainer').style.display = 'none';
         document.getElementById('build-console').style.display = 'block';
+        updateBuildTicker(28, '🔨 شغال على نار هادئة: المعالج دا يترجم كود Dart للغة الآلة الثنائية (ARM64) الخاصة بجهازك HONOR JMS-W09.', 2);
         """)
         page.wait_for_timeout(300)
         p5_build = os.path.join(artifact_dir, "step3_build_console.png")
         page.screenshot(path=p5_build)
         print("Captured:", p5_build)
 
-        # Step 3 with celebration benchmark card
+        # Step 3 with celebration benchmark card on tablet
         page.evaluate("""
         document.getElementById('build-console').style.display = 'none';
         document.getElementById('benchmark-card').style.display = 'block';
-        document.getElementById('benchmark-head-text').innerText = 'التطبيق يعمل الآن بنجاح على هاتف Infinix X6878!';
+        document.getElementById('benchmark-head-text').innerText = 'التطبيق يعمل الآن بنجاح على شاشة HONOR JMS-W09!';
+        document.getElementById('stat-speed').innerText = '1.8 ثانية';
         """)
         page.wait_for_timeout(300)
         p5_bench = os.path.join(artifact_dir, "step3_benchmark_celebration.png")
@@ -93,6 +88,17 @@ def capture():
         p6 = os.path.join(artifact_dir, "step4_vscode_cheatsheet.png")
         page.screenshot(path=p6)
         print("Captured:", p6)
+
+        # Copy all screenshots to docs/screenshots in the repository
+        docs_dir = r"d:\flutterway\docs\screenshots"
+        os.makedirs(docs_dir, exist_ok=True)
+        import shutil
+        for f in ["step1_dark.png", "step1_light.png", "step2_progress.png", "step3_device_detected.png", "step3_build_console.png", "step3_benchmark_celebration.png", "step4_vscode_cheatsheet.png"]:
+            src = os.path.join(artifact_dir, f)
+            dst = os.path.join(docs_dir, f)
+            if os.path.exists(src):
+                shutil.copy2(src, dst)
+        print("Screenshots synced to docs/screenshots/")
 
         browser.close()
 
