@@ -12,12 +12,18 @@ from __future__ import annotations
 
 import ast
 import os
+import sys
+import time
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 APP = ROOT / "gui" / "onboarding_app.py"
+COMPANION = ROOT / "gui" / "companion_service.py"
+VSCODE = ROOT / "gui" / "vscode_integration.py"
+SPEC = ROOT / "FlutterWayNative.spec"
 HTML = ROOT / "gui" / "onboarding" / "index.html"
 
 
@@ -40,7 +46,104 @@ def static_checks() -> None:
         "finishRealBuild must require both build and install success"
     )
     assert "rep.score || 100" not in html_src, "the 0% -> 100% falsy bug must stay fixed"
+    assert "if not jdk_path:" in app_src, "onboarding must stop when JDK setup fails"
+    assert "if not self._ensure_starter_project(project_path):" in app_src, (
+        "onboarding must stop when the starter project fails"
+    )
+    assert "flutter_bat, \"create\"" in app_src, "starter project must fall back to flutter create"
+    assert "function onboardingFailed" in html_src, "UI must expose a setup failure state"
+    assert 'id="setup-error-box"' in html_src, "step 2 must render a setup error box"
+
+    for source_path in (APP, COMPANION, VSCODE):
+        source = source_path.read_text(encoding="utf-8")
+        assert r"d:\flutterway" not in source.lower(), f"hardcoded project path in {source_path.name}"
+        assert r"C:\flutter" not in source, f"hardcoded Flutter path in {source_path.name}"
+        assert r"C:\Android" not in source, f"hardcoded SDK path in {source_path.name}"
+        assert r"C:\g" not in source, f"hardcoded Gradle home in {source_path.name}"
+        assert r"C:\flutter_test_app" not in source, f"hardcoded template path in {source_path.name}"
+
+    assert "gui.paths" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.paths"
     print("[static] passed")
+
+
+def paths_checks() -> None:
+    import shutil
+    import tempfile
+
+    from gui import paths
+
+    assert os.path.exists(paths.onboarding_html()), "onboarding HTML must resolve"
+    assert os.path.exists(paths.driver_inf_path()), "USB driver INF must resolve"
+    assert os.path.exists(paths.icon_path()), "window icon must resolve"
+    assert paths.flutter_version(), "Flutter version must be readable"
+    assert paths.flutter_bat(), "Flutter launcher must resolve"
+    assert paths.adb_path(), "ADB path must resolve"
+    assert paths.jdk_home(), "JDK must be discoverable on this host"
+    assert os.path.isdir(paths.gradle_user_home()), "Gradle home must exist"
+    assert os.path.isdir(paths.android_sdk_root()), "Android SDK must resolve"
+
+    original = {
+        "FLUTTERWAY_FLUTTER_ROOT": os.environ.get("FLUTTERWAY_FLUTTER_ROOT"),
+        "ANDROID_SDK_ROOT": os.environ.get("ANDROID_SDK_ROOT"),
+        "GRADLE_USER_HOME": os.environ.get("GRADLE_USER_HOME"),
+    }
+    temp_flutter = tempfile.mkdtemp(prefix="fw_flutter_")
+    temp_sdk = tempfile.mkdtemp(prefix="fw_sdk_")
+    temp_gradle = tempfile.mkdtemp(prefix="fw_gradle_")
+    try:
+        os.environ["FLUTTERWAY_FLUTTER_ROOT"] = temp_flutter
+        os.environ["ANDROID_SDK_ROOT"] = temp_sdk
+        os.environ["GRADLE_USER_HOME"] = temp_gradle
+        assert os.path.abspath(temp_flutter) == paths.flutter_root()
+        assert os.path.abspath(temp_sdk) == paths.android_sdk_root()
+        assert os.path.abspath(temp_gradle) == paths.gradle_user_home()
+    finally:
+        for key, value in original.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+        shutil.rmtree(temp_flutter, ignore_errors=True)
+        shutil.rmtree(temp_sdk, ignore_errors=True)
+        shutil.rmtree(temp_gradle, ignore_errors=True)
+    print("[paths] passed")
+
+
+def python_checks() -> None:
+    """Exercise start_onboarding's failure path without touching the host."""
+    import gui.onboarding_app as app
+
+    class FakeWindow:
+        def __init__(self):
+            self.calls = []
+
+        def evaluate_js(self, script):
+            self.calls.append(script)
+
+    api = app.OnboardingApi({"window": None})
+    original = app.ensure_jdk
+    app.ensure_jdk = lambda: None
+    try:
+        api.start_onboarding("usb")
+        deadline = time.time() + 5
+        while time.time() < deadline and not api.state.get("setup_error"):
+            time.sleep(0.05)
+        assert api.state.get("setup_error"), "JDK failure must stop onboarding with an error"
+        assert api.state.get("is_complete") is False, "JDK failure must not mark setup complete"
+
+        # The UI must receive the failure hook, not a fake 100% success.
+        fake = FakeWindow()
+        api2 = app.OnboardingApi({"window": fake})
+        api2.start_onboarding("usb")
+        deadline = time.time() + 5
+        while time.time() < deadline and not any("onboardingFailed" in call for call in fake.calls):
+            time.sleep(0.05)
+        assert any("onboardingFailed" in call for call in fake.calls), (
+            "start_onboarding must call onboardingFailed in the UI"
+        )
+    finally:
+        app.ensure_jdk = original
+    print("[python] onboarding failure path passed")
 
 
 def launch_browser(playwright):
@@ -79,6 +182,15 @@ def ui_checks() -> None:
         # 2) Healthy score remains 100%.
         page.evaluate("renderDoctorReport({score: 100, items: []})")
         assert page.locator("#doctor-score-display").inner_text().strip() == "100%"
+
+        # 2b) A setup failure must be visible and retryable, not a silent 100%.
+        page.evaluate(
+            "switchMainView('wizard'); showStep(2); onboardingFailed('تعذر تنزيل Flutter SDK')"
+        )
+        assert page.locator("#setup-error-box").is_visible()
+        assert "تعذر تنزيل Flutter SDK" in page.locator("#setup-error-text").inner_text()
+        page.evaluate("resetSetupError()")
+        assert not page.locator("#setup-error-box").is_visible()
 
         # Activate the wizard build screen for the build-state checks.
         page.evaluate("switchMainView('wizard'); showStep(3);")
@@ -133,5 +245,7 @@ def ui_checks() -> None:
 
 if __name__ == "__main__":
     static_checks()
+    paths_checks()
+    python_checks()
     ui_checks()
     print("All audit smoke checks passed.")

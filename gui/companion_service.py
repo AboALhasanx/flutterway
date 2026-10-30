@@ -12,23 +12,13 @@ import subprocess
 
 try:
     from gui.vscode_integration import get_vscode_status, configure_vscode, find_code_cli
+    from gui import paths
 except ImportError:
     from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
+    import paths
 
 def get_adb_path():
-    candidates = [
-        r"C:\platform-tools\adb.exe",
-        r"C:\Android\platform-tools\adb.exe",
-        os.path.expandvars(r"%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe"),
-        r"C:\flutter\bin\cache\artifacts\engine\windows-x64\adb.exe",
-    ]
-    for c in candidates:
-        if os.path.exists(c):
-            return c
-    w = shutil.which("adb")
-    if w:
-        return w
-    return "adb"
+    return paths.adb_path()
 
 def run_silent(cmd_args, **kwargs):
     startupinfo = subprocess.STARTUPINFO()
@@ -38,9 +28,7 @@ def run_silent(cmd_args, **kwargs):
     return subprocess.run(cmd_args, capture_output=True, text=True, startupinfo=startupinfo, creationflags=creationflags, **kwargs)
 
 def get_recent_projects_file():
-    appdata = os.path.expandvars(r"%APPDATA%\FlutterWay")
-    os.makedirs(appdata, exist_ok=True)
-    return os.path.join(appdata, "recent_projects.json")
+    return paths.recent_projects_file()
 
 def load_recent_projects():
     fpath = get_recent_projects_file()
@@ -51,7 +39,7 @@ def load_recent_projects():
         except Exception:
             return []
     # Seed with default first app if exists
-    default_p = os.path.expandvars(r"%USERPROFILE%\Desktop\my_first_app")
+    default_p = paths.default_project_path()
     if os.path.exists(default_p):
         return [{
             "name": "my_first_app",
@@ -89,15 +77,9 @@ def check_long_paths():
         return False
 
 def check_licenses_accepted():
-    sdk_candidates = [
-        r"C:\Android",
-        os.path.expandvars(r"%LOCALAPPDATA%\Android\Sdk")
-    ]
-    for sdk in sdk_candidates:
-        lic_dir = os.path.join(sdk, "licenses")
-        if os.path.exists(lic_dir) and os.listdir(lic_dir):
-            return True
-    return False
+    sdk = paths.android_sdk_root()
+    lic_dir = os.path.join(sdk, "licenses")
+    return os.path.exists(lic_dir) and bool(os.listdir(lic_dir))
 
 def get_smart_doctor_report():
     """Runs a lightning-fast, comprehensive diagnostic of all components students need for mobile Android courses."""
@@ -105,34 +87,25 @@ def get_smart_doctor_report():
     adb = get_adb_path()
 
     # 1. Flutter SDK
-    flutter_bin = r"C:\flutter\bin\flutter.bat"
-    flutter_installed = os.path.exists(flutter_bin) or (shutil.which("flutter") is not None)
-    flutter_version = "3.47.9 (Stable)" if flutter_installed else "غير مثبت"
+    flutter_root = paths.flutter_root()
+    flutter_bat = paths.flutter_bat()
+    flutter_installed = os.path.exists(flutter_bat)
+    flutter_version = paths.flutter_version(flutter_root)
+    version_label = f"{flutter_version} (Stable)" if flutter_version else "غير معروف"
     items.append({
         "id": "flutter_sdk",
         "title": "محرك Flutter & Dart SDK",
         "status": "PASS" if flutter_installed else "FAIL",
         "badge": "جاهز ومسجل" if flutter_installed else "بحاجة لتثبيت",
-        "detail": f"المسار: C:\\flutter | الإصدار: {flutter_version}",
+        "detail": f"المسار: {flutter_root} | الإصدار: {version_label}",
         "auto_fixable": not flutter_installed,
         "fix_id": "fix_path"
     })
 
     # 2. Java JDK 21
-    jh = os.environ.get("JAVA_HOME", "")
-    java_ok = False
-    java_detail = "غير مهيأ"
-    if jh and os.path.exists(os.path.join(jh, "bin", "java.exe")):
-        java_ok = True
-        java_detail = f"Adoptium Temurin JDK 21 | {jh}"
-    else:
-        cand = [r"C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot", r"C:\Program Files\Java\jdk-21"]
-        for c in cand:
-            if os.path.exists(os.path.join(c, "bin", "java.exe")):
-                java_ok = True
-                java_detail = f"Adoptium Temurin JDK 21 | {c}"
-                break
-
+    jh = paths.jdk_home()
+    java_ok = bool(jh)
+    java_detail = f"Adoptium Temurin JDK 21 | {jh}" if jh else "غير مهيأ — لم يتم العثور على java.exe"
     items.append({
         "id": "java_jdk",
         "title": "بيئة جافا ومحرك أندرويد (JDK 21)",
@@ -144,14 +117,18 @@ def get_smart_doctor_report():
     })
 
     # 3. Android SDK & Platform-Tools
-    android_sdk = r"C:\Android"
-    sdk_ok = os.path.exists(android_sdk)
+    android_sdk = paths.android_sdk_root()
+    platforms = sorted(glob.glob(os.path.join(android_sdk, "platforms", "android-*")))
+    build_tools = sorted(glob.glob(os.path.join(android_sdk, "build-tools", "*")))
+    sdk_ok = os.path.exists(os.path.join(android_sdk, "platform-tools", "adb.exe")) and bool(platforms)
+    api_label = os.path.basename(platforms[-1]).replace("android-", "API ") if platforms else "API غير مثبت"
+    tools_label = os.path.basename(build_tools[-1]) if build_tools else "Build-Tools غير مثبتة"
     items.append({
         "id": "android_sdk",
         "title": "حزمة أدوات أندرويد (Android SDK)",
         "status": "PASS" if sdk_ok else "WARN",
-        "badge": "API 35/36 مثبت" if sdk_ok else "بحاجة لتجهيز",
-        "detail": f"مسار الحزمة: {android_sdk} | Build-Tools 36.0.0",
+        "badge": f"{api_label} | {tools_label}" if sdk_ok else "بحاجة لتجهيز",
+        "detail": f"المسار: {android_sdk} | {api_label} | {tools_label}",
         "auto_fixable": False,
         "fix_id": ""
     })
@@ -181,7 +158,7 @@ def get_smart_doctor_report():
     })
 
     # 6. VS Code & Extensions
-    vsc = get_vscode_status(r"C:\flutter")
+    vsc = get_vscode_status(paths.flutter_root())
     vsc_ok = vsc.get("is_ready", False)
     items.append({
         "id": "vscode",
@@ -240,7 +217,7 @@ def heal_doctor_item(fix_id):
 
         elif fix_id == "fix_licenses":
             p = subprocess.Popen(
-                [r"C:\flutter\bin\flutter.bat", "doctor", "--android-licenses"],
+                [paths.flutter_bat(), "doctor", "--android-licenses"],
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
@@ -256,14 +233,14 @@ def heal_doctor_item(fix_id):
             return {"success": True, "message": "تمت إعادة تشغيل وتصفية منفذ الاتصال بالهاتف بنجاح!"}
 
         elif fix_id == "fix_vscode":
-            res = configure_vscode(r"C:\flutter")
+            res = configure_vscode(paths.flutter_root())
             return res
 
         elif fix_id == "fix_path":
-            # Add flutter and java to permanent User PATH
-            flutter_bin = r"C:\flutter\bin"
-            jh = os.environ.get("JAVA_HOME", r"C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot")
-            java_bin = os.path.join(jh, "bin")
+            # Add the discovered Flutter and Java bin directories to the User PATH.
+            flutter_bin = os.path.join(paths.flutter_root(), "bin")
+            jh = paths.jdk_home()
+            java_bin = os.path.join(jh, "bin") if jh else ""
 
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, winreg.KEY_ALL_ACCESS) as key:
                 try:
@@ -272,10 +249,22 @@ def heal_doctor_item(fix_id):
                     val = ""
                 parts = [p.strip() for p in val.split(";") if p.strip()]
                 for p_add in [flutter_bin, java_bin]:
-                    if not any(p_add.lower() == p.lower() for p in parts):
+                    if p_add and not any(p_add.lower() == p.lower() for p in parts):
                         parts.insert(0, p_add)
                 new_val = ";".join(parts)
+                try:
+                    with open(os.path.join(paths.data_dir(), "path_backup.txt"), "w", encoding="utf-8") as backup:
+                        backup.write(val)
+                except Exception:
+                    pass
                 winreg.SetValueEx(key, "Path", 0, winreg.REG_EXPAND_SZ, new_val)
+
+            os.environ["PATH"] = new_val
+            try:
+                import ctypes
+                ctypes.windll.user32.SendMessageTimeoutW(0xFFFF, 0x001A, 0, "Environment", 0x0002, 5000, None)
+            except Exception:
+                pass
 
             return {"success": True, "message": "تم تحديث وتسجيل مسارات فلاتر وجافا في متغيرات النظام بنجاح!"}
 
@@ -283,7 +272,7 @@ def heal_doctor_item(fix_id):
             # Terminate running java gradle daemons
             run_silent(["taskkill", "/f", "/im", "java.exe"])
             # Remove lock files in caches and daemon
-            for base in [r"C:\g", os.path.expandvars(r"%USERPROFILE%\.gradle")]:
+            for base in [paths.gradle_user_home(), os.path.expandvars(r"%USERPROFILE%\.gradle")]:
                 if os.path.exists(base):
                     for sub in ["daemon", "caches"]:
                         sub_path = os.path.join(base, sub)
@@ -316,21 +305,25 @@ def create_lecture_project(name, custom_parent_folder=None):
     if not clean_name or not clean_name[0].isalpha():
         clean_name = "lecture_" + clean_name
 
-    target_parent = custom_parent_folder or os.path.expandvars(r"%USERPROFILE%\Desktop\FlutterProjects")
+    target_parent = custom_parent_folder or paths.lecture_projects_dir()
     os.makedirs(target_parent, exist_ok=True)
     project_dir = os.path.join(target_parent, clean_name)
 
     if os.path.exists(project_dir):
-        # Already exists, just return it
-        save_recent_project(clean_name, project_dir, "مشروع محاضرة موجود مسبقاً")
-        return {"success": True, "path": project_dir, "name": clean_name, "message": "المشروع موجود مسبقاً وجاهز للفتح!"}
+        if os.path.exists(os.path.join(project_dir, "pubspec.yaml")):
+            save_recent_project(clean_name, project_dir, "مشروع محاضرة موجود مسبقاً")
+            return {"success": True, "path": project_dir, "name": clean_name, "message": "المشروع موجود مسبقاً وجاهز للفتح!"}
+        return {"success": False, "error": "المجلد موجود لكنه ليس مشروع فلاتر مكتملاً. اختر اسماً آخر أو أصلح المجلد."}
 
-    # High-speed clone from verified template C:\flutter_test_app
-    src_template = r"C:\flutter_test_app"
-    if os.path.exists(src_template):
+    # High-speed clone from the bundled/legacy verified template
+    src_template = paths.starter_template_dir()
+    if src_template and os.path.exists(src_template):
         def ignore_patterns(dir, files):
             return [f for f in files if f in [".git", "build", ".dart_tool", ".gradle"]]
-        shutil.copytree(src_template, project_dir, ignore=ignore_patterns)
+        try:
+            shutil.copytree(src_template, project_dir, ignore=ignore_patterns)
+        except Exception as e:
+            print("Lecture template copy error:", e)
 
         # Update pubspec.yaml name
         pubspec_path = os.path.join(project_dir, "pubspec.yaml")
@@ -422,9 +415,15 @@ class _LectureHomePageState extends State<LectureHomePage> {{
 """
             with open(main_dart, "w", encoding="utf-8") as f:
                 f.write(code)
-    else:
+    if not os.path.exists(os.path.join(project_dir, "pubspec.yaml")):
         # Fallback to flutter create
-        run_silent(["C:\\flutter\\bin\\flutter.bat", "create", "--org", "com.university.student", "--platforms", "android", clean_name], cwd=target_parent)
+        try:
+            run_silent([paths.flutter_bat(), "create", "--org", "com.university.student", "--platforms", "android", "--overwrite", clean_name], cwd=target_parent)
+        except Exception as e:
+            return {"success": False, "error": f"تعذر تشغيل Flutter لإنشاء المشروع: {e}"}
+
+    if not os.path.exists(os.path.join(project_dir, "pubspec.yaml")):
+        return {"success": False, "error": "تعذر إنشاء مشروع المحاضرة. تأكد من تثبيت Flutter SDK ثم أعد المحاولة."}
 
     save_recent_project(clean_name, project_dir, f"مشروع محاضرة جديد تم إنشاؤه بنجاح")
     return {
@@ -586,7 +585,7 @@ def dev_reset_environment(mode="soft"):
     # 4. Clean Gradle Locks & Stop Zombie Daemons
     try:
         run_silent(["taskkill", "/f", "/im", "java.exe"])
-        for base in [r"C:\g", os.path.expandvars(r"%USERPROFILE%\.gradle")]:
+        for base in [paths.gradle_user_home(), os.path.expandvars(r"%USERPROFILE%\.gradle")]:
             if os.path.exists(base):
                 for sub in ["daemon", "caches"]:
                     sub_path = os.path.join(base, sub)

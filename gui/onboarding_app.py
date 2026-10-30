@@ -9,13 +9,23 @@ import shutil
 import webview
 import winreg
 
+# Arabic log messages must never crash a legacy Windows console.
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 # Import our robust VS Code integration and Companion service
 try:
     from gui.vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     from gui import companion_service
+    from gui import paths
 except ImportError:
     from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     import companion_service
+    import paths
 
 def set_user_env(name, value):
     """Sets a User environment variable permanently in the Windows Registry."""
@@ -42,36 +52,24 @@ def add_to_user_path(new_dir):
         curr = os.environ.get("PATH", "")
         if new_dir.lower() not in curr.lower():
             os.environ["PATH"] = new_dir + ";" + curr
+        # Notify open shells/apps that the environment changed.
+        try:
+            import ctypes
+            ctypes.windll.user32.SendMessageTimeoutW(
+                0xFFFF, 0x001A, 0, "Environment", 0x0002, 5000, None
+            )
+        except Exception:
+            pass
+        return True
     except Exception as e:
         print(f"Registry PATH update error: {e}")
+        return False
 
 def find_adb():
-    candidates = [
-        r"C:\platform-tools\adb.exe",
-        os.path.expandvars(r"%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe"),
-        r"C:\flutter\bin\cache\artifacts\engine\windows-x64\adb.exe",
-    ]
-    for c in candidates:
-        if os.path.exists(c):
-            return c
-    import shutil
-    w = shutil.which("adb")
-    if w:
-        return w
-    return "adb"
+    return paths.adb_path()
 
 def find_jdk():
-    candidates = [
-        r"C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot",
-        os.environ.get("JAVA_HOME", ""),
-        r"C:\Program Files\Java\jdk-21",
-        r"C:\Program Files\Java\jdk-17",
-        r"C:\Program Files\Microsoft\jdk-17.0.19.10-hotspot",
-    ]
-    for c in candidates:
-        if c and os.path.exists(os.path.join(c, "bin", "java.exe")):
-            return c
-    return None
+    return paths.jdk_home()
 
 def ensure_jdk():
     """Locates or silently installs JDK 21, sets JAVA_HOME and GRADLE_USER_HOME, and registers in PATH."""
@@ -90,10 +88,11 @@ def ensure_jdk():
             print("Winget JDK install fallback error:", e)
 
     if jdk:
+        gradle_home = paths.gradle_user_home()
         os.environ["JAVA_HOME"] = jdk
-        os.environ["GRADLE_USER_HOME"] = r"C:\g"
+        os.environ["GRADLE_USER_HOME"] = gradle_home
         set_user_env("JAVA_HOME", jdk)
-        set_user_env("GRADLE_USER_HOME", r"C:\g")
+        set_user_env("GRADLE_USER_HOME", gradle_home)
         add_to_user_path(os.path.join(jdk, "bin"))
     return jdk
 
@@ -107,9 +106,10 @@ class OnboardingApi:
             "is_complete": False,
             "theme": "dark",
             "connected_device": None,
-            "project_path": os.path.expandvars(r"%USERPROFILE%\Desktop\my_first_app"),
+            "project_path": paths.default_project_path(),
             "app_running_on_phone": False,
-            "missing_drivers": False
+            "missing_drivers": False,
+            "setup_error": None
         }
 
     def check_laptop_compatibility(self):
@@ -247,7 +247,7 @@ class OnboardingApi:
 
     def install_usb_drivers(self):
         """Installs the official Google Universal USB Driver package via Windows pnputil with UAC elevation."""
-        inf_path = os.path.abspath(r"d:\flutterway\assets\drivers\google_usb\usb_driver\android_winusb.inf")
+        inf_path = paths.driver_inf_path()
         if not os.path.exists(inf_path):
             return {"success": False, "error": "ملف التعريف غير موجود في مجلد الأدوات"}
         
@@ -308,7 +308,7 @@ class OnboardingApi:
                 pass
 
         # 3. Locate compiled APK strictly from real project build output
-        project_path = self.state.get("project_path") or os.path.expandvars(r"%USERPROFILE%\Desktop\my_first_app")
+        project_path = self.state.get("project_path") or paths.default_project_path()
         apk_candidates = [
             os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-debug.apk"),
             os.path.join(project_path, "build", "app", "outputs", "apk", "debug", "app-debug.apk")
@@ -415,23 +415,21 @@ class OnboardingApi:
                     target_serial = devs[0].get("serial")
 
             # 2. Resolve project path
-            project_path = self.state.get("project_path") or os.path.expandvars(r"%USERPROFILE%\Desktop\my_first_app")
+            project_path = self.state.get("project_path") or paths.default_project_path()
             self._ensure_starter_project(project_path)
 
             send_log(f"$ cd {project_path}")
             send_log("$ flutter build apk --debug -v")
 
             # 3. Locate flutter.bat and java
-            flutter_bat = r"C:\flutter\bin\flutter.bat"
-            if not os.path.exists(flutter_bat):
-                flutter_bat = shutil.which("flutter.bat") or shutil.which("flutter") or "flutter"
+            flutter_bat = paths.flutter_bat()
 
             jdk_path = ensure_jdk()
             env = os.environ.copy()
             if jdk_path and os.path.exists(jdk_path):
                 env["JAVA_HOME"] = jdk_path
                 env["PATH"] = os.path.join(jdk_path, "bin") + ";" + env.get("PATH", "")
-            flutter_bin = r"C:\flutter\bin"
+            flutter_bin = os.path.dirname(flutter_bat)
             if os.path.exists(flutter_bin):
                 env["PATH"] = flutter_bin + ";" + env.get("PATH", "")
             adb = find_adb()
@@ -599,103 +597,164 @@ class OnboardingApi:
     def start_onboarding(self, mode="usb"):
         self.state["selected_mode"] = mode
         self.state["current_step"] = 2
+        self.state["setup_error"] = None
+        self.state["is_complete"] = False
         print(f"[Onboarding] Starting REAL setup flow with mode: {mode}")
 
         def worker():
-            win = self.window_holder["window"]
+            win = self.window_holder.get("window")
 
-            # Stage 1: Environment & System Check (0% - 18%) -> Checklist Item 1
-            self._update_ui(win, 10, "جاري فحص إعدادات اللابتوب وتوفير أفضل مسار...", 1)
-            time.sleep(0.4)
-            self._update_ui(win, 18, "تم فحص الذاكرة ومساحة القرص وتوافق النظام بنجاح", 1)
-            time.sleep(0.3)
-
-            # Stage 2: Java (JDK 21) & Gradle Toolchain (18% - 42%) -> Checklist Item 2
-            self._update_ui(win, 24, "جاري تهيئة بيئة Java ومحرك بناء أندرويد Gradle...", 2)
-            jdk_path = ensure_jdk()
-            if jdk_path:
-                self._update_ui(win, 40, "تم تهيئة بيئة Java (JDK 21) ومحرك Gradle بنجاح", 2)
-            else:
-                self._update_ui(win, 40, "تم تجهيز بيئة البناء الأساسية ومحرك Gradle", 2)
-            time.sleep(0.4)
-
-            # Stage 3: Flutter Toolchain & PATH Registration (42% - 75%) -> Checklist Item 3
-            flutter_target = r"C:\flutter"
-            flutter_bin = os.path.join(flutter_target, "bin")
-
-            if not os.path.exists(os.path.join(flutter_bin, "flutter.bat")):
-                self._update_ui(win, 48, "جاري تنزيل محرك Flutter & Dart الرسمي من السحابة...", 3)
-
-                startupinfo = subprocess.STARTUPINFO()
-                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                startupinfo.wShowWindow = 0
-                creationflags = subprocess.CREATE_NO_WINDOW
-
-                cmd = ["git", "clone", "--depth", "1", "-b", "stable", "https://github.com/flutter/flutter.git", flutter_target]
+            def fail(message, percent=0):
+                self.state["is_complete"] = False
+                self.state["setup_error"] = message
                 try:
-                    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, startupinfo=startupinfo, creationflags=creationflags)
-                    while True:
-                        line = proc.stdout.readline()
-                        if not line and proc.poll() is not None:
-                            break
-                        if "Receiving objects:" in line:
-                            try:
-                                part = line.split("Receiving objects:")[1].split("%")[0].strip()
-                                p_val = int(part)
-                                scaled = 48 + int(p_val * 0.22)
-                                self._update_ui(win, scaled, f"جاري تنزيل وتجهيز محرك فلاتر ({p_val}%)...", 3)
-                            except Exception:
-                                pass
-                    proc.wait()
+                    print(f"[Onboarding] FAILED: {message}")
+                except Exception:
+                    pass
+                if win:
+                    try:
+                        win.evaluate_js(f"onboardingFailed({json.dumps(message)});")
+                    except Exception:
+                        pass
+
+            try:
+                # Stage 1: Environment & System Check (0% - 18%) -> Checklist Item 1
+                self._update_ui(win, 10, "جاري فحص إعدادات اللابتوب وتوفير أفضل مسار...", 1)
+                time.sleep(0.4)
+                self._update_ui(win, 18, "تم فحص الذاكرة ومساحة القرص وتوافق النظام بنجاح", 1)
+                time.sleep(0.3)
+
+                # Stage 2: Java (JDK 21) & Gradle Toolchain (18% - 42%) -> Checklist Item 2
+                self._update_ui(win, 24, "جاري تهيئة بيئة Java ومحرك بناء أندرويد Gradle...", 2)
+                jdk_path = ensure_jdk()
+                if not jdk_path:
+                    fail("تعذر تثبيت JDK 21. تأكد من اتصال الإنترنت أو ثبّت Microsoft OpenJDK 21 يدوياً ثم أعد المحاولة.", 24)
+                    return
+                self._update_ui(win, 40, "تم تهيئة بيئة Java (JDK 21) ومحرك Gradle بنجاح", 2)
+                time.sleep(0.4)
+
+                # Stage 3: Flutter Toolchain & PATH Registration (42% - 75%) -> Checklist Item 3
+                flutter_target = paths.flutter_root()
+                flutter_bin = os.path.join(flutter_target, "bin")
+                flutter_bat = os.path.join(flutter_bin, "flutter.bat")
+
+                if not os.path.exists(flutter_bat):
+                    if os.path.exists(flutter_target) and os.listdir(flutter_target):
+                        fail(f"مجلد {flutter_target} موجود لكنه غير مكتمل (لا يحتوي flutter.bat). احذفه أو أصلحه ثم أعد المحاولة.", 48)
+                        return
+
+                    self._update_ui(win, 48, "جاري تنزيل محرك Flutter & Dart الرسمي من السحابة...", 3)
+
+                    startupinfo = subprocess.STARTUPINFO()
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                    startupinfo.wShowWindow = 0
+                    creationflags = subprocess.CREATE_NO_WINDOW
+
+                    cmd = ["git", "clone", "--depth", "1", "-b", "stable", "https://github.com/flutter/flutter.git", flutter_target]
+                    try:
+                        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, startupinfo=startupinfo, creationflags=creationflags)
+                        while True:
+                            line = proc.stdout.readline()
+                            if not line and proc.poll() is not None:
+                                break
+                            if "Receiving objects:" in line:
+                                try:
+                                    part = line.split("Receiving objects:")[1].split("%")[0].strip()
+                                    p_val = int(part)
+                                    scaled = 48 + int(p_val * 0.22)
+                                    self._update_ui(win, scaled, f"جاري تنزيل وتجهيز محرك فلاتر ({p_val}%)...", 3)
+                                except Exception:
+                                    pass
+                        proc.wait()
+                    except Exception as e:
+                        print("Git clone error:", e)
+
+                    if not os.path.exists(flutter_bat):
+                        fail("تعذر تنزيل Flutter SDK. تأكد من اتصال الإنترنت ووجود Git، ثم أعد المحاولة.", 48)
+                        return
+
+                # Register the Flutter bin directory in the user PATH via the Registry
+                self._update_ui(win, 70, "جاري تسجيل مسار فلاتر في بيئة النظام (PATH)...", 3)
+                if not add_to_user_path(flutter_bin):
+                    self._update_ui(win, 72, "تم تنزيل Flutter، لكن تعذر تسجيله في PATH. سنكمل بالمسار المباشر.", 3)
+                else:
+                    self._update_ui(win, 75, "تم اكتمال تنزيل وتسجيل محرك فلاتر بنجاح", 3)
+                time.sleep(0.4)
+
+                # Stage 4: VS Code Configuration & Extensions (75% - 90%) -> Checklist Item 4
+                self._update_ui(win, 84, "جاري ربط محرر VS Code وتثبيت إضافات فلاتر...", 4)
+                vscode_ok = False
+                try:
+                    vscode_res = configure_vscode(flutter_target)
+                    vscode_ok = bool(vscode_res and vscode_res.get("success"))
                 except Exception as e:
-                    print("Git clone error:", e)
+                    print("VS Code setup error:", e)
 
-            # Register C:\flutter\bin in User PATH via WinRegistry
-            self._update_ui(win, 70, "جاري تسجيل مسار فلاتر في بيئة النظام (PATH)...", 3)
-            try:
-                add_to_user_path(flutter_bin)
+                # Stage 5: Starter Project Setup on Desktop (90% - 100%) -> Checklist Item 4
+                self._update_ui(win, 92, "جاري تجهيز أول مشروع فلاتر حقيقي على الديسكتوب...", 4)
+                project_path = paths.default_project_path()
+                if not self._ensure_starter_project(project_path):
+                    fail("تم تثبيت Flutter لكن تعذر إنشاء مشروع البداية. راجع سجل الأخطاء ثم أعد المحاولة.", 92)
+                    return
+
+                time.sleep(0.4)
+                if vscode_ok:
+                    self._update_ui(win, 100, "اكتمل التجهيز! حان وقت فحص وتجربة هاتفك", 4)
+                else:
+                    self._update_ui(win, 98, "اكتمل Flutter والمشروع، لكن VS Code غير مثبت أو تعذر ضبطه. يمكنك تثبيته لاحقاً.", 4)
+                self.state["is_complete"] = True
+                self.state["project_path"] = project_path
+
+                # Transition to Step 3: Phone verification
+                time.sleep(0.6)
+                self.state["current_step"] = 3
+                if win:
+                    win.evaluate_js("showStep(3);")
             except Exception as e:
-                print("PATH registration error:", e)
-
-            self._update_ui(win, 75, "تم اكتمال تنزيل وتسجيل محرك فلاتر بنجاح", 3)
-            time.sleep(0.4)
-
-            # Stage 4: VS Code Configuration & Extensions (75% - 90%) -> Checklist Item 4
-            self._update_ui(win, 84, "جاري ربط محرر VS Code وتثبيت إضافات فلاتر...", 4)
-            try:
-                configure_vscode(flutter_target)
-            except Exception as e:
-                print("VS Code setup error:", e)
-
-            # Stage 5: Starter Project Setup on Desktop (90% - 100%) -> Checklist Item 4
-            self._update_ui(win, 92, "جاري تجهيز أول مشروع فلاتر حقيقي على الديسكتوب...", 4)
-            project_path = os.path.expandvars(r"%USERPROFILE%\Desktop\my_first_app")
-            self._ensure_starter_project(project_path)
-
-            time.sleep(0.4)
-            self._update_ui(win, 100, "اكتمل التجهيز! حان وقت فحص وتجربة هاتفك", 4)
-            self.state["is_complete"] = True
-            self.state["project_path"] = project_path
-
-            # Transition to Step 3: Phone verification
-            time.sleep(0.6)
-            self.state["current_step"] = 3
-            if win:
-                win.evaluate_js("showStep(3);")
+                fail(f"خطأ غير متوقع أثناء التجهيز: {e}", 0)
 
         threading.Thread(target=worker, daemon=True).start()
         return {"success": True}
 
     def _ensure_starter_project(self, project_path):
-        """Ensures complete starter Flutter project exists on Desktop with Android Gradle support"""
+        """Ensure a real Flutter project exists; copy a template or run flutter create."""
         os.makedirs(project_path, exist_ok=True)
-        src_template = r"C:\flutter_test_app"
-        if os.path.exists(src_template) and not os.path.exists(os.path.join(project_path, "android")):
+        pubspec = os.path.join(project_path, "pubspec.yaml")
+        if os.path.exists(pubspec):
+            return True
+
+        src_template = paths.starter_template_dir()
+        if src_template and os.path.exists(src_template) and not os.path.exists(os.path.join(project_path, "android")):
             try:
-                import shutil
                 shutil.copytree(src_template, project_path, dirs_exist_ok=True)
-            except Exception:
-                pass
+            except Exception as e:
+                print("Starter template copy error:", e)
+
+        if os.path.exists(pubspec):
+            return True
+
+        flutter_bat = paths.flutter_bat()
+        if not os.path.exists(flutter_bat):
+            flutter_bat = shutil.which("flutter.bat") or shutil.which("flutter")
+        if not flutter_bat:
+            return False
+
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = 0
+        try:
+            subprocess.run(
+                [flutter_bat, "create", "--org", "com.example", "--platforms", "android", "--overwrite", project_path],
+                cwd=os.path.dirname(project_path),
+                capture_output=True,
+                text=True,
+                startupinfo=startupinfo,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+                timeout=240,
+            )
+        except Exception as e:
+            print("flutter create error:", e)
+        return os.path.exists(pubspec)
 
     def open_vscode(self):
         print("[Onboarding] Opening VS Code with starter project...")
@@ -706,7 +765,7 @@ class OnboardingApi:
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = 0
                 creationflags = subprocess.CREATE_NO_WINDOW
-                project_path = self.state.get("project_path") or os.path.expandvars(r"%USERPROFILE%\Desktop\my_first_app")
+                project_path = self.state.get("project_path") or paths.default_project_path()
                 # Launch VS Code with project folder
                 subprocess.Popen([code_cli, project_path], startupinfo=startupinfo, creationflags=creationflags)
                 return {"success": True}
@@ -906,27 +965,14 @@ def start_harness(api, window_holder):
     threading.Thread(target=server, daemon=True).start()
 
 def get_html_path():
-    if getattr(sys, 'frozen', False):
-        base = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
-        p1 = os.path.join(base, "onboarding", "index.html")
-        if os.path.exists(p1):
-            return p1
-        p2 = os.path.join(os.path.dirname(sys.executable), "onboarding", "index.html")
-        if os.path.exists(p2):
-            return p2
-    cand = os.path.abspath(os.path.join(os.path.dirname(__file__), "onboarding", "index.html"))
-    if os.path.exists(cand):
-        return cand
-    return r"d:\flutterway\gui\onboarding\index.html"
+    return paths.onboarding_html()
 
 def apply_window_icon(window):
     try:
         import clr
         clr.AddReference('System.Drawing')
         import System.Drawing
-        ico_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets", "icon.ico"))
-        if not os.path.exists(ico_path):
-            ico_path = r"d:\flutterway\assets\icon.ico"
+        ico_path = paths.icon_path()
         if os.path.exists(ico_path) and hasattr(window, 'native') and window.native:
             window.native.Icon = System.Drawing.Icon(ico_path)
     except Exception:

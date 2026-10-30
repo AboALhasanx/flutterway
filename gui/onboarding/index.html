@@ -1873,6 +1873,11 @@
           <div style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px;" id="tips-banner">
             💡 نصيحة: لن تحتاج مستقبلاً لفتح موجه الأوامر الأسود أو كتابة مسارات PATH المعقدة يدوياً.
           </div>
+
+          <div id="setup-error-box" style="display: none; width: 100%; margin-top: 12px; padding: 12px 14px; border: 1px solid var(--danger); border-radius: 10px; background: var(--danger-bg); text-align: right;">
+            <div id="setup-error-text" style="font-size: 12px; font-weight: 700; color: var(--danger); line-height: 1.6; margin-bottom: 8px;"></div>
+            <button class="btn-secondary" onclick="startSetup()" style="font-size: 12px;">إعادة المحاولة</button>
+          </div>
         </div>
       </section>
 
@@ -2594,10 +2599,38 @@
     }
 
     function startSetup() {
+      resetSetupError();
       showStep(2);
       if (window.pywebview && window.pywebview.api) {
         window.pywebview.api.start_onboarding(selectedMode);
       }
+    }
+
+    function resetSetupError() {
+      const box = document.getElementById('setup-error-box');
+      if (box) box.style.display = 'none';
+      const text = document.getElementById('progress-text');
+      if (text) text.style.color = 'var(--text)';
+      const pct = document.getElementById('progress-pct');
+      if (pct) pct.style.color = 'var(--accent)';
+      const fill = document.getElementById('progress-fill');
+      if (fill) fill.style.background = 'var(--accent)';
+    }
+
+    function onboardingFailed(message) {
+      const box = document.getElementById('setup-error-box');
+      const text = document.getElementById('setup-error-text');
+      if (text) text.innerText = message;
+      if (box) box.style.display = 'block';
+      const progressText = document.getElementById('progress-text');
+      if (progressText) {
+        progressText.innerText = message;
+        progressText.style.color = 'var(--danger)';
+      }
+      const pct = document.getElementById('progress-pct');
+      if (pct) pct.style.color = 'var(--danger)';
+      const fill = document.getElementById('progress-fill');
+      if (fill) fill.style.background = 'var(--danger)';
     }
 
     function updateProgress(percent, statusText, chkStep) {

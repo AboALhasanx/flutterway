@@ -4,32 +4,16 @@ import json
 import re
 import subprocess
 
-def find_code_cli():
-    candidates = [
-        r"D:\Microsoft VS Code\bin\code.cmd",
-        os.path.expandvars(r"%LOCALAPPDATA%\Programs\Microsoft VS Code\bin\code.cmd"),
-        os.path.expandvars(r"%PROGRAMFILES%\Microsoft VS Code\bin\code.cmd"),
-        "code"
-    ]
-    for c in candidates:
-        if os.path.exists(c):
-            return c
-    # Try where.exe
-    try:
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        startupinfo.wShowWindow = 0
-        res = subprocess.run(["where.exe", "code"], capture_output=True, text=True, startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW)
-        if res.returncode == 0 and res.stdout.strip():
-            lines = res.stdout.strip().splitlines()
-            for line in lines:
-                if line.endswith(".cmd") or line.endswith(".exe"):
-                    return line
-    except Exception:
-        pass
-    return None
+try:
+    from gui import paths
+except ImportError:
+    import paths
 
-def get_vscode_status(flutter_target_dir="C:\\flutter"):
+def find_code_cli():
+    return paths.vscode_cli()
+
+def get_vscode_status(flutter_target_dir=None):
+    flutter_target_dir = flutter_target_dir or paths.flutter_root()
     code_cli = find_code_cli()
     if not code_cli:
         return {
@@ -73,7 +57,7 @@ def get_vscode_status(flutter_target_dir="C:\\flutter"):
             pass
 
     # Check settings.json
-    settings_path = os.path.expandvars(r"%APPDATA%\Code\User\settings.json")
+    settings_path = paths.vscode_settings_path()
     current_sdk_path = None
     if os.path.exists(settings_path):
         try:
@@ -97,7 +81,8 @@ def get_vscode_status(flutter_target_dir="C:\\flutter"):
         "is_ready": is_ready
     }
 
-def configure_vscode(flutter_target_dir="C:\\flutter"):
+def configure_vscode(flutter_target_dir=None):
+    flutter_target_dir = flutter_target_dir or paths.flutter_root()
     status = get_vscode_status(flutter_target_dir)
     code_cli = status.get("code_path")
     if not code_cli:
@@ -122,9 +107,9 @@ def configure_vscode(flutter_target_dir="C:\\flutter"):
             pass
 
     # Update settings.json safely
-    settings_dir = os.path.expandvars(r"%APPDATA%\Code\User")
+    settings_path = paths.vscode_settings_path()
+    settings_dir = os.path.dirname(settings_path)
     os.makedirs(settings_dir, exist_ok=True)
-    settings_path = os.path.join(settings_dir, "settings.json")
 
     settings_data = {}
     if os.path.exists(settings_path):
