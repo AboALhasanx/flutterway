@@ -151,6 +151,14 @@ def capture():
         page.screenshot(path=c5)
         print("Captured:", c5)
 
+        # 3. Developer Sandbox Modal Open
+        page.evaluate("openDevModal();")
+        page.wait_for_timeout(300)
+        c6 = os.path.join(artifact_dir, "dev_sandbox_modal.png")
+        page.screenshot(path=c6)
+        print("Captured:", c6)
+        page.evaluate("closeDevModal();")
+
         # Copy all screenshots to docs/screenshots in the repository
         docs_dir = r"d:\flutterway\docs\screenshots"
         os.makedirs(docs_dir, exist_ok=True)
@@ -160,7 +168,7 @@ def capture():
             "step3_device_detected.png", "step3_build_console.png", "step3_benchmark_celebration.png",
             "step4_vscode_cheatsheet.png",
             "companion_doctor.png", "companion_projects.png", "companion_rescue.png",
-            "companion_device.png", "companion_cheatsheet.png"
+            "companion_device.png", "companion_cheatsheet.png", "dev_sandbox_modal.png"
         ]
         for f in all_shots:
             src = os.path.join(artifact_dir, f)

@@ -614,6 +614,21 @@ class OnboardingApi:
         subprocess.run(cmd, startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW)
         return {"success": True, "message": "تم إرسال إشارة تنشيط الشاشة بنجاح!"}
 
+    def dev_reset(self, mode="soft"):
+        """Developer Sandbox Reset: clears test apps, caches, and projects, resetting app to clean state."""
+        res = companion_service.dev_reset_environment(mode)
+        self.state["current_step"] = 1
+        self.state["progress_percent"] = 0
+        self.state["is_complete"] = False
+        self.state["app_running_on_phone"] = False
+        win = self.window_holder.get("window")
+        if win:
+            try:
+                win.evaluate_js("onDevResetComplete();")
+            except Exception:
+                pass
+        return res
+
 # --- Agent Testing Harness for Modern Onboarding UI ---
 def start_harness(api, window_holder):
     def server():
@@ -675,7 +690,8 @@ def start_harness(api, window_holder):
                         "btn-tab-doctor", "btn-tab-projects", "btn-tab-rescue", "btn-tab-device", "btn-tab-cheatsheet",
                         "btn-doctor-heal-all", "btn-create-lecture-proj", "btn-clean-project", "btn-open-proj-vscode",
                         "btn-rescue-gradle", "btn-rescue-licenses", "btn-rescue-adb", "btn-rescue-longpaths", "btn-rescue-network",
-                        "btn-device-ping", "btn-device-screenshot"
+                        "btn-device-ping", "btn-device-screenshot",
+                        "btn-dev-modal-toggle", "btn-dev-soft-reset", "btn-dev-full-reset"
                     ]
                     if target in allowed_targets:
                         if win:

@@ -518,3 +518,105 @@ def capture_device_screenshot_b64(serial=None):
         b64 = base64.b64encode(res.stdout).decode("utf-8")
         return {"success": True, "data_url": f"data:image/png;base64,{b64}"}
     return {"success": False, "error": "تعذر التقاط شاشة الهاتف"}
+
+def dev_reset_environment(mode="soft"):
+    """Developer testing reset: wipes test apps, desktop projects, caches, and recent history to test flows repeatedly."""
+    adb = get_adb_path()
+    logs = []
+
+    # 1. Uninstall test app from attached Android devices
+    try:
+        dev_res = run_silent([adb, "devices"])
+        for line in dev_res.stdout.splitlines()[1:]:
+            parts = line.split()
+            if len(parts) >= 2 and parts[1] == "device":
+                serial = parts[0]
+                u_res = run_silent([adb, "-s", serial, "uninstall", "com.example.flutter_test_app"])
+                logs.append(f"تم إلغاء تثبيت التطبيق التجريبي من الجهاز {serial}: {u_res.stdout.strip() or 'Success'}")
+    except Exception as e:
+        logs.append(f"تعذر إلغاء التثبيت من الهاتف: {e}")
+
+    # 2. Wipe Desktop test projects
+    desktop = os.path.expandvars(r"%USERPROFILE%\Desktop")
+    for proj_name in ["my_first_app", "اول_تطبيق_فلاتر"]:
+        target = os.path.join(desktop, proj_name)
+        if os.path.exists(target):
+            try:
+                shutil.rmtree(target, ignore_errors=True)
+                logs.append(f"تم حذف مجلد المشروع التجريبي: {proj_name}")
+            except Exception as e:
+                logs.append(f"تعذر حذف {proj_name}: {e}")
+
+    # Also clean demo lecture projects
+    lecture_folder = os.path.join(desktop, "FlutterProjects")
+    if os.path.exists(lecture_folder):
+        for demo in ["lecture_test_demo", "test_lecture_proj"]:
+            p = os.path.join(lecture_folder, demo)
+            if os.path.exists(p):
+                shutil.rmtree(p, ignore_errors=True)
+                logs.append(f"تم حذف مشروع المحاضرة التجريبي: {demo}")
+
+    # 3. Clear Recent Projects cache in AppData
+    rec_file = get_recent_projects_file()
+    if os.path.exists(rec_file):
+        try:
+            os.remove(rec_file)
+            logs.append("تم تفريغ سجل المشاريع الأخيرة من AppData")
+        except Exception as e:
+            logs.append(f"تعذر مسح سجل المشاريع: {e}")
+
+    # 4. Clean Gradle Locks & Zombie Processes
+    try:
+        run_silent(["taskkill", "/f", "/im", "java.exe"])
+        for base in [r"C:\g", os.path.expandvars(r"%USERPROFILE%\.gradle")]:
+            if os.path.exists(base):
+                for sub in ["daemon", "caches"]:
+                    sub_path = os.path.join(base, sub)
+                    if os.path.exists(sub_path):
+                        for root, _, files in os.walk(sub_path):
+                            for f in files:
+                                if f.endswith(".lock") or f.endswith(".lck"):
+                                    try:
+                                        os.remove(os.path.join(root, f))
+                                    except Exception:
+                                        pass
+        logs.append("تم إنهاء عمليات الجافا المعلقة وتصفية أقفال كاش الجرادل")
+    except Exception as e:
+        logs.append(f"تنبيه كاش الجرادل: {e}")
+
+    # 5. Full Clean Slate mode (if explicitly requested by developer)
+    if mode == "full":
+        try:
+            # Remove flutter from User PATH
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, winreg.KEY_ALL_ACCESS) as key:
+                try:
+                    val, _ = winreg.QueryValueEx(key, "Path")
+                except FileNotFoundError:
+                    val = ""
+                parts = [p.strip() for p in val.split(";") if p.strip() and "flutter" not in p.lower()]
+                new_val = ";".join(parts) + ";"
+                winreg.SetValueEx(key, "Path", 0, winreg.REG_EXPAND_SZ, new_val)
+            logs.append("تم إلغاء تسجيل Flutter من مسار PATH لاختبار التثبيت من الصفر")
+        except Exception as e:
+            logs.append(f"تعذر تعديل PATH: {e}")
+
+        # Clean VS Code flutterSdkPath setting
+        settings_path = os.path.expandvars(r"%APPDATA%\Code\User\settings.json")
+        if os.path.exists(settings_path):
+            try:
+                with open(settings_path, "r", encoding="utf-8") as f:
+                    s_data = json.load(f)
+                if "dart.flutterSdkPath" in s_data:
+                    del s_data["dart.flutterSdkPath"]
+                    with open(settings_path, "w", encoding="utf-8") as f:
+                        json.dump(s_data, f, indent=2, ensure_ascii=False)
+                    logs.append("تمت إزالة مسار SDK من إعدادات VS Code")
+            except Exception as e:
+                logs.append(f"تعذر تعديل إعدادات VS Code: {e}")
+
+    return {
+        "success": True,
+        "mode": mode,
+        "logs": logs,
+        "message": "تمت إعادة تعيين بيئة الاختبار بنجاح! بإمكانك الآن إعادة تجربة واختبار كل خطوات التطبيق من البداية."
+    }
