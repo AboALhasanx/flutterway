@@ -175,6 +175,7 @@ pyinstaller FlutterWayNative.spec --noconfirm
 عدة اختبار كاملة لخمسة طلاب مبتدئين: سكربت الجلسة، المهام، الموافقة، استبيان SUS، مقياس SEQ، جدول الملاحظات، ومعايير القبول.
 
 - الدليل: [`docs/USER_TESTING_KIT.md`](docs/USER_TESTING_KIT.md)
+- مراجعة الخبير: [`docs/HEURISTIC_REVIEW.md`](docs/HEURISTIC_REVIEW.md)
 - نموذج النتائج: [`docs/USER_TEST_RESULTS_TEMPLATE.md`](docs/USER_TEST_RESULTS_TEMPLATE.md)
 - حساب النتائج: `python tests/user_test_metrics.py`
 

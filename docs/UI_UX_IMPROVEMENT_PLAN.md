@@ -15,9 +15,9 @@
 | Phase 3 — Doctor/Projects/Hot Reload | ✅ | Doctor: ملخص + المشاكل فقط وكل الفحوصات مطوية؛ Projects: مشروع نشط أولاً و3 إجراءات؛ Hot Reload: "غيّر هذا النص" + معاينة والمحرر مطوي. |
 | Phase 4 — Visual system | ✅ | توكنز للخط/المسافة/الحركة؛ لا نص تحت 12px؛ body 14px وhero 28px؛ بطاقة USB بعمودين؛ responsive 920/760؛ احترام reduced-motion. |
 | Phase 5 — States/Responsive/A11y | ✅ | حالات loading/empty/error/success موحّدة؛ 0 أزرار بلا اسم و0 صور بلا alt؛ aria-live/progressbar/focus trap/aria-current؛ 860px بلا Scroll أفقي. |
-| Phase 6 — User testing | 🧰 | عدة كاملة في `docs/USER_TESTING_KIT.md` + نموذج نتائج + CSV + سكربت حساب SUS/SEQ؛ **بانتظار 5 طلاب**. |
+| Phase 6 — User testing | 🧰 | عدة كاملة في `docs/USER_TESTING_KIT.md` + نموذج نتائج + CSV + سكربت حساب SUS/SEQ؛ مراجعة خبير في `docs/HEURISTIC_REVIEW.md`؛ **بانتظار 5 طلاب**. |
 
-**الأدلة الحالية:** `audit_smoke.py`، `student_journey.py` (22 شاشة، 0 ملاحظات، 0 عناصر بلا اسم)، `custom_project_journey.py` (بناء وتثبيت 71MB)، `hot_reload_journey.py` (تعديل سريع حقيقي، 1.37s، تغيّر شاشة الهاتف)، وعدة Phase 6 في `docs/USER_TESTING_KIT.md`.
+**الأدلة الحالية:** `audit_smoke.py`، `student_journey.py` (22 شاشة، 0 ملاحظات، 0 عناصر بلا اسم)، `custom_project_journey.py` (بناء وتثبيت 71MB)، `hot_reload_journey.py` (تعديل سريع حقيقي، ~1s، تغيّر شاشة الهاتف)، عدة Phase 6 في `docs/USER_TESTING_KIT.md`، ومراجعة خبير في `docs/HEURISTIC_REVIEW.md`.
 
 ---
 

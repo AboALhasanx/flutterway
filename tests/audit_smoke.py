@@ -409,6 +409,7 @@ def ui_checks() -> None:
         assert not page.locator("#benchmark-card").is_visible()
         assert "error" in (page.locator("#bstep-3").get_attribute("class") or "")
         assert "[ERROR] build failed" in page.locator("#build-terminal-lines").inner_text()
+        assert "أعد المحاولة" in page.locator("#btn-run-test").inner_text()
 
         # 4) A successful build with a failed install must also fail.
         page.evaluate(

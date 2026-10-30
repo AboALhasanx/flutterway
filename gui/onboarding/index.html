@@ -505,6 +505,20 @@
       border-color: var(--accent);
     }
 
+    button:disabled,
+    .btn-primary:disabled,
+    .btn-secondary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    button:disabled:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
     .btn-warning {
       background: var(--warning-bg);
       color: var(--warning);
@@ -2052,15 +2066,15 @@
           </div>
           <div class="home-steps" id="home-quick" style="display: none;">
             <button class="home-step" onclick="openVSCode()">
-              <div class="home-step-num">VS</div>
+              <div class="home-step-num"><span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span></div>
               <div><div class="home-step-title">افتح VS Code</div><div class="home-step-desc">عدّل مشروعك وابدأ الكتابة.</div></div>
             </button>
             <button class="home-step" onclick="switchCompanionTab('hotreload')">
-              <div class="home-step-num">↻</div>
+              <div class="home-step-num"><span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span></div>
               <div><div class="home-step-title">جرّب Hot Reload</div><div class="home-step-desc">غيّر نصاً وشاهد الهاتف يتحدّث.</div></div>
             </button>
             <button class="home-step" onclick="switchCompanionTab('cheatsheet')">
-              <div class="home-step-num">؟</div>
+              <div class="home-step-num"><span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span></div>
               <div><div class="home-step-title">تعلّم الأساسيات</div><div class="home-step-desc">مفكرة قصيرة للمبتدئين.</div></div>
             </button>
           </div>
@@ -2073,7 +2087,7 @@
             <div class="doctor-score-badge">
               <div class="score-circle" id="doctor-score-display">100%</div>
               <div>
-                <div class="score-title">جاهزية البيئة للمحاضرات والأندرويد</div>
+                <div class="score-title">جاهزية بيئة التطوير</div>
                 <div class="score-sub" id="doctor-score-subtitle">كافة أدوات التطوير ومسارات فلاتر وجافا وSDK تعمل بتناغم تام</div>
               </div>
             </div>
@@ -2125,12 +2139,12 @@
             </div>
 
             <div class="active-project-actions">
-              <button id="btn-run-proj-phone" class="btn-primary" style="padding: 8px 18px; font-size: 12px;" onclick="runActiveProjectPhone()">
+              <button id="btn-run-proj-phone" class="btn-primary" style="padding: 8px 18px; font-size: 12px;" onclick="runActiveProjectPhone()" disabled>
                 <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
                 <span>شغّل على الهاتف</span>
               </button>
 
-              <button id="btn-open-proj-vscode" class="btn-secondary" onclick="openActiveProjectVSCode()">
+              <button id="btn-open-proj-vscode" class="btn-secondary" onclick="openActiveProjectVSCode()" disabled>
                 <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
                 <span>افتح VS Code</span>
               </button>
@@ -3704,6 +3718,15 @@
       activeProjPath = path;
       document.getElementById('active-proj-name').innerText = name;
       document.getElementById('active-proj-path').innerText = path;
+      const createBtn = document.getElementById('btn-create-lecture-proj');
+      if (createBtn) {
+        createBtn.classList.toggle('btn-primary', !path);
+        createBtn.classList.toggle('btn-secondary', !!path);
+      }
+      const runBtn = document.getElementById('btn-run-proj-phone');
+      if (runBtn) runBtn.disabled = !path;
+      const vscodeBtn = document.getElementById('btn-open-proj-vscode');
+      if (vscodeBtn) vscodeBtn.disabled = !path;
       if (!window.appInit) window.appInit = {};
       window.appInit.active_project = { name, path };
       renderHome();
@@ -4199,7 +4222,11 @@
         if (logDetails) logDetails.open = true;
         if (consoleBox) consoleBox.style.display = 'block';
         if (benchmarkCard) benchmarkCard.style.display = 'none';
-        if (btnRun) btnRun.style.display = 'inline-flex';
+        if (btnRun) {
+          btnRun.style.display = 'inline-flex';
+          const label = btnRun.querySelectorAll('span')[1];
+          if (label) label.innerText = 'أعد المحاولة';
+        }
         if (ctrlBtns) ctrlBtns.style.display = 'flex';
         return;
       }
