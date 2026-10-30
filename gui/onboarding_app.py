@@ -9,6 +9,11 @@ import shutil
 import webview
 import winreg
 
+# Cache the slow PowerShell PnP probe so the 5-second UI poll cannot spawn it
+# continuously while no phone is connected.
+_last_pnp_check = 0.0
+_last_pnp_result = (False, "جهاز أندرويد")
+
 # Arabic log messages must never crash a legacy Windows console.
 for _stream in (sys.stdout, sys.stderr):
     if _stream is not None and hasattr(_stream, "reconfigure"):
@@ -29,12 +34,21 @@ except ImportError:
     import paths
     import android_sdk
 
+def _broadcast_environment_change():
+    try:
+        import ctypes
+        ctypes.windll.user32.SendMessageTimeoutW(0xFFFF, 0x001A, 0, "Environment", 0x0002, 5000, None)
+    except Exception:
+        pass
+
+
 def set_user_env(name, value):
     """Sets a User environment variable permanently in the Windows Registry."""
     try:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, winreg.KEY_SET_VALUE) as key:
             val_type = winreg.REG_EXPAND_SZ if "%" in value else winreg.REG_SZ
             winreg.SetValueEx(key, name, 0, val_type, value)
+        _broadcast_environment_change()
     except Exception as e:
         print(f"Error setting registry env {name}: {e}")
 
@@ -47,6 +61,11 @@ def add_to_user_path(new_dir):
             except FileNotFoundError:
                 val = ""
             parts = [p.strip() for p in val.split(";") if p.strip()]
+            try:
+                with open(os.path.join(paths.data_dir(), "path_backup.txt"), "w", encoding="utf-8") as backup:
+                    backup.write(val)
+            except Exception:
+                pass
             if not any(new_dir.lower() == p.lower() for p in parts):
                 new_val = new_dir + ";" + val
                 winreg.SetValueEx(key, "Path", 0, winreg.REG_EXPAND_SZ, new_val)
@@ -55,13 +74,7 @@ def add_to_user_path(new_dir):
         if new_dir.lower() not in curr.lower():
             os.environ["PATH"] = new_dir + ";" + curr
         # Notify open shells/apps that the environment changed.
-        try:
-            import ctypes
-            ctypes.windll.user32.SendMessageTimeoutW(
-                0xFFFF, 0x001A, 0, "Environment", 0x0002, 5000, None
-            )
-        except Exception:
-            pass
+        _broadcast_environment_change()
         return True
     except Exception as e:
         print(f"Registry PATH update error: {e}")
@@ -215,22 +228,28 @@ class OnboardingApi:
                         "is_ready": (status == "device")
                     })
             
-            # Check if there is an unconfigured Android device via PnP
+            # Check if there is an unconfigured Android device via PnP (cached).
             missing_driver = False
             missing_name = "جهاز أندرويد"
+            global _last_pnp_check, _last_pnp_result
             if not devices:
-                try:
-                    ps_cmd = 'Get-PnpDevice | Where-Object { ($_.FriendlyName -like "*Android*" -or $_.Class -eq "OtherDevices") -and $_.Status -ne "OK" } | Select-Object -ExpandProperty FriendlyName -First 1'
-                    pnp_res = subprocess.run(
-                        ['powershell', '-NoProfile', '-Command', ps_cmd],
-                        capture_output=True, text=True, startupinfo=startupinfo, creationflags=creationflags, timeout=2
-                    )
-                    out = pnp_res.stdout.strip()
-                    if out:
-                        missing_driver = True
-                        missing_name = out
-                except Exception:
-                    pass
+                if time.time() - _last_pnp_check > 15:
+                    try:
+                        ps_cmd = 'Get-PnpDevice | Where-Object { ($_.FriendlyName -like "*Android*" -or $_.Class -eq "OtherDevices") -and $_.Status -ne "OK" } | Select-Object -ExpandProperty FriendlyName -First 1'
+                        pnp_res = subprocess.run(
+                            ['powershell', '-NoProfile', '-Command', ps_cmd],
+                            capture_output=True, text=True, startupinfo=startupinfo, creationflags=creationflags, timeout=2
+                        )
+                        out = pnp_res.stdout.strip()
+                        if out:
+                            missing_driver = True
+                            missing_name = out
+                    except Exception:
+                        pass
+                    _last_pnp_check = time.time()
+                    _last_pnp_result = (missing_driver, missing_name)
+                else:
+                    missing_driver, missing_name = _last_pnp_result
 
             self.state["missing_drivers"] = missing_driver
 
@@ -356,9 +375,11 @@ class OnboardingApi:
             )
         }
 
-    def start_real_gradle_build(self, serial=None):
-        """Asynchronously runs the REAL Flutter Gradle build on the Desktop starter project,
+    def start_real_gradle_build(self, project_path=None, serial=None):
+        """Asynchronously runs the REAL Flutter Gradle build on the selected project,
         streaming live logs to the UI console and installing the fresh APK on the connected device."""
+        if project_path and os.path.isdir(project_path):
+            self.state["project_path"] = project_path
         win = self.window_holder.get("window")
 
         # Humorous & empathetic progress messages based on elapsed time
@@ -582,8 +603,6 @@ class OnboardingApi:
                 "installed_ok": installed_ok,
                 "build_time": time_formatted,
                 "apk_size": f"{apk_size_mb} MB",
-                "ram_usage": "38 MB",
-                "fps": "60 FPS",
                 "message": build_message
             }
 

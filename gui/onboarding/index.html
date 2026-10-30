@@ -1989,18 +1989,14 @@
             <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
               انظر لهاتفك الآن! ستجد التطبيق قد فتح أمامك وتستطيع النقر على زر العداد وتجربته بيدك.
             </div>
-            <div class="diag-specs-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 12px;">
+            <div class="diag-specs-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 12px;">
               <div class="spec-item">
-                <div class="spec-val" style="color: var(--success);" id="stat-speed">1.8 ثانية</div>
-                <div class="spec-lbl">زمن التشغيل المباشر</div>
+                <div class="spec-val" style="color: var(--success);" id="stat-speed">—</div>
+                <div class="spec-lbl">زمن بناء Gradle</div>
               </div>
               <div class="spec-item">
-                <div class="spec-val" style="color: var(--success);">38 MB</div>
-                <div class="spec-lbl">استهلاك الرام</div>
-              </div>
-              <div class="spec-item">
-                <div class="spec-val" style="color: var(--success);">60 FPS</div>
-                <div class="spec-lbl">سلاسة الشاشة</div>
+                <div class="spec-val" style="color: var(--success);" id="stat-size">—</div>
+                <div class="spec-lbl">حجم ملف APK</div>
               </div>
             </div>
             <button id="btn-proceed-to-vscode" class="btn-primary" style="background: var(--success);" onclick="showStep(4)">
@@ -2370,22 +2366,38 @@
       projs.forEach(p => {
         const item = document.createElement('div');
         item.className = 'recent-item';
-        item.innerHTML = `
-          <div>
-            <div style="font-size: 13px; font-weight: 800; color: var(--text);">${p.name}</div>
-            <div style="font-size: 10px; color: var(--text-muted);">${p.path}</div>
-          </div>
-          <div style="display: flex; gap: 6px;">
-            <button class="btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="selectActiveProject('${p.name}', '${p.path.replace(/\\/g, '\\\\')}')">
-              <span>تحديد كنشط</span>
-            </button>
-          </div>
-        `;
+
+        const info = document.createElement('div');
+        const nameEl = document.createElement('div');
+        nameEl.style.cssText = 'font-size: 13px; font-weight: 800; color: var(--text);';
+        nameEl.textContent = p.name;
+        const pathEl = document.createElement('div');
+        pathEl.style.cssText = 'font-size: 10px; color: var(--text-muted);';
+        pathEl.textContent = p.path;
+        info.appendChild(nameEl);
+        info.appendChild(pathEl);
+
+        const actions = document.createElement('div');
+        actions.style.cssText = 'display: flex; gap: 6px;';
+        const button = document.createElement('button');
+        button.className = 'btn-secondary';
+        button.style.cssText = 'padding: 4px 10px; font-size: 11px;';
+        const label = document.createElement('span');
+        label.textContent = 'تحديد كنشط';
+        button.appendChild(label);
+        button.addEventListener('click', () => selectActiveProject(p.name, p.path));
+        actions.appendChild(button);
+
+        item.appendChild(info);
+        item.appendChild(actions);
         container.appendChild(item);
       });
     }
 
+    let activeProjPath = null;
+
     function selectActiveProject(name, path) {
+      activeProjPath = path;
       document.getElementById('active-proj-name').innerText = name;
       document.getElementById('active-proj-path').innerText = path;
     }
@@ -2442,7 +2454,7 @@
     function runActiveProjectPhone() {
       switchMainView('wizard');
       showStep(3);
-      runRealGradleBuild();
+      runRealGradleBuild(activeProjPath);
     }
 
     // ========================================================
@@ -2661,7 +2673,7 @@
     function startDevicePolling() {
       checkDeviceNow();
       if (!devicePollInterval) {
-        devicePollInterval = setInterval(checkDeviceNow, 2000);
+        devicePollInterval = setInterval(checkDeviceNow, 5000);
       }
     }
 
@@ -2757,14 +2769,14 @@
       alert("تم نسخ نص البحث بنجاح! الصقه في بحث يوتيوب متبوعاً باسم موديل جهازك.");
     }
 
-    function runRealGradleBuild() {
+    function runRealGradleBuild(projectPath) {
       document.getElementById('btn-run-test').style.display = 'none';
       document.getElementById('device-guide-box').style.display = 'none';
       document.getElementById('device-ctrl-btns').style.display = 'none';
       document.getElementById('build-console').style.display = 'block';
 
       if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api.start_real_gradle_build();
+        window.pywebview.api.start_real_gradle_build(projectPath || null);
       }
     }
 
@@ -2862,6 +2874,10 @@
         }
         if (res.build_time) {
           document.getElementById('stat-speed').innerText = res.build_time;
+        }
+        if (res.apk_size) {
+          const sizeEl = document.getElementById('stat-size');
+          if (sizeEl) sizeEl.innerText = res.apk_size;
         }
       }, 700);
     }

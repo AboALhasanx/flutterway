@@ -66,6 +66,20 @@ def static_checks() -> None:
     assert "gui.android_sdk" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.android_sdk"
     assert "def install_android_sdk" in (ROOT / "gui" / "android_sdk.py").read_text(encoding="utf-8")
     assert "fix_android_sdk" in COMPANION.read_text(encoding="utf-8")
+    companion_src = COMPANION.read_text(encoding="utf-8")
+    assert "taskkill" not in companion_src, "must not kill every java.exe process"
+    assert "def kill_gradle_daemons" in companion_src
+    assert "ram_usage" not in app_src, "fake RAM metric must stay removed"
+    assert 'id="stat-size"' in html_src, "success card must show the real APK size"
+    assert "زمن بناء Gradle" in html_src, "build time must be labelled honestly"
+    assert "item.innerHTML" not in html_src, "recent project names must not use innerHTML"
+    assert "activeProjPath" in html_src, "selected project path must be tracked"
+    assert "start_real_gradle_build(projectPath || null)" in html_src
+    assert "setInterval(checkDeviceNow, 5000)" in html_src, "device polling must be slower"
+    assert "_last_pnp_check" in app_src, "PowerShell PnP probe must be cached"
+    assert "path_backup.txt" in app_src, "PATH changes must be backed up"
+    assert "path_backup.txt" in companion_src, "PATH changes must be backed up"
+    assert "flutter_bins" in companion_src, "full reset must match Flutter PATH exactly"
     print("[static] passed")
 
 
@@ -122,7 +136,12 @@ def paths_checks() -> None:
 
 def python_checks() -> None:
     """Exercise start_onboarding's failure path without touching the host."""
+    import inspect
+
     import gui.onboarding_app as app
+
+    params = inspect.signature(app.OnboardingApi.start_real_gradle_build).parameters
+    assert "project_path" in params, "build API must accept the selected project path"
 
     class FakeWindow:
         def __init__(self):
@@ -203,6 +222,21 @@ def ui_checks() -> None:
         page.evaluate("resetSetupError()")
         assert not page.locator("#setup-error-box").is_visible()
 
+        # 2c) Recent-project names/paths must be rendered as text, never HTML.
+        import json
+
+        xss_project = {
+            "name": "<img src=x onerror=window.__fw_xss=1>",
+            "path": r"C:\Users\O'Brien\proj",
+        }
+        page.evaluate("switchMainView('companion'); switchCompanionTab('projects');")
+        page.evaluate("renderRecentProjects(" + json.dumps([xss_project]) + ")")
+        assert page.evaluate("window.__fw_xss || 0") == 0
+        assert page.locator("#recent-projects-list img").count() == 0
+        assert "O'Brien" in page.locator("#recent-projects-list").inner_text()
+        page.locator("#recent-projects-list button").first.click()
+        assert page.evaluate("activeProjPath") == r"C:\Users\O'Brien\proj"
+
         # Activate the wizard build screen for the build-state checks.
         page.evaluate("switchMainView('wizard'); showStep(3);")
         page.wait_for_timeout(200)
@@ -225,11 +259,12 @@ def ui_checks() -> None:
 
         # 5) Only a successful build + install shows the celebration card.
         page.evaluate(
-            "finishRealBuild({success: true, installed_ok: true, device_name: 'Test Phone', build_time: '5s'})"
+            "finishRealBuild({success: true, installed_ok: true, device_name: 'Test Phone', build_time: '5s', apk_size: '12.3 MB'})"
         )
         page.wait_for_timeout(850)
         assert page.locator("#benchmark-card").is_visible()
         assert "Test Phone" in page.locator("#benchmark-head-text").inner_text()
+        assert page.locator("#stat-size").inner_text().strip() == "12.3 MB"
 
         # 6) Disconnecting the phone must reset the device card.
         page.evaluate("handleDeviceResponse({success: true, devices: []})")

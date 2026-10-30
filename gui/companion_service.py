@@ -29,6 +29,37 @@ def run_silent(cmd_args, **kwargs):
     creationflags = subprocess.CREATE_NO_WINDOW
     return subprocess.run(cmd_args, capture_output=True, text=True, startupinfo=startupinfo, creationflags=creationflags, **kwargs)
 
+def kill_gradle_daemons():
+    """Terminate Gradle/Kotlin daemons only; never touch unrelated Java apps."""
+    targets = []
+    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+        try:
+            name = (proc.info.get("name") or "").lower()
+            if name not in ("java.exe", "javaw.exe"):
+                continue
+            cmdline = " ".join(proc.info.get("cmdline") or []).lower()
+            if "gradle" in cmdline or "kotlin" in cmdline:
+                targets.append(proc)
+        except Exception:
+            pass
+
+    for proc in targets:
+        try:
+            proc.terminate()
+        except Exception:
+            pass
+
+    try:
+        _, alive = psutil.wait_procs(targets, timeout=3)
+    except Exception:
+        alive = targets
+    for proc in alive:
+        try:
+            proc.kill()
+        except Exception:
+            pass
+    return len(targets)
+
 def get_recent_projects_file():
     return paths.recent_projects_file()
 
@@ -278,8 +309,8 @@ def heal_doctor_item(fix_id):
             return {"success": True, "message": "تم تحديث وتسجيل مسارات فلاتر وجافا في متغيرات النظام بنجاح!"}
 
         elif fix_id == "fix_gradle_cache":
-            # Terminate running java gradle daemons
-            run_silent(["taskkill", "/f", "/im", "java.exe"])
+            # Terminate only Gradle/Kotlin daemons, never unrelated Java apps
+            killed = kill_gradle_daemons()
             # Remove lock files in caches and daemon
             for base in [paths.gradle_user_home(), os.path.expandvars(r"%USERPROFILE%\.gradle")]:
                 if os.path.exists(base):
@@ -293,7 +324,7 @@ def heal_doctor_item(fix_id):
                                             os.remove(os.path.join(root, f))
                                         except Exception:
                                             pass
-            return {"success": True, "message": "تم إنهاء العمليات المعلقة وتنظيف أقفال كاش الجرادل بنجاح!"}
+            return {"success": True, "message": f"تم إنهاء {killed} عملية Gradle وتنظيف أقفال الكاش بنجاح!"}
 
         elif fix_id == "fix_network":
             run_silent(["ipconfig", "/flushdns"])
@@ -593,7 +624,7 @@ def dev_reset_environment(mode="soft"):
 
     # 4. Clean Gradle Locks & Stop Zombie Daemons
     try:
-        run_silent(["taskkill", "/f", "/im", "java.exe"])
+        killed = kill_gradle_daemons()
         for base in [paths.gradle_user_home(), os.path.expandvars(r"%USERPROFILE%\.gradle")]:
             if os.path.exists(base):
                 for sub in ["daemon", "caches"]:
@@ -606,28 +637,45 @@ def dev_reset_environment(mode="soft"):
                                         os.remove(os.path.join(root, f))
                                     except Exception:
                                         pass
-        logs.append("تم إيقاف دواليب Gradle Daemons وتصفية ملفات الأقفال (.lock)")
+        logs.append(f"تم إيقاف {killed} من دواليب Gradle وتصفية ملفات الأقفال (.lock)")
     except Exception as e:
         logs.append(f"تنبيه كاش الجرادل: {e}")
 
     # 5. Full Clean Slate mode (if explicitly requested by developer)
     if mode == "full":
         try:
-            # Remove flutter from User PATH
+            # Remove the Flutter bin entry from User PATH (exact match only)
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, winreg.KEY_ALL_ACCESS) as key:
                 try:
                     val, _ = winreg.QueryValueEx(key, "Path")
                 except FileNotFoundError:
                     val = ""
-                parts = [p.strip() for p in val.split(";") if p.strip() and "flutter" not in p.lower()]
+                try:
+                    with open(os.path.join(paths.data_dir(), "path_backup.txt"), "w", encoding="utf-8") as backup:
+                        backup.write(val)
+                except Exception:
+                    pass
+                flutter_bins = {
+                    os.path.normcase(os.path.normpath(os.path.join(paths.flutter_root(), "bin"))),
+                    os.path.normcase(os.path.normpath(os.path.join(paths.data_dir(), "flutter", "bin"))),
+                }
+                parts = [
+                    p.strip() for p in val.split(";")
+                    if p.strip() and os.path.normcase(os.path.normpath(p.strip())) not in flutter_bins
+                ]
                 new_val = ";".join(parts) + ";"
                 winreg.SetValueEx(key, "Path", 0, winreg.REG_EXPAND_SZ, new_val)
+            try:
+                import ctypes
+                ctypes.windll.user32.SendMessageTimeoutW(0xFFFF, 0x001A, 0, "Environment", 0x0002, 5000, None)
+            except Exception:
+                pass
             logs.append("تم إلغاء تسجيل Flutter من مسار PATH لاختبار التثبيت من الصفر")
         except Exception as e:
             logs.append(f"تعذر تعديل PATH: {e}")
 
         # Clean VS Code flutterSdkPath setting
-        settings_path = os.path.expandvars(r"%APPDATA%\Code\User\settings.json")
+        settings_path = paths.vscode_settings_path()
         if os.path.exists(settings_path):
             try:
                 with open(settings_path, "r", encoding="utf-8") as f:
