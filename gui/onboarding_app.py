@@ -36,6 +36,7 @@ try:
     from gui import dev_reset
     from gui import managed
     from gui import downloads
+    from gui import toolchain
     from gui import hot_reload
     from gui import diagnostics
 except ImportError:
@@ -47,6 +48,7 @@ except ImportError:
     import dev_reset
     import managed
     import downloads
+    import toolchain
     import hot_reload
     import diagnostics
 
@@ -59,17 +61,24 @@ def _broadcast_environment_change():
 
 
 def set_user_env(name, value):
-    """Sets a User environment variable permanently in the Windows Registry."""
+    """Set a user environment variable and verify it persisted. Returns bool."""
     try:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, winreg.KEY_SET_VALUE) as key:
             val_type = winreg.REG_EXPAND_SZ if "%" in value else winreg.REG_SZ
             winreg.SetValueEx(key, name, 0, val_type, value)
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, 0) as key:
+            stored, _ = winreg.QueryValueEx(key, name)
+        if str(stored) != str(value):
+            print(f"Registry env {name} did not persist (readback mismatch)")
+            return False
         _broadcast_environment_change()
+        return True
     except Exception as e:
         print(f"Error setting registry env {name}: {e}")
+        return False
 
 def add_to_user_path(new_dir):
-    """Atomically adds a folder to the User PATH via Windows Registry without duplicates."""
+    """Add a folder to the user PATH and verify it persisted. Returns bool."""
     try:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, winreg.KEY_ALL_ACCESS) as key:
             try:
@@ -83,13 +92,16 @@ def add_to_user_path(new_dir):
             except Exception:
                 pass
             if not any(new_dir.lower() == p.lower() for p in parts):
-                new_val = new_dir + ";" + val
-                winreg.SetValueEx(key, "Path", 0, winreg.REG_EXPAND_SZ, new_val)
-        # Also update os.environ for current runtime
+                winreg.SetValueEx(key, "Path", 0, winreg.REG_EXPAND_SZ, new_dir + ";" + val)
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, 0) as key:
+            stored, _ = winreg.QueryValueEx(key, "Path")
+        stored_parts = [p.strip() for p in str(stored).split(";") if p.strip()]
+        if not any(new_dir.lower() == p.lower() for p in stored_parts):
+            print("Registry PATH update did not persist (readback mismatch)")
+            return False
         curr = os.environ.get("PATH", "")
         if new_dir.lower() not in curr.lower():
             os.environ["PATH"] = new_dir + ";" + curr
-        # Notify open shells/apps that the environment changed.
         _broadcast_environment_change()
         return True
     except Exception as e:
@@ -972,27 +984,25 @@ class OnboardingApi:
                     startupinfo.wShowWindow = 0
                     creationflags = subprocess.CREATE_NO_WINDOW
 
-                    cmd = ["git", "clone", "--depth", "1", "-b", "stable", "https://github.com/flutter/flutter.git", flutter_target]
-                    try:
-                        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, startupinfo=startupinfo, creationflags=creationflags)
-                        while True:
-                            line = proc.stdout.readline()
-                            if not line and proc.poll() is not None:
-                                break
-                            if "Receiving objects:" in line:
-                                try:
-                                    part = line.split("Receiving objects:")[1].split("%")[0].strip()
-                                    p_val = int(part)
-                                    scaled = 48 + int(p_val * 0.22)
-                                    self._update_ui(win, scaled, f"جاري تنزيل وتجهيز محرك فلاتر ({p_val}%)...", 3)
-                                except Exception:
-                                    pass
-                        proc.wait()
-                    except Exception as e:
-                        print("Git clone error:", e)
+                    release = toolchain.resolve_flutter_release("stable")
+                    if not release:
+                        fail("تعذر قراءة قائمة إصدارات Flutter الرسمية. تحقق من الإنترنت ثم أعد المحاولة.", 48)
+                        return
+
+                    def flutter_progress(pct):
+                        overall = 48 + int(max(0, min(100, int(pct))) * 22 / 100)
+                        self._update_ui(win, overall, f"ننزّل Flutter {release.version}... {pct}%", 3)
+
+                    installed = toolchain.install_flutter_archive(
+                        flutter_target, release, progress=flutter_progress
+                    )
+                    if not installed.get("success"):
+                        fail(installed.get("error") or "تعذر تجهيز Flutter SDK.", 48)
+                        return
+                    self._update_ui(win, 70, f"تم تجهيز Flutter {release.version} (موثّق)", 3)
 
                     if not os.path.exists(flutter_bat):
-                        fail("تعذر تنزيل Flutter SDK. تأكد من اتصال الإنترنت ووجود Git، ثم أعد المحاولة.", 48)
+                        fail("اكتمل التنزيل لكن flutter.bat غير موجود.", 48)
                         return
 
                 # Register the Flutter bin directory in the user PATH via the Registry
@@ -1015,7 +1025,10 @@ class OnboardingApi:
                 if not sdk_result.get("success"):
                     fail(sdk_result.get("error", "تعذر تجهيز Android SDK. تأكد من اتصال الإنترنت ثم أعد المحاولة."), 80)
                     return
-                self._update_ui(win, 86, "تم تجهيز أدوات أندرويد بنجاح", 3)
+                if sdk_result.get("warnings"):
+                    self._update_ui(win, 86, sdk_result.get("message") or "تم تجهيز الأدوات، لكن تعذر حفظ متغيرات البيئة.", 3)
+                else:
+                    self._update_ui(win, 86, "تم تجهيز أدوات أندرويد بنجاح", 3)
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = 0

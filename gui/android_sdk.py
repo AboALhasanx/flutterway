@@ -137,7 +137,7 @@ def _run_sdkmanager(sdk_root: str, args: list[str], timeout: int = 900) -> tuple
     return process.returncode, output or ""
 
 
-def _persist_env(name: str, value: str) -> None:
+def _persist_env(name: str, value: str) -> bool:
     try:
         import ctypes
         import winreg
@@ -145,12 +145,17 @@ def _persist_env(name: str, value: str) -> None:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, winreg.KEY_SET_VALUE) as key:
             value_type = winreg.REG_EXPAND_SZ if "%" in value else winreg.REG_SZ
             winreg.SetValueEx(key, name, 0, value_type, value)
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, 0) as key:
+            stored, _ = winreg.QueryValueEx(key, name)
+        if str(stored) != str(value):
+            return False
         ctypes.windll.user32.SendMessageTimeoutW(0xFFFF, 0x001A, 0, "Environment", 0x0002, 5000, None)
+        return True
     except Exception:
-        pass
+        return False
 
 
-def _persist_path_entry(entry: str) -> None:
+def _persist_path_entry(entry: str) -> bool:
     try:
         import ctypes
         import winreg
@@ -164,9 +169,14 @@ def _persist_path_entry(entry: str) -> None:
             if not any(entry.lower() == part.lower() for part in parts):
                 parts.insert(0, entry)
                 winreg.SetValueEx(key, "Path", 0, winreg.REG_EXPAND_SZ, ";".join(parts))
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment", 0, 0) as key:
+            stored, _ = winreg.QueryValueEx(key, "Path")
+        if not any(entry.lower() == part.strip().lower() for part in str(stored).split(";")):
+            return False
         ctypes.windll.user32.SendMessageTimeoutW(0xFFFF, 0x001A, 0, "Environment", 0x0002, 5000, None)
+        return True
     except Exception:
-        pass
+        return False
 
 
 def install_android_sdk(progress: Callable[[str], None] | None = None, persist: bool = True) -> dict:
@@ -175,15 +185,20 @@ def install_android_sdk(progress: Callable[[str], None] | None = None, persist: 
     os.makedirs(sdk_root, exist_ok=True)
 
     if sdk_ready(sdk_root):
+        warnings = []
         if persist:
             os.environ["ANDROID_HOME"] = sdk_root
             os.environ["ANDROID_SDK_ROOT"] = sdk_root
-            _persist_env("ANDROID_HOME", sdk_root)
-            _persist_env("ANDROID_SDK_ROOT", sdk_root)
-            _persist_path_entry(os.path.join(sdk_root, "platform-tools"))
+            if not _persist_env("ANDROID_HOME", sdk_root):
+                warnings.append("ANDROID_HOME لم يُحفظ")
+            if not _persist_env("ANDROID_SDK_ROOT", sdk_root):
+                warnings.append("ANDROID_SDK_ROOT لم يُحفظ")
+            if not _persist_path_entry(os.path.join(sdk_root, "platform-tools")):
+                warnings.append("platform-tools لم تُضف إلى PATH")
         if progress:
             progress("Android SDK جاهز مسبقاً — لا حاجة لإعادة التنزيل")
-        return {"success": True, "sdk_root": sdk_root, "message": "Android SDK جاهز مسبقاً"}
+        return {"success": True, "sdk_root": sdk_root, "warnings": warnings,
+                "message": "Android SDK جاهز مسبقاً" + (" (تحذير: تعذر حفظ بعض متغيرات البيئة)" if warnings else "")}
 
     archive = os.path.join(paths.data_dir(), "cache", f"commandlinetools-{CMDLINE_TOOLS_VERSION}.zip")
     os.makedirs(os.path.dirname(archive), exist_ok=True)
@@ -213,9 +228,16 @@ def install_android_sdk(progress: Callable[[str], None] | None = None, persist: 
 
     os.environ["ANDROID_HOME"] = sdk_root
     os.environ["ANDROID_SDK_ROOT"] = sdk_root
+    warnings = []
     if persist:
-        _persist_env("ANDROID_HOME", sdk_root)
-        _persist_env("ANDROID_SDK_ROOT", sdk_root)
-        _persist_path_entry(os.path.join(sdk_root, "platform-tools"))
+        if not _persist_env("ANDROID_HOME", sdk_root):
+            warnings.append("ANDROID_HOME لم يُحفظ")
+        if not _persist_env("ANDROID_SDK_ROOT", sdk_root):
+            warnings.append("ANDROID_SDK_ROOT لم يُحفظ")
+        if not _persist_path_entry(os.path.join(sdk_root, "platform-tools")):
+            warnings.append("platform-tools لم تُضف إلى PATH")
 
-    return {"success": True, "sdk_root": sdk_root, "message": "تم تثبيت Android SDK وأدوات adb بنجاح"}
+    message = "تم تثبيت Android SDK وأدوات adb بنجاح"
+    if warnings:
+        message += " — لكن تعذر حفظ بعض متغيرات البيئة. سنكمل بالمسار المباشر."
+    return {"success": True, "sdk_root": sdk_root, "warnings": warnings, "message": message}
