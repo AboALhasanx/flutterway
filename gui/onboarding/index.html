@@ -110,6 +110,70 @@
       outline-offset: 3px;
     }
 
+    /* Shared states: loading / empty / error / success */
+    .state-box {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+      width: 100%;
+      padding: var(--space-4);
+      border: 1px dashed var(--card-border);
+      border-radius: var(--radius-card);
+      background: var(--bg);
+      text-align: right;
+    }
+
+    .state-box.empty {
+      flex-direction: column;
+      text-align: center;
+      padding: var(--space-6);
+    }
+
+    .state-box.error {
+      border-color: var(--danger);
+      background: var(--danger-bg);
+    }
+
+    .state-box.success {
+      border-color: var(--success);
+      background: var(--success-bg);
+    }
+
+    .state-title {
+      font-size: var(--fs-body);
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .state-desc {
+      font-size: var(--fs-caption);
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .state-actions {
+      display: flex;
+      gap: var(--space-2);
+      margin-top: var(--space-1);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .state-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--card-border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: state-spin 0.9s linear infinite;
+      flex: 0 0 auto;
+    }
+
+    @keyframes state-spin {
+      to { transform: rotate(360deg); }
+    }
+
     [data-theme="dark"] .btn-primary {
       color: #0b0f19;
     }
@@ -1917,7 +1981,7 @@
       <div class="companion-container">
         <!-- Sub-Navigation Tabs -->
         <div class="companion-subnav">
-          <button id="btn-tab-home" class="comp-tab-btn active" onclick="switchCompanionTab('home')">
+          <button id="btn-tab-home" class="comp-tab-btn active" aria-current="page" onclick="switchCompanionTab('home')">
             <span class="icon" style="width: 14px; height: 14px;">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
             </span>
@@ -1939,7 +2003,7 @@
           </button>
 
           <div class="more-wrap">
-            <button id="btn-tab-more" class="comp-tab-btn" onclick="toggleMoreMenu(event)">
+            <button id="btn-tab-more" class="comp-tab-btn" onclick="toggleMoreMenu(event)" aria-haspopup="true" aria-expanded="false">
               <span class="icon" style="width: 14px; height: 14px;">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
               </span>
@@ -2031,7 +2095,7 @@
             </div>
           </div>
 
-          <div class="doctor-summary" id="doctor-summary-line">نفحص بيئتك الآن...</div>
+          <div class="doctor-summary" id="doctor-summary-line" aria-live="polite">نفحص بيئتك الآن...</div>
 
           <div class="doctor-ok-note" id="doctor-ok-note" style="display: none;">
             ✓ كل الفحوصات سليمة — ما في شي يحتاج إصلاح.
@@ -2195,7 +2259,7 @@
           </div>
 
           <!-- Toast result -->
-          <div id="rescue-toast" style="display: none; padding: 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; margin-top: 8px;"></div>
+          <div id="rescue-toast" role="status" aria-live="polite" style="display: none; padding: 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; margin-top: 8px;"></div>
         </div>
 
         <!-- TAB 4: CONNECTED DEVICE STUDIO -->
@@ -2328,6 +2392,14 @@
               <span id="hr-status-badge" class="level-badge" style="margin: 0; background: var(--warning-bg); color: var(--warning); border-color: var(--warning);">غير متصل</span>
             </div>
 
+            <div id="hr-project-required" class="state-box empty" style="display: none;">
+              <div class="state-title">اختر مشروعاً أولاً</div>
+              <div class="state-desc">Hot Reload يحتاج مشروعاً مفتوحاً. اختر مشروعك من «مشروعي» بعدها ارجع هنا.</div>
+              <div class="state-actions">
+                <button class="btn-secondary" onclick="switchCompanionTab('projects')">اذهب للمشاريع</button>
+              </div>
+            </div>
+
             <div class="hr-toolbar">
               <span style="font-size: 12px; color: var(--text-muted);">المشروع: <b id="hr-project" style="color: var(--text);">—</b></span>
               <button id="btn-hr-start" class="btn-primary" style="padding: 8px 16px; font-size: 12px;" onclick="startHotReload()">بدء الجلسة</button>
@@ -2348,10 +2420,11 @@
                   <input id="hr-quick-text" class="proj-input" type="text" spellcheck="false"
                          aria-label="النص الجديد الذي سيظهر على الهاتف"
                          placeholder="اكتب النص الجديد..."
-                         oninput="scheduleQuickHotReload()">
+                         oninput="scheduleQuickHotReload()"
+                         onkeydown="if(event.key==='Enter'){event.preventDefault();applyQuickHotReloadText();}">
                   <button id="btn-hr-apply" class="btn-primary" style="padding: 10px 18px; font-size: 12px;" onclick="applyQuickHotReloadText()">طبّق الآن</button>
                 </div>
-                <div id="hr-quick-hint" class="hr-quick-hint">ابدأ الجلسة أولاً، بعدها عدّل النص.</div>
+                <div id="hr-quick-hint" class="hr-quick-hint" role="status" aria-live="polite">ابدأ الجلسة أولاً، بعدها عدّل النص.</div>
               </div>
               <div class="hr-preview-col">
                 <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">شاشة الهاتف</div>
@@ -2368,7 +2441,7 @@
                 <button id="btn-hr-restart" class="btn-secondary" style="font-size: 12px;" onclick="hotReloadAction('restart')">Hot Restart</button>
               </div>
               <textarea id="hr-editor" class="hr-editor" spellcheck="false" oninput="scheduleHotReload()" placeholder="اختر مشروعاً ثم اضغط بدء الجلسة..." style="margin-top: 10px;"></textarea>
-              <div id="hr-log" class="hr-log">لم تبدأ الجلسة بعد.</div>
+              <div id="hr-log" class="hr-log" role="log" aria-live="polite">لم تبدأ الجلسة بعد.</div>
             </details>
           </div>
         </div>
@@ -2516,11 +2589,11 @@
 
         <div class="progress-box">
           <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-            <div id="progress-text" style="font-size: 13px; font-weight: 700; color: var(--text);">نفحص اللابتوب ونختار أفضل مسار...</div>
+            <div id="progress-text" style="font-size: 13px; font-weight: 700; color: var(--text);" role="status" aria-live="polite">نفحص اللابتوب ونختار أفضل مسار...</div>
             <div id="progress-pct" style="font-size: 15px; font-weight: 900; color: var(--accent);">0%</div>
           </div>
 
-          <div class="progress-bar-container">
+          <div class="progress-bar-container" id="progress-bar" role="progressbar" aria-labelledby="progress-text" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
             <div id="progress-fill" class="progress-bar-fill"></div>
           </div>
 
@@ -2547,7 +2620,7 @@
             💡 لن تحتاج فتح موجه الأوامر أو تعديل PATH يدوياً.
           </div>
 
-          <div id="setup-error-box" style="display: none; width: 100%; margin-top: 12px; padding: 12px 14px; border: 1px solid var(--danger); border-radius: 10px; background: var(--danger-bg); text-align: right;">
+          <div id="setup-error-box" role="alert" aria-live="assertive" style="display: none; width: 100%; margin-top: 12px; padding: 12px 14px; border: 1px solid var(--danger); border-radius: 10px; background: var(--danger-bg); text-align: right;">
             <div id="setup-error-text" style="font-size: 12px; font-weight: 700; color: var(--danger); line-height: 1.6; margin-bottom: 8px;"></div>
             <button class="btn-secondary" onclick="startSetup()" style="font-size: 12px;">إعادة المحاولة</button>
           </div>
@@ -2621,7 +2694,7 @@
               </div>
             </div>
 
-            <div class="build-commentary" id="build-commentary-text">
+            <div class="build-commentary" id="build-commentary-text" role="status" aria-live="polite">
               🚀 نجهّز مشروعك للبناء... أول مرة قد تأخذ دقيقة.
             </div>
 
@@ -2934,7 +3007,10 @@
     // Companion Tab Switching
     function switchCompanionTab(tabId) {
       activeCompanionTab = tabId;
-      document.querySelectorAll('.comp-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.comp-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.removeAttribute('aria-current');
+      });
       document.querySelectorAll('.comp-tab-pane').forEach(pane => pane.classList.remove('active'));
 
       const primaryMap = {
@@ -2944,6 +3020,7 @@
       };
       const navBtn = document.getElementById(primaryMap[tabId] || 'btn-tab-more');
       if (navBtn) navBtn.classList.add('active');
+      if (primaryMap[tabId] && navBtn) navBtn.setAttribute('aria-current', 'page');
       const pane = document.getElementById(`tab-${tabId}`);
       if (pane) pane.classList.add('active');
       closeMoreMenu();
@@ -2960,6 +3037,8 @@
       } else if (tabId === 'device') {
         loadDeviceStudioData();
       } else if (tabId === 'hotreload') {
+        const req = document.getElementById('hr-project-required');
+        if (req) req.style.display = getActiveProjectPath() ? 'none' : 'flex';
         refreshHotReloadStatus();
         startHotReloadPolling();
         syncHotReloadQuickText();
@@ -2972,13 +3051,18 @@
     function closeMoreMenu() {
       const menu = document.getElementById('more-menu');
       if (menu) menu.style.display = 'none';
+      const more = document.getElementById('btn-tab-more');
+      if (more) more.setAttribute('aria-expanded', 'false');
     }
 
     function toggleMoreMenu(event) {
       if (event) event.stopPropagation();
       const menu = document.getElementById('more-menu');
       if (!menu) return;
-      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+      const open = menu.style.display !== 'block';
+      menu.style.display = open ? 'block' : 'none';
+      const more = document.getElementById('btn-tab-more');
+      if (more) more.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
 
     document.addEventListener('click', event => {
@@ -3356,7 +3440,14 @@
       const grid = document.getElementById('doctor-cards-grid');
       const allGrid = document.getElementById('doctor-all-grid');
       const summary = document.getElementById('doctor-summary-line');
-      if (grid) grid.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">نفحص بيئتك...</div>';
+      if (grid) grid.innerHTML = `
+        <div class="state-box loading" role="status" aria-live="polite">
+          <span class="state-spinner" aria-hidden="true"></span>
+          <div>
+            <div class="state-title">نفحص بيئتك...</div>
+            <div class="state-desc">نتأكد من Flutter وJava وأدوات أندرويد.</div>
+          </div>
+        </div>`;
       if (allGrid) allGrid.innerHTML = '';
       if (summary) summary.innerText = 'نفحص بيئة Flutter وJava وأدوات أندرويد...';
 
@@ -3366,6 +3457,17 @@
           renderDoctorReport(rep);
         } catch (e) {
           console.error(e);
+          if (grid) grid.innerHTML = `
+            <div class="state-box error" role="alert">
+              <div>
+                <div class="state-title">تعذر إكمال الفحص</div>
+                <div class="state-desc">صار خطأ غير متوقع. جرّب إعادة الفحص.</div>
+                <div class="state-actions" style="justify-content: flex-start;">
+                  <button class="btn-secondary" onclick="runSmartDoctorScan()">إعادة الفحص</button>
+                </div>
+              </div>
+            </div>`;
+          if (summary) summary.innerText = 'تعذر إكمال الفحص.';
         }
       } else {
         // Fallback preview
@@ -3524,7 +3626,14 @@
       const container = document.getElementById('recent-projects-list');
       container.innerHTML = '';
       if (recentProjectsAll.length === 0) {
-        container.innerHTML = '<div style="font-size: 12px; color: var(--text-muted);">لم يتم إنشاء مشاريع حديثة بعد.</div>';
+        container.innerHTML = `
+          <div class="state-box empty">
+            <div class="state-title">ما عندك مشاريع بعد</div>
+            <div class="state-desc">أنشئ مشروعك الأول وخلّينا نجهّزه ونشغّله على هاتفك.</div>
+            <div class="state-actions">
+              <button class="btn-secondary" onclick="focusProjectName()">أنشئ مشروعي الأول</button>
+            </div>
+          </div>`;
         return;
       }
 
@@ -3580,6 +3689,11 @@
         });
         container.appendChild(toggle);
       }
+    }
+
+    function focusProjectName() {
+      const input = document.getElementById('input-lecture-name');
+      if (input) input.focus();
     }
 
     let activeProjPath = null;
@@ -3864,7 +3978,9 @@
       const fill = document.getElementById('progress-fill');
       const text = document.getElementById('progress-text');
       const pct = document.getElementById('progress-pct');
+      const bar = document.getElementById('progress-bar');
 
+      if (bar) bar.setAttribute('aria-valuenow', String(percent));
       if (fill) fill.style.width = `${percent}%`;
       if (text) text.innerText = statusText;
       if (pct) pct.innerText = `${percent}%`;
@@ -4130,6 +4246,7 @@
     function openDevModal() {
       const modal = document.getElementById('dev-modal');
       if (modal) {
+        window.__devModalOpener = document.activeElement;
         modal.style.display = 'flex';
         const closeBtn = modal.querySelector('.modal-close-btn');
         if (closeBtn) closeBtn.focus();
@@ -4140,10 +4257,31 @@
     function closeDevModal() {
       const modal = document.getElementById('dev-modal');
       if (modal) modal.style.display = 'none';
+      const opener = window.__devModalOpener;
+      if (opener && typeof opener.focus === 'function') opener.focus();
     }
 
     document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') closeDevModal();
+      const modal = document.getElementById('dev-modal');
+      if (!modal || modal.style.display === 'none') return;
+      if (event.key === 'Escape') {
+        closeDevModal();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusables = Array.from(
+        modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      ).filter(el => !el.disabled && el.offsetParent !== null);
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     });
 
     async function executeDevReset(mode) {

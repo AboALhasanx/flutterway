@@ -89,6 +89,9 @@ def static_checks() -> None:
     assert "--fs-body: 14px" in html_src, "body text must use the 14px token"
     assert "@media (max-width: 920px)" in html_src, "tablet layout must collapse to one column"
     assert "@media (max-width: 760px)" in html_src, "compact layout must be defined"
+    assert 'role="progressbar"' in html_src, "progress must expose progressbar semantics"
+    assert 'id="hr-project-required"' in html_src, "hot reload must explain when no project is selected"
+    assert 'aria-expanded' in html_src, "More menu must expose expanded state"
     assert 'id="btn-tab-home"' in html_src, "Home must be the first destination"
     assert html_src.count('class="comp-tab-btn active"') + html_src.count('class="comp-tab-btn"') == 4, "exactly 3 primary tabs plus More"
     assert 'id="hr-editor"' in html_src
@@ -357,6 +360,13 @@ def ui_checks() -> None:
             "path": r"C:\Users\O'Brien\proj",
         }
         page.evaluate("switchMainView('companion'); switchCompanionTab('projects');")
+        page.evaluate("activeProjPath = null; renderRecentProjects([])")
+        assert page.locator("#recent-projects-list .state-box.empty").is_visible()
+        assert "ما عندك مشاريع" in page.locator("#recent-projects-list").inner_text()
+        page.evaluate("switchCompanionTab('hotreload')")
+        page.wait_for_timeout(200)
+        assert page.locator("#hr-project-required").is_visible()
+        page.evaluate("switchCompanionTab('projects')")
         xss_second = {"name": "safe_project", "path": r"C:\Users\O'Brien\proj2"}
         page.evaluate("activeProjPath = null")
         page.evaluate("renderRecentProjects(" + json.dumps([xss_project, xss_second]) + ")")
@@ -381,8 +391,11 @@ def ui_checks() -> None:
         page.evaluate("openDevModal()")
         assert page.locator("#dev-modal").is_visible()
         assert page.evaluate("document.activeElement.classList.contains('modal-close-btn')")
+        page.keyboard.press("Shift+Tab")
+        assert page.evaluate("document.getElementById('dev-modal').contains(document.activeElement)")
         page.keyboard.press("Escape")
         assert not page.locator("#dev-modal").is_visible()
+        assert page.evaluate("document.activeElement.id") == "card-emu", "focus must return to the opener"
 
         # Activate the wizard build screen for the build-state checks.
         page.evaluate("switchMainView('wizard'); showStep(3);")

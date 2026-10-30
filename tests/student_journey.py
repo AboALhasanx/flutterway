@@ -160,13 +160,19 @@ def main() -> int:
             bar = page.evaluate("""() => {
                 const fill = document.getElementById('progress-fill');
                 const track = fill.parentElement;
-                return { fill: fill.getBoundingClientRect().width, track: track.getBoundingClientRect().width };
+                return {
+                    fill: fill.getBoundingClientRect().width,
+                    track: track.getBoundingClientRect().width,
+                    ariaNow: document.getElementById('progress-bar').getAttribute('aria-valuenow')
+                };
             }""")
             if bar["track"]:
                 ratio = bar["fill"] / bar["track"]
                 report["metrics"]["progress_bar"] = {"ratio": round(ratio, 3), **bar}
                 if abs(ratio - 0.25) > 0.06:
                     finding("high", "Step 2 progress", f"شريط التقدم لا يعكس النسبة: {round(ratio * 100)}% بدل 25%.")
+            if bar.get("ariaNow") != "25":
+                finding("medium", "Accessibility", "aria-valuenow لا يطابق نسبة التقدم.")
             shot("03_step2_progress", "الخطوة 2: شكل التقدم (بدون تشغيل التثبيت)")
             page.evaluate("onboardingFailed('تعذر تنزيل Flutter SDK. تأكد من اتصال الإنترنت ثم أعد المحاولة.')")
             page.wait_for_timeout(250)
@@ -294,6 +300,13 @@ def main() -> int:
                 finding("low", "Companion / Projects", "لا توجد مشاريع حديثة، والطالب يرى مساحة فارغة بدون زر إنشاء واضح داخل نفس البطاقة.")
             elif not projects["active"] or projects["activeName"] == "—":
                 finding("medium", "Companion / Projects", "المشروع النشط غير محدد تلقائياً رغم وجود مشاريع حديثة.")
+            page.evaluate("activeProjPath = null; renderRecentProjects([])")
+            page.wait_for_timeout(200)
+            shot("09b_projects_empty", "حالة عدم وجود مشاريع: رسالة + زر إنشاء")
+            if not page.locator("#recent-projects-list .state-box.empty").is_visible():
+                finding("medium", "Companion / Projects", "الحالة الفارغة لا تعرض رسالة وزر إنشاء.")
+            page.evaluate("loadRecentProjectsList()")
+            page.wait_for_timeout(600)
 
             page.evaluate("switchCompanionTab('rescue')")
             page.wait_for_timeout(300)
@@ -389,20 +402,44 @@ def main() -> int:
                 finding("medium", "Accessibility", "اختيار البطاقة بلوحة المفاتيح لا يعمل.")
 
             # 11. Layout and accessibility metrics.
-            a11y = page.evaluate("""() => ({
-                aria: document.querySelectorAll('[aria-label], [aria-labelledby], [aria-pressed], [aria-modal]').length,
-                roles: document.querySelectorAll('[role]').length,
-                mediaRules: Array.from(document.styleSheets).reduce((count, sheet) => {
-                    try { return count + Array.from(sheet.cssRules).filter(r => r.type === CSSRule.MEDIA_RULE).length; }
-                    catch (e) { return count; }
-                }, 0),
-                terminalSelect: getComputedStyle(document.getElementById('build-terminal-lines')).userSelect
-            })""")
+            a11y = page.evaluate("""() => {
+                const nameOf = el => (
+                    (el.getAttribute('aria-label') || '').trim() ||
+                    (el.innerText || '').trim() ||
+                    (el.getAttribute('title') || '').trim() ||
+                    (el.getAttribute('placeholder') || '').trim()
+                );
+                const interactive = Array.from(document.querySelectorAll('button, a[href], input, select, textarea'))
+                    .filter(el => el.offsetParent !== null);
+                return {
+                    aria: document.querySelectorAll('[aria-label], [aria-labelledby], [aria-pressed], [aria-modal]').length,
+                    roles: document.querySelectorAll('[role]').length,
+                    unnamed: interactive.filter(el => !nameOf(el)).length,
+                    imagesNoAlt: document.querySelectorAll('img:not([alt])').length,
+                    liveRegions: document.querySelectorAll('[aria-live]').length,
+                    progressRole: !!document.querySelector('[role="progressbar"]'),
+                    lang: document.documentElement.lang,
+                    dir: document.documentElement.dir,
+                    mediaRules: Array.from(document.styleSheets).reduce((count, sheet) => {
+                        try { return count + Array.from(sheet.cssRules).filter(r => r.type === CSSRule.MEDIA_RULE).length; }
+                        catch (e) { return count; }
+                    }, 0),
+                    terminalSelect: getComputedStyle(document.getElementById('build-terminal-lines')).userSelect
+                };
+            }""")
             report["metrics"]["a11y"] = a11y
             if a11y["mediaRules"] == 0:
                 finding("medium", "Responsive", "لا توجد @media rules؛ الواجهة لا تتكيف مع الدقة/التكبير.")
             if a11y["terminalSelect"] != "text":
                 finding("medium", "Accessibility", "لا يمكن تحديد/نسخ سجل البناء.")
+            if a11y["unnamed"] > 0:
+                finding("high", "Accessibility", f"يوجد {a11y['unnamed']} عنصر تفاعلي بلا اسم وصفي.")
+            if a11y["imagesNoAlt"] > 0:
+                finding("medium", "Accessibility", f"يوجد {a11y['imagesNoAlt']} صورة بلا alt.")
+            if a11y["lang"] != "ar" or a11y["dir"] != "rtl":
+                finding("medium", "Accessibility", "لغة/اتجاه الصفحة غير مضبوطين.")
+            if not a11y["progressRole"]:
+                finding("medium", "Accessibility", "شريط التقدم بلا role=progressbar.")
 
             report["console_errors"] = console_errors
             if console_errors:
