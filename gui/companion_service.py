@@ -111,8 +111,14 @@ def check_long_paths():
 
 def check_licenses_accepted():
     sdk = paths.android_sdk_root()
-    lic_dir = os.path.join(sdk, "licenses")
-    return os.path.exists(lic_dir) and bool(os.listdir(lic_dir))
+    license_file = os.path.join(sdk, "licenses", "android-sdk-license")
+    try:
+        if not os.path.exists(license_file) or os.path.getsize(license_file) == 0:
+            return False
+        with open(license_file, "r", encoding="utf-8", errors="ignore") as handle:
+            return any(line.strip() for line in handle)
+    except Exception:
+        return False
 
 def get_smart_doctor_report():
     """Runs a lightning-fast, comprehensive diagnostic of all components students need for mobile Android courses."""

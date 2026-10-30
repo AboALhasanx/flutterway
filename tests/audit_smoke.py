@@ -24,6 +24,7 @@ APP = ROOT / "gui" / "onboarding_app.py"
 COMPANION = ROOT / "gui" / "companion_service.py"
 VSCODE = ROOT / "gui" / "vscode_integration.py"
 SPEC = ROOT / "FlutterWayNative.spec"
+CLEAN = ROOT / "clean_slate.py"
 HTML = ROOT / "gui" / "onboarding" / "index.html"
 
 
@@ -80,6 +81,10 @@ def static_checks() -> None:
     assert "path_backup.txt" in app_src, "PATH changes must be backed up"
     assert "path_backup.txt" in companion_src, "PATH changes must be backed up"
     assert "flutter_bins" in companion_src, "full reset must match Flutter PATH exactly"
+    assert "android-sdk-license" in companion_src, "license check must verify the real license file"
+    clean_src = CLEAN.read_text(encoding="utf-8")
+    assert "--uninstall-extensions" in clean_src, "extension removal must be opt-in"
+    assert '"flutter" in lower' not in clean_src, "clean slate must not delete unrelated PATH entries"
     print("[static] passed")
 
 

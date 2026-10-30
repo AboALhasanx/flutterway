@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 import json
@@ -37,13 +38,21 @@ def get_user_path():
 def clean_environment():
     print("[1/5] Removing Flutter and duplicates from User PATH via WinRegistry...")
     raw_path = get_user_path()
+    try:
+        backup_dir = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "FlutterWay")
+        os.makedirs(backup_dir, exist_ok=True)
+        with open(os.path.join(backup_dir, "path_backup.txt"), "w", encoding="utf-8") as handle:
+            handle.write(raw_path)
+    except Exception:
+        pass
     parts = [p.strip() for p in raw_path.split(";") if p.strip()]
     
     seen = set()
     cleaned = []
     for p in parts:
         lower = p.lower()
-        if "flutter" in lower:
+        normalized = lower.rstrip("\\/")
+        if normalized.endswith("\\flutter\\bin") or normalized.endswith("/flutter/bin"):
             print(f"  - Removed: {p}")
             continue
         if lower not in seen:
@@ -54,7 +63,7 @@ def clean_environment():
     set_user_path(new_path_str)
     print("  ✓ User PATH cleaned via Registry.")
 
-def clean_vscode():
+def clean_vscode(uninstall_extensions=False):
     print("[2/5] Cleaning VS Code configuration...")
     settings_path = os.path.expandvars(r"%APPDATA%\Code\User\settings.json")
     if os.path.exists(settings_path):
@@ -77,6 +86,10 @@ def clean_vscode():
                 print("  ✓ VS Code settings already clean.")
         except Exception as e:
             print(f"  ! Error updating settings: {e}")
+
+    if not uninstall_extensions:
+        print("  - Skipping VS Code extension uninstall (pass --uninstall-extensions to opt in).")
+        return
 
     print("[3/5] Uninstalling VS Code Flutter/Dart extensions...")
     code_candidates = [
@@ -116,7 +129,12 @@ def clean_desktop_projects():
 def verify():
     print("[5/5] Verifying clean state...")
     raw_path = get_user_path()
-    flutter_in_path = "flutter" in raw_path.lower()
+    flutter_in_path = any(
+        part.lower().rstrip("\\/").endswith("\\flutter\\bin")
+        or part.lower().rstrip("\\/").endswith("/flutter/bin")
+        for part in raw_path.split(";")
+        if part.strip()
+    )
     
     desktop = os.path.expandvars(r"%USERPROFILE%\Desktop")
     has_proj = os.path.exists(os.path.join(desktop, "my_first_app"))
@@ -126,7 +144,14 @@ def verify():
     print("\n✅ Clean slate successfully prepared! Computer is ready for fresh beginner simulation.")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Prepare a clean FlutterWay test slate.")
+    parser.add_argument(
+        "--uninstall-extensions",
+        action="store_true",
+        help="Also uninstall the user's global VS Code Flutter/Dart extensions.",
+    )
+    args = parser.parse_args()
     clean_environment()
-    clean_vscode()
+    clean_vscode(args.uninstall_extensions)
     clean_desktop_projects()
     verify()
