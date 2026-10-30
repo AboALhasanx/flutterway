@@ -1,7 +1,7 @@
 # خطة تحسين UI/UX — FlutterWay
 > **النطاق:** الواجهة وتجربة المبتدئ فقط. **الهوية/اللوغو خارج النطاق حالياً** (بناءً على طلبك).
-> **الحالة:** Phase 0–5 منفّذة ومختبرة. Phase 6 (اختبار طلاب حقيقيين) متبقية.
-> **آخر تحديث:** 2026-10-30 — بعد حالات موحّدة وتدقيق إتاحة Phase 5.
+> **الحالة:** Phase 0–5 منفّذة ومختبرة. Phase 6: عدة الاختبار جاهزة، **لم تُنفَّذ جلسات طلاب بعد**.
+> **آخر تحديث:** 2026-10-30 — بعد تجهيز عدة اختبار المستخدم Phase 6.
 
 ---
 
@@ -15,9 +15,9 @@
 | Phase 3 — Doctor/Projects/Hot Reload | ✅ | Doctor: ملخص + المشاكل فقط وكل الفحوصات مطوية؛ Projects: مشروع نشط أولاً و3 إجراءات؛ Hot Reload: "غيّر هذا النص" + معاينة والمحرر مطوي. |
 | Phase 4 — Visual system | ✅ | توكنز للخط/المسافة/الحركة؛ لا نص تحت 12px؛ body 14px وhero 28px؛ بطاقة USB بعمودين؛ responsive 920/760؛ احترام reduced-motion. |
 | Phase 5 — States/Responsive/A11y | ✅ | حالات loading/empty/error/success موحّدة؛ 0 أزرار بلا اسم و0 صور بلا alt؛ aria-live/progressbar/focus trap/aria-current؛ 860px بلا Scroll أفقي. |
-| Phase 6 — User testing | ◐ | اختبارات آلية (Playwright + جهاز حقيقي)؛ لا اختبار 5 طلاب بعد. |
+| Phase 6 — User testing | 🧰 | عدة كاملة في `docs/USER_TESTING_KIT.md` + نموذج نتائج + CSV + سكربت حساب SUS/SEQ؛ **بانتظار 5 طلاب**. |
 
-**الأدلة الحالية:** `audit_smoke.py`، `student_journey.py` (22 شاشة، 0 ملاحظات، 0 عناصر بلا اسم)، `custom_project_journey.py` (بناء وتثبيت 71MB)، `hot_reload_journey.py` (تعديل سريع حقيقي، 1.37s، تغيّر شاشة الهاتف).
+**الأدلة الحالية:** `audit_smoke.py`، `student_journey.py` (22 شاشة، 0 ملاحظات، 0 عناصر بلا اسم)، `custom_project_journey.py` (بناء وتثبيت 71MB)، `hot_reload_journey.py` (تعديل سريع حقيقي، 1.37s، تغيّر شاشة الهاتف)، وعدة Phase 6 في `docs/USER_TESTING_KIT.md`.
 
 ---
 

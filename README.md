@@ -157,6 +157,8 @@ pyinstaller FlutterWayNative.spec --noconfirm
 
 ## 🧪 أدوات المطور والمختبر (Developer Sandbox & Full Reset)
 
+> تظهر فقط عند تشغيل التطبيق بـ `--dev` أو `FLUTTERWAY_DEV=1`، ومخفية عن واجهة الطالب.
+
 لمطوري الأداة والمختبرين (QA / Devs) الراغبين في اختبار دورة حياة التطبيق ومسح كل ما قام البرنامج بتهيئته ومساعدته للتأكد بنسبة 100% من أنه يهيئ البيئة فعلاً من الصفر:
 
 - **زر نمط المطور في الشريط العلوي (`Dev Reset`):**
@@ -165,6 +167,16 @@ pyinstaller FlutterWayNative.spec --noconfirm
     2. **إعادة تعيين الهاتف ومشاريع التجربة (Soft Reset):** تحذف التطبيق من التابلت ومشاريع التجربة فقط لإعادة اختبار وحش البناء الحقيقي دون المساس بمسارات النظام.
 
 ![لوحة أدوات المطور والمختبر](docs/screenshots/dev_sandbox_modal.png)
+
+---
+
+## 🧑‍🎓 اختبار المستخدم (Phase 6)
+
+عدة اختبار كاملة لخمسة طلاب مبتدئين: سكربت الجلسة، المهام، الموافقة، استبيان SUS، مقياس SEQ، جدول الملاحظات، ومعايير القبول.
+
+- الدليل: [`docs/USER_TESTING_KIT.md`](docs/USER_TESTING_KIT.md)
+- نموذج النتائج: [`docs/USER_TEST_RESULTS_TEMPLATE.md`](docs/USER_TEST_RESULTS_TEMPLATE.md)
+- حساب النتائج: `python tests/user_test_metrics.py`
 
 ---
 
