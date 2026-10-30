@@ -74,6 +74,10 @@ def static_checks() -> None:
     assert "gui.elf_strip" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.elf_strip"
     assert "gui.hot_reload" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.hot_reload"
     assert "class HotReloadSession" in (ROOT / "gui" / "hot_reload.py").read_text(encoding="utf-8")
+    hot_src = (ROOT / "gui" / "hot_reload.py").read_text(encoding="utf-8")
+    assert "used_prebuilt" in hot_src, "hot reload must report prebuilt vs first build"
+    assert "optimize_apk" in hot_src, "unsigned debug APK must be optimized automatically"
+    assert "openHotReload(true)" in html_src, "Home must auto-start hot reload"
     assert "def hot_reload_start" in app_src
     assert "def hot_reload_save" in app_src
     assert 'id="tab-hotreload"' in html_src, "hot reload pane must stay reachable"

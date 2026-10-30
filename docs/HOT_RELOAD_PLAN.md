@@ -39,10 +39,11 @@
 - `start(project_path, serial)`:
   - يتحقق من `lib/main.dart` ووجود الهاتف.
   - يفضّل `build/app/outputs/flutter-apk/app-debug.signed.apk`.
-  - إن وُجد: `flutter run -d <serial> --debug --use-application-binary <apk>`.
-  - إن لم يوجد: رسالة واضحة "ابنِ التطبيق أولاً من تبويب المشاريع" (وليس بناء 636MB صامتاً).
+  - إن لم يوجد لكن `app-debug.apk` موجود: يحسّنه ويوقّعه تلقائياً (71MB).
+  - إن وُجد APK: `flutter run -d <serial> --debug --use-application-binary <apk>`.
+  - إن لم يوجد أي APK: يبني عادياً `flutter run -d <serial> --debug` (حتى 300 ثانية) بدل الفشل.
   - `Popen(stdin=PIPE, stdout=PIPE, stderr=STDOUT)` + خيط قراءة.
-  - ينتظر `r Hot reload.` أو `A Dart VM Service` حتى 120 ثانية.
+  - ينتظر `r Hot reload.` أو `A Dart VM Service` حتى 150 ثانية (أو 300 عند البناء الأول).
 - `save(content, reload=True)`:
   - يكتب `lib/main.dart` بعد التحقق من المسار.
   - إن كان الجلسة جاهزة: يرسل `r\n`.

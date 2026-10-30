@@ -1120,6 +1120,11 @@
       color: var(--warning);
     }
 
+    .hr-quick-hint.error {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
     .hr-quick-hint.ok {
       color: var(--success);
     }
@@ -2086,7 +2091,7 @@
               <div class="home-step-num"><span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span></div>
               <div><div class="home-step-title">افتح VS Code</div><div class="home-step-desc">عدّل مشروعك وابدأ الكتابة.</div></div>
             </button>
-            <button class="home-step" onclick="switchCompanionTab('hotreload')">
+            <button class="home-step" onclick="openHotReload(true)">
               <div class="home-step-num"><span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span></div>
               <div><div class="home-step-title">جرّب Hot Reload</div><div class="home-step-desc">غيّر نصاً وشاهد الهاتف يتحدّث.</div></div>
             </button>
@@ -3117,9 +3122,18 @@
       if (event.key === 'Escape') closeMoreMenu();
     });
 
+    function openHotReload(autoStart) {
+      switchCompanionTab('hotreload');
+      if (autoStart && getActiveProjectPath()) {
+        setTimeout(() => {
+          if (!hrRunning) startHotReload();
+        }, 400);
+      }
+    }
+
     function homePrimaryAction() {
       if (window.appInit && window.appInit.has_setup) {
-        switchCompanionTab('hotreload');
+        openHotReload(true);
       } else {
         switchMainView('wizard');
         showStep(1);
@@ -3271,16 +3285,19 @@
       if (!path) {
         setHrBadge('اختر مشروعاً أولاً', 'danger');
         setHrLog('اختر مشروعاً من تبويب «مشاريع المحاضرات» أولاً، ثم عد إلى هنا.');
+        setHrQuickHint('اختر مشروعاً أولاً من «مشروعي».', 'error');
         return;
       }
       setHrBadge('جاري تشغيل Flutter...', 'warn');
-      setHrLog('جاري تشغيل flutter run وتثبيت APK المصغّر...');
+      setHrLog('جاري تشغيل flutter run وتجهيز الجلسة...');
+      setHrQuickHint('نجهّز الجلسة... أول مرة قد نبني المشروع (دقائق).', '');
       if (!window.pywebview || !window.pywebview.api) return;
       try {
         const res = await window.pywebview.api.hot_reload_start(path);
         if (!res.success) {
           setHrBadge('فشل البدء', 'danger');
           setHrLog(res.error || 'تعذر بدء الجلسة');
+          setHrQuickHint(res.error || 'تعذر بدء الجلسة. تأكد من اتصال الهاتف ثم أعد المحاولة.', 'error');
           return;
         }
         const read = await window.pywebview.api.hot_reload_read();
@@ -3298,6 +3315,7 @@
       } catch (e) {
         setHrBadge('خطأ', 'danger');
         setHrLog(`خطأ: ${e}`);
+        setHrQuickHint(`تعذر بدء الجلسة: ${e}`, 'error');
       }
     }
 

@@ -42,11 +42,18 @@ class HotReloadSession:
         self.project_path = None
         self.serial = None
         self.vm_service = None
+        self.used_prebuilt = False
         self._last_request = 0.0
         self._stop_reader = False
         atexit.register(self.stop)
 
     # ------------------------------------------------------------------ helpers
+    def _command(self, serial: str, apk: str | None) -> list[str]:
+        command = [paths.flutter_bat(), "run", "-d", serial, "--debug"]
+        if apk:
+            command.extend(["--use-application-binary", apk])
+        return command
+
     def _append(self, raw_line: str) -> None:
         line = ANSI_RE.sub("", raw_line).rstrip()
         if not line:
@@ -134,10 +141,16 @@ class HotReloadSession:
                     apk = candidate
                     break
             if not apk:
-                return {
-                    "success": False,
-                    "error": "ابنِ التطبيق أولاً من تبويب مشاريع المحاضرات حتى يتوفر APK مصغّر للـ Hot Reload.",
-                }
+                full_apk = os.path.join(base, "app-debug.apk")
+                if os.path.exists(full_apk):
+                    try:
+                        try:
+                            from gui import android_apk
+                        except ImportError:
+                            import android_apk
+                        apk = android_apk.optimize_apk(full_apk)
+                    except Exception:
+                        apk = full_apk
 
             self.project_path = project_path
             self.serial = serial
@@ -145,10 +158,14 @@ class HotReloadSession:
             self.last_error = None
             self.last_reload_ms = None
             self.ready = False
+            self.used_prebuilt = bool(apk)
             self.running = True
+            command = self._command(serial, apk)
+            if not apk:
+                self._append("لا يوجد APK جاهز — سنبني المشروع الآن. أول مرة قد تأخذ دقائق.")
             try:
                 self.proc = subprocess.Popen(
-                    [paths.flutter_bat(), "run", "-d", serial, "--debug", "--use-application-binary", apk],
+                    command,
                     cwd=project_path,
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
@@ -166,7 +183,7 @@ class HotReloadSession:
                 self.running = False
                 return {"success": False, "error": f"تعذر تشغيل flutter run: {exc}"}
 
-        deadline = time.time() + 150
+        deadline = time.time() + (300 if not self.used_prebuilt else 150)
         while time.time() < deadline:
             with self.lock:
                 if self.ready:
@@ -231,6 +248,7 @@ class HotReloadSession:
                 "last_reload_ms": self.last_reload_ms,
                 "last_error": self.last_error,
                 "vm_service": self.vm_service,
+                "used_prebuilt": self.used_prebuilt,
                 "logs": list(self.logs)[-80:],
             }
 
