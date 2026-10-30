@@ -30,6 +30,7 @@ try:
     from gui import android_sdk
     from gui import android_apk
     from gui import dev_reset
+    from gui import hot_reload
 except ImportError:
     from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     import companion_service
@@ -37,6 +38,7 @@ except ImportError:
     import android_sdk
     import android_apk
     import dev_reset
+    import hot_reload
 
 def _broadcast_environment_change():
     try:
@@ -130,6 +132,7 @@ class OnboardingApi:
             "missing_drivers": False,
             "setup_error": None
         }
+        self.hot_reload = hot_reload.HotReloadSession()
 
     def check_laptop_compatibility(self):
         try:
@@ -1000,6 +1003,32 @@ class OnboardingApi:
         os.environ["FLUTTERWAY_BUILD_MODE"] = mode
         return {"success": True, "mode": mode}
 
+    def _active_serial(self):
+        device = self.state.get("connected_device")
+        if device and device.get("serial"):
+            return device["serial"]
+        devices = companion_service.get_connected_devices()
+        return devices[0]["serial"] if devices else None
+
+    def hot_reload_start(self, project_path=None):
+        path = project_path or self.state.get("project_path") or paths.default_project_path()
+        return self.hot_reload.start(path, self._active_serial())
+
+    def hot_reload_read(self):
+        return self.hot_reload.read_main()
+
+    def hot_reload_save(self, content):
+        return self.hot_reload.save(content)
+
+    def hot_reload_action(self, action):
+        return self.hot_reload.action(action)
+
+    def hot_reload_status(self):
+        return self.hot_reload.status()
+
+    def hot_reload_screenshot(self):
+        return companion_service.capture_device_screenshot_b64(self._active_serial())
+
 # --- Agent Testing Harness for Modern Onboarding UI ---
 def start_harness(api, window_holder):
     def server():
@@ -1059,6 +1088,7 @@ def start_harness(api, window_holder):
                         "btn-run-test", "btn-proceed-to-vscode", "btn-open-vscode", "btn-skip-to-vscode",
                         "btn-nav-wizard", "btn-nav-companion",
                         "btn-tab-doctor", "btn-tab-projects", "btn-tab-rescue", "btn-tab-device", "btn-tab-cheatsheet",
+                        "btn-tab-hotreload", "btn-hr-start", "btn-hr-reload", "btn-hr-restart", "btn-hr-stop", "btn-hr-preview",
                         "btn-doctor-heal-all", "btn-create-lecture-proj", "btn-clean-project", "btn-open-proj-vscode",
                         "btn-rescue-gradle", "btn-rescue-licenses", "btn-rescue-adb", "btn-rescue-longpaths", "btn-rescue-network",
                         "btn-device-ping", "btn-device-screenshot",

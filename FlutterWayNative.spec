@@ -14,6 +14,7 @@ a = Analysis(
         'gui.companion_service',
         'gui.dev_reset',
         'gui.elf_strip',
+        'gui.hot_reload',
         'gui.paths',
         'gui.vscode_integration',
         'psutil',

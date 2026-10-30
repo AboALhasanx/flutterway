@@ -866,6 +866,69 @@
       color: #fff;
     }
 
+    /* HOT RELOAD STUDIO */
+    .hr-card {
+      width: 100%;
+      min-width: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: right;
+    }
+
+    .hr-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hr-editor {
+      flex: 1;
+      min-width: 0;
+      min-height: 340px;
+      background: #0b0f19;
+      color: #e2e8f0;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: 'Consolas', 'Fira Code', monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      direction: ltr;
+      text-align: left;
+      resize: vertical;
+      user-select: text;
+    }
+
+    .hr-log {
+      width: 100%;
+      max-height: 170px;
+      overflow: auto;
+      background: #000;
+      color: #10b981;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: 'Consolas', 'Fira Code', monospace;
+      font-size: 11px;
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      user-select: text;
+    }
+
+    .hr-preview {
+      width: 100%;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      background: #fff;
+    }
+
     /* STEP 4: Cheatsheet */
     .cheatsheet-card {
       width: 100%;
@@ -940,7 +1003,7 @@
       gap: 8px;
       border-bottom: 1px solid var(--card-border);
       padding-bottom: 12px;
-      overflow-x: auto;
+      flex-wrap: wrap;
       width: 100%;
     }
 
@@ -953,6 +1016,7 @@
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -1394,6 +1458,13 @@
             </span>
             <span>مفكرة الطالب والمختصرات</span>
           </button>
+
+          <button id="btn-tab-hotreload" class="comp-tab-btn" onclick="switchCompanionTab('hotreload')">
+            <span class="icon" style="width: 14px; height: 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </span>
+            <span>التحديث الفوري (Hot Reload)</span>
+          </button>
         </div>
 
         <!-- TAB 1: SMART DOCTOR -->
@@ -1702,6 +1773,42 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- TAB 6: HOT RELOAD STUDIO -->
+        <div id="tab-hotreload" class="comp-tab-pane">
+          <div class="hr-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
+              <div>
+                <div class="score-title">استوديو التحديث الفوري (Hot Reload)</div>
+                <div class="score-sub">عدّل الكود داخل التطبيق؛ الهاتف يتحدث تلقائياً بعد توقف الكتابة — بدون زر وبدون Enter.</div>
+              </div>
+              <span id="hr-status-badge" class="level-badge" style="margin: 0; background: var(--warning-bg); color: var(--warning); border-color: var(--warning);">غير متصل</span>
+            </div>
+
+            <div class="hr-toolbar">
+              <span style="font-size: 11px; color: var(--text-muted);">المشروع: <b id="hr-project" style="color: var(--text);">—</b></span>
+              <button id="btn-hr-start" class="btn-primary" style="padding: 8px 16px; font-size: 12px;" onclick="startHotReload()">بدء الجلسة</button>
+              <button id="btn-hr-reload" class="btn-secondary" style="font-size: 12px;" onclick="hotReloadAction('reload')">Hot Reload الآن</button>
+              <button id="btn-hr-restart" class="btn-secondary" style="font-size: 12px;" onclick="hotReloadAction('restart')">Hot Restart</button>
+              <button id="btn-hr-stop" class="btn-secondary" style="font-size: 12px; color: var(--danger);" onclick="hotReloadAction('stop')">إيقاف</button>
+              <label style="font-size: 11px; color: var(--text-muted); display: flex; gap: 6px; align-items: center;">
+                <input type="checkbox" id="hr-auto" checked> تحديث تلقائي عند الكتابة
+              </label>
+              <span id="hr-last-reload" style="font-size: 11px; color: var(--text-muted);">آخر تحديث: —</span>
+            </div>
+
+            <div style="display: flex; gap: 14px; align-items: flex-start; width: 100%;">
+              <textarea id="hr-editor" class="hr-editor" spellcheck="false" oninput="scheduleHotReload()" placeholder="اختر مشروعاً من تبويب المشاريع ثم اضغط بدء الجلسة..."></textarea>
+              <div style="display: flex; flex-direction: column; gap: 8px; width: 190px; flex-shrink: 0;">
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">شاشة الهاتف</div>
+                <img id="hr-preview" class="hr-preview" alt="معاينة الهاتف" style="display: none;" />
+                <button id="btn-hr-preview" class="btn-secondary" style="font-size: 11px; padding: 5px 10px;" onclick="refreshHotReloadPreview()">تحديث المعاينة</button>
+              </div>
+            </div>
+
+            <div id="hr-log" class="hr-log">لم تبدأ الجلسة بعد.</div>
           </div>
         </div>
       </div>
@@ -2266,6 +2373,12 @@
     let progressTimer = null;
     let devicePollInterval = null;
     let detectedDevices = [];
+    let hrPollTimer = null;
+    let hrPreviewTimer = null;
+    let hrAutoTimer = null;
+    let hrSuppressInput = false;
+    let hrLastContent = '';
+    let hrRunning = false;
 
     // Main View Switching (Wizard vs Companion)
     function switchMainView(viewName) {
@@ -2281,6 +2394,7 @@
         runSmartDoctorScan();
         loadRecentProjectsList();
       } else {
+        stopHotReloadPolling();
         showStep(1);
       }
     }
@@ -2296,12 +2410,198 @@
       if (btn) btn.classList.add('active');
       if (pane) pane.classList.add('active');
 
+      if (tabId !== 'hotreload') {
+        stopHotReloadPolling();
+      }
       if (tabId === 'doctor') {
         runSmartDoctorScan();
       } else if (tabId === 'projects') {
         loadRecentProjectsList();
       } else if (tabId === 'device') {
         loadDeviceStudioData();
+      } else if (tabId === 'hotreload') {
+        refreshHotReloadStatus();
+        startHotReloadPolling();
+      }
+    }
+
+    // ========================================================
+    // HOT RELOAD STUDIO
+    // ========================================================
+    function getActiveProjectPath() {
+      if (typeof activeProjPath !== 'undefined' && activeProjPath) return activeProjPath;
+      const text = document.getElementById('active-proj-path')?.innerText || '';
+      return text.includes(':') ? text : null;
+    }
+
+    function setHrBadge(text, kind) {
+      const badge = document.getElementById('hr-status-badge');
+      if (!badge) return;
+      badge.innerText = text;
+      badge.style.background = kind === 'success' ? 'var(--success-bg)' : kind === 'danger' ? 'var(--danger-bg)' : 'var(--warning-bg)';
+      badge.style.color = kind === 'success' ? 'var(--success)' : kind === 'danger' ? 'var(--danger)' : 'var(--warning)';
+      badge.style.borderColor = badge.style.color;
+    }
+
+    function setHrLog(text) {
+      const log = document.getElementById('hr-log');
+      if (log) log.textContent = text;
+    }
+
+    function renderHrStatus(st) {
+      const project = document.getElementById('hr-project');
+      const last = document.getElementById('hr-last-reload');
+      const start = document.getElementById('btn-hr-start');
+      const reload = document.getElementById('btn-hr-reload');
+      const restart = document.getElementById('btn-hr-restart');
+      const stop = document.getElementById('btn-hr-stop');
+      const running = !!(st && st.running);
+      const ready = !!(st && st.ready);
+      hrRunning = running && ready;
+      if (running && ready) setHrBadge('متصل — جاهز', 'success');
+      else if (running) setHrBadge('جاري الاتصال...', 'warn');
+      else setHrBadge('غير متصل', 'warn');
+      if (project) {
+        const path = st?.project_path || getActiveProjectPath() || '—';
+        project.innerText = path === '—' ? '—' : path.split(/[\\/]/).pop();
+        project.title = path;
+      }
+      if (last) last.innerText = st?.last_reload_ms ? `آخر تحديث: ${st.last_reload_ms} ms` : 'آخر تحديث: —';
+      if (start) { start.disabled = running; start.innerText = running ? 'جلسة نشطة' : 'بدء الجلسة'; }
+      if (reload) reload.disabled = !ready;
+      if (restart) restart.disabled = !ready;
+      if (stop) stop.disabled = !running;
+      if (st && st.logs) {
+        const log = document.getElementById('hr-log');
+        if (log) {
+          log.textContent = st.logs.join('\n') || 'لا يوجد سجل بعد.';
+          log.scrollTop = log.scrollHeight;
+        }
+      }
+    }
+
+    async function refreshHotReloadStatus() {
+      if (!window.pywebview || !window.pywebview.api) return;
+      try {
+        const st = await window.pywebview.api.hot_reload_status();
+        renderHrStatus(st);
+      } catch (e) {
+        setHrBadge('تعذر قراءة الحالة', 'danger');
+      }
+    }
+
+    function startHotReloadPolling() {
+      stopHotReloadPolling();
+      refreshHotReloadStatus();
+      hrPollTimer = setInterval(refreshHotReloadStatus, 1200);
+      hrPreviewTimer = setInterval(refreshHotReloadPreview, 2500);
+    }
+
+    function stopHotReloadPolling() {
+      if (hrPollTimer) { clearInterval(hrPollTimer); hrPollTimer = null; }
+      if (hrPreviewTimer) { clearInterval(hrPreviewTimer); hrPreviewTimer = null; }
+    }
+
+    async function startHotReload() {
+      const path = getActiveProjectPath();
+      if (!path) {
+        setHrBadge('اختر مشروعاً أولاً', 'danger');
+        setHrLog('اختر مشروعاً من تبويب «مشاريع المحاضرات» أولاً، ثم عد إلى هنا.');
+        return;
+      }
+      setHrBadge('جاري تشغيل Flutter...', 'warn');
+      setHrLog('جاري تشغيل flutter run وتثبيت APK المصغّر...');
+      if (!window.pywebview || !window.pywebview.api) return;
+      try {
+        const res = await window.pywebview.api.hot_reload_start(path);
+        if (!res.success) {
+          setHrBadge('فشل البدء', 'danger');
+          setHrLog(res.error || 'تعذر بدء الجلسة');
+          return;
+        }
+        const read = await window.pywebview.api.hot_reload_read();
+        if (read.success) {
+          const editor = document.getElementById('hr-editor');
+          hrSuppressInput = true;
+          editor.value = read.content;
+          hrLastContent = read.content;
+          hrSuppressInput = false;
+        }
+        renderHrStatus(res);
+        startHotReloadPolling();
+        refreshHotReloadPreview();
+      } catch (e) {
+        setHrBadge('خطأ', 'danger');
+        setHrLog(`خطأ: ${e}`);
+      }
+    }
+
+    function scheduleHotReload() {
+      if (hrSuppressInput) return;
+      const auto = document.getElementById('hr-auto');
+      if (!auto || !auto.checked) return;
+      if (hrAutoTimer) clearTimeout(hrAutoTimer);
+      hrAutoTimer = setTimeout(saveHotReload, 900);
+    }
+
+    async function saveHotReload() {
+      const editor = document.getElementById('hr-editor');
+      if (!editor) return;
+      if (editor.value === hrLastContent) return;
+      if (!window.pywebview || !window.pywebview.api) return;
+      try {
+        const res = await window.pywebview.api.hot_reload_save(editor.value);
+        if (res.success) {
+          hrLastContent = editor.value;
+          const log = document.getElementById('hr-log');
+          if (log) {
+            log.textContent += `\n${res.reload_sent ? '→ تم إرسال Hot Reload' : '→ تم الحفظ؛ الجلسة غير جاهزة'}`;
+            log.scrollTop = log.scrollHeight;
+          }
+          refreshHotReloadStatus();
+          setTimeout(refreshHotReloadStatus, 1500);
+          setTimeout(refreshHotReloadPreview, 1800);
+        } else {
+          setHrLog(res.error || 'تعذر حفظ الملف');
+        }
+      } catch (e) {
+        setHrLog(`خطأ أثناء الحفظ: ${e}`);
+      }
+    }
+
+    async function hotReloadAction(action) {
+      if (!window.pywebview || !window.pywebview.api) return;
+      try {
+        const res = await window.pywebview.api.hot_reload_action(action);
+        if (!res.success) setHrLog(res.error || res.message || 'تعذر تنفيذ الإجراء');
+        if (action === 'stop') {
+          hrRunning = false;
+          stopHotReloadPolling();
+          setHrBadge('غير متصل', 'warn');
+        } else {
+          refreshHotReloadStatus();
+          setTimeout(refreshHotReloadStatus, 1500);
+          setTimeout(refreshHotReloadPreview, 1800);
+        }
+      } catch (e) {
+        setHrLog(`خطأ: ${e}`);
+      }
+    }
+
+    async function refreshHotReloadPreview() {
+      if (!window.pywebview || !window.pywebview.api) return;
+      try {
+        const res = await window.pywebview.api.hot_reload_screenshot();
+        const img = document.getElementById('hr-preview');
+        if (!img) return;
+        if (res.success && res.data_url) {
+          img.src = res.data_url;
+          img.style.display = 'block';
+        } else {
+          img.style.display = 'none';
+        }
+      } catch (e) {
+        // Preview is optional; do not spam the main log.
       }
     }
 

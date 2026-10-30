@@ -67,6 +67,14 @@ def static_checks() -> None:
     assert "gui.android_sdk" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.android_sdk"
     assert "gui.android_apk" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.android_apk"
     assert "gui.elf_strip" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.elf_strip"
+    assert "gui.hot_reload" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.hot_reload"
+    assert "class HotReloadSession" in (ROOT / "gui" / "hot_reload.py").read_text(encoding="utf-8")
+    assert "def hot_reload_start" in app_src
+    assert "def hot_reload_save" in app_src
+    assert 'id="btn-tab-hotreload"' in html_src
+    assert 'id="hr-editor"' in html_src
+    assert "scheduleHotReload" in html_src
+    assert "startHotReload" in html_src
     assert "def optimize_apk" in (ROOT / "gui" / "android_apk.py").read_text(encoding="utf-8")
     assert "def strip_elf" in (ROOT / "gui" / "elf_strip.py").read_text(encoding="utf-8")
     assert "def install_android_sdk" in (ROOT / "gui" / "android_sdk.py").read_text(encoding="utf-8")
@@ -185,6 +193,13 @@ def python_checks() -> None:
     from gui import companion_service
     from gui import dev_reset
     from gui import android_apk, elf_strip
+    from gui.hot_reload import HotReloadSession
+
+    assert HotReloadSession().status()["running"] is False
+    assert app.OnboardingApi({"window": None}).hot_reload_status()["running"] is False
+    assert not app.OnboardingApi({"window": None}).hot_reload_read()["success"]
+    assert not app.OnboardingApi({"window": None}).hot_reload_save("x")["success"]
+    assert not app.OnboardingApi({"window": None}).hot_reload_action("bad")["success"]
 
     assert elf_strip.strip_elf(b"not an elf") == b"not an elf"
     missing = os.path.join(tempfile.gettempdir(), "fw_missing.apk")
