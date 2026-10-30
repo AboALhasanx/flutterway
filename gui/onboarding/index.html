@@ -813,6 +813,17 @@
       color: #fff;
     }
 
+    .build-step-row.error {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .build-step-row.error .bstep-icon {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+    }
+
     /* STEP 4: Cheatsheet */
     .cheatsheet-card {
       width: 100%;
@@ -2245,7 +2256,25 @@
     }
 
     function renderDoctorReport(rep) {
-      document.getElementById('doctor-score-display').innerText = `${rep.score || 100}%`;
+      rep = rep || {};
+      const score = Number.isFinite(Number(rep.score)) ? Number(rep.score) : 0;
+      const scoreEl = document.getElementById('doctor-score-display');
+      if (scoreEl) {
+        scoreEl.innerText = `${score}%`;
+        const scoreColor = score >= 85 ? 'var(--success)' : score >= 50 ? 'var(--warning)' : 'var(--danger)';
+        const scoreBg = score >= 85 ? 'var(--success-bg)' : score >= 50 ? 'var(--warning-bg)' : 'var(--danger-bg)';
+        scoreEl.style.color = scoreColor;
+        scoreEl.style.borderColor = scoreColor;
+        scoreEl.style.background = scoreBg;
+      }
+      const subtitleEl = document.getElementById('doctor-score-subtitle');
+      if (subtitleEl) {
+        subtitleEl.innerText = score >= 85
+          ? 'كافة أدوات التطوير ومسارات فلاتر وجافا وSDK تعمل بتناغم تام'
+          : score >= 50
+            ? 'بعض الأدوات تحتاج ضبطاً بسيطاً قبل بدء البناء'
+            : 'البيئة غير مكتملة — راجع العناصر الحمراء أدناه';
+      }
       const grid = document.getElementById('doctor-cards-grid');
       grid.innerHTML = '';
 
@@ -2622,6 +2651,7 @@
     }
 
     function handleDeviceResponse(res) {
+      res = res || {};
       const statusText = document.getElementById('device-status-text');
       const statusSub = document.getElementById('device-status-sub');
       const radar = document.getElementById('device-radar-icon');
@@ -2648,8 +2678,23 @@
           statusText.innerText = `الهاتف متصل، لكن يتطلب الموافقة!`;
           statusText.style.color = 'var(--warning)';
           statusSub.innerText = `انظر لشاشة هاتفك الآن واضغط (سماح / Always Allow) لتصحيح USB.`;
+          if (radar) {
+            radar.style.borderColor = 'var(--warning)';
+            radar.style.background = 'var(--warning-bg)';
+            radar.style.color = 'var(--warning)';
+          }
           if (btnRun) btnRun.style.display = 'none';
         }
+      } else {
+        statusText.innerText = 'بانتظار توصيل هاتف أندرويد عبر كيبل USB...';
+        statusText.style.color = 'var(--text)';
+        if (statusSub) statusSub.innerText = 'تأكد من فتح شاشة القفل واختيار "نقل الملفات (File Transfer)" عند التوصيل.';
+        if (radar) {
+          radar.style.borderColor = 'var(--accent)';
+          radar.style.background = 'var(--highlight)';
+          radar.style.color = 'var(--accent)';
+        }
+        if (btnRun) btnRun.style.display = 'none';
       }
     }
 
@@ -2751,6 +2796,25 @@
       const consoleBox = document.getElementById('build-console');
       const benchmarkCard = document.getElementById('benchmark-card');
       const s3 = document.getElementById('bstep-3');
+      const btnRun = document.getElementById('btn-run-test');
+      const ctrlBtns = document.getElementById('device-ctrl-btns');
+      const taskActive = document.getElementById('build-task-active');
+      const ok = !!res && res.success === true && res.installed_ok === true;
+
+      if (!ok) {
+        if (s3) {
+          s3.className = 'build-step-row error';
+          s3.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+        }
+        if (taskActive) taskActive.innerText = 'Build Failed';
+        const reason = (res && (res.message || res.error)) || 'فشل البناء أو تثبيت التطبيق على الهاتف. راجع سجل الأخطاء أعلاه.';
+        appendLiveBuildLog(`[ERROR] ${reason}`);
+        if (consoleBox) consoleBox.style.display = 'block';
+        if (benchmarkCard) benchmarkCard.style.display = 'none';
+        if (btnRun) btnRun.style.display = 'inline-flex';
+        if (ctrlBtns) ctrlBtns.style.display = 'flex';
+        return;
+      }
 
       if (s3) {
         s3.className = 'build-step-row done';
@@ -2758,8 +2822,8 @@
       }
 
       setTimeout(() => {
-        consoleBox.style.display = 'none';
-        benchmarkCard.style.display = 'block';
+        if (consoleBox) consoleBox.style.display = 'none';
+        if (benchmarkCard) benchmarkCard.style.display = 'block';
         if (res.device_name) {
           document.getElementById('benchmark-head-text').innerText = `التطبيق يعمل الآن بنجاح على شاشة ${res.device_name}!`;
         }

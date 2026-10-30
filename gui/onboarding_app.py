@@ -5,6 +5,7 @@ import time
 import socket
 import threading
 import subprocess
+import shutil
 import webview
 import winreg
 
@@ -346,7 +347,11 @@ class OnboardingApi:
             "success": installed_ok,
             "device_name": f"{manufacturer} {device_name}".strip(),
             "installed_ok": installed_ok,
-            "message": f"تم تشغيل التطبيق بنجاح على {manufacturer} {device_name}!"
+            "message": (
+                f"تم تشغيل التطبيق بنجاح على {manufacturer} {device_name}!"
+                if installed_ok else
+                "تعذر تثبيت أو تشغيل التطبيق على الهاتف. راجع اتصال USB وسجل الأخطاء."
+            )
         }
 
     def start_real_gradle_build(self, serial=None):
@@ -564,6 +569,13 @@ class OnboardingApi:
             secs = int(elapsed_total % 60)
             time_formatted = f"{mins}د و {secs}ث ({elapsed_total} ثانية)" if mins > 0 else f"{elapsed_total} ثانية"
 
+            if build_success and apk_exists and installed_ok:
+                build_message = f"تم بناء وتشغيل التطبيق بنجاح على {manufacturer} {device_model}!"
+            elif build_success and apk_exists:
+                build_message = f"تم بناء التطبيق بنجاح، لكن تعذر تثبيته على {manufacturer} {device_model}."
+            else:
+                build_message = "فشل بناء التطبيق. راجع سجل الأخطاء أعلاه."
+
             res = {
                 "success": build_success and apk_exists,
                 "device_name": f"{manufacturer} {device_model}".strip(),
@@ -572,7 +584,7 @@ class OnboardingApi:
                 "apk_size": f"{apk_size_mb} MB",
                 "ram_usage": "38 MB",
                 "fps": "60 FPS",
-                "message": f"تم بناء وتشغيل التطبيق بنجاح على {manufacturer} {device_model}!"
+                "message": build_message
             }
 
             if win:
@@ -920,13 +932,19 @@ def apply_window_icon(window):
     except Exception:
         pass
 
+def harness_enabled():
+    """Enable the localhost agent harness only when explicitly requested."""
+    return os.environ.get("FLUTTERWAY_HARNESS") == "1" or "--harness" in sys.argv[1:]
+
+
 def main():
     html_path = get_html_path()
     window_holder = {"window": None}
     api = OnboardingApi(window_holder)
 
-    # Start Harness IPC
-    start_harness(api, window_holder)
+    # Start the localhost harness only in explicit developer/testing mode.
+    if harness_enabled():
+        start_harness(api, window_holder)
 
     # Create native standalone window using Windows Edge WebView2
     window = webview.create_window(
