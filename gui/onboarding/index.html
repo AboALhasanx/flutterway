@@ -867,7 +867,66 @@
       height: 100%;
       width: 0%;
       background: linear-gradient(90deg, var(--accent) 0%, #29b6f6 100%);
-      transition: width 0.3s ease;
+      transition: width 0.12s linear;
+    }
+
+    .progress-detail {
+      width: 100%;
+      min-height: 18px;
+      margin-top: -8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .progress-wait {
+      display: none;
+      width: 100%;
+      margin-top: -8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--warning);
+      text-align: right;
+      background: var(--warning-bg);
+      border-right: 3px solid var(--warning);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .progress-wait.slide-out {
+      animation: wait-out 0.25s ease forwards;
+    }
+
+    .progress-wait.slide-in {
+      animation: wait-in 0.3s ease;
+    }
+
+    @keyframes wait-out {
+      to { opacity: 0; transform: translateX(18px); }
+    }
+
+    @keyframes wait-in {
+      from { opacity: 0; transform: translateX(-18px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .progress-bar-container {
+      position: relative;
+    }
+
+    .progress-bar-container.stalled::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+      animation: progress-shimmer 1.4s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes progress-shimmer {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(100%); }
     }
 
     .checklist {
@@ -992,6 +1051,16 @@
       flex-direction: column;
       gap: 8px;
       font-size: 12px;
+    }
+
+    .build-expectation {
+      width: 100%;
+      max-width: 520px;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 8px;
     }
 
     .build-log-details {
@@ -2659,6 +2728,9 @@
             <div id="progress-pct" style="font-size: 15px; font-weight: 900; color: var(--accent);">0%</div>
           </div>
 
+          <div id="progress-detail" class="progress-detail" aria-live="polite"></div>
+          <div id="progress-wait" class="progress-wait" role="status" aria-live="polite"></div>
+
           <div class="progress-bar-container" id="progress-bar" role="progressbar" aria-labelledby="progress-text" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
             <div id="progress-fill" class="progress-bar-fill"></div>
           </div>
@@ -2822,7 +2894,11 @@
           </div>
 
           <!-- Action Buttons -->
-          <button id="btn-run-test" class="btn-primary" style="display: none; padding: 14px 44px; font-size: 15px;" onclick="runRealGradleBuild()">
+          <div id="first-build-hint" class="build-expectation" style="display: none;">
+          أول بناء قد يأخذ 10–20 دقيقة حسب سرعة النت. البناء التالي أسرع.
+        </div>
+
+        <button id="btn-run-test" class="btn-primary" style="display: none; padding: 14px 44px; font-size: 15px;" onclick="runRealGradleBuild()">
             <span class="icon" style="width: 16px; height: 16px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
             <span>ابدأ بناء وتجربة التطبيق على هاتفي المتصل الآن</span>
           </button>
@@ -3038,7 +3114,16 @@
     let currentTheme = 'dark';
     let currentProgress = 0;
     let targetProgress = 0;
+    let displayedProgress = 0;
     let progressTimer = null;
+    let lastProgressAt = 0;
+    let lastWaitChange = 0;
+    let waitMessageIndex = 0;
+    const PROGRESS_WAIT_MESSAGES = [
+      'الشغل شغال بالخلفية... انتظر شوية.',
+      'التنزيل يحتاج وقت حسب سرعة النت.',
+      'لا تغلق النافذة — نكمل التجهيز.',
+    ];
     let devicePollInterval = null;
     let detectedDevices = [];
     let hrPollTimer = null;
@@ -4051,8 +4136,14 @@
 
       if (stepNum === 3) {
         setupUiRunning = false;
+        if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+        const waitEl = document.getElementById('progress-wait');
+        if (waitEl) waitEl.style.display = 'none';
+        const barContainer = document.querySelector('.progress-bar-container');
+        if (barContainer) barContainer.classList.remove('stalled');
         startDevicePolling();
       } else {
+        if (stepNum !== 2 && progressTimer) { clearInterval(progressTimer); progressTimer = null; }
         stopDevicePolling();
       }
 
@@ -4128,6 +4219,7 @@
       if (setupUiRunning) return;
       setupUiRunning = true;
       resetSetupError();
+      resetProgressDisplay();
       showStep(2);
       if (!window.pywebview || !window.pywebview.api) return;
       try {
@@ -4182,6 +4274,11 @@
       if (pct) pct.style.color = 'var(--danger)';
       const fill = document.getElementById('progress-fill');
       if (fill) fill.style.background = 'var(--danger)';
+      if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+      const waitEl = document.getElementById('progress-wait');
+      if (waitEl) waitEl.style.display = 'none';
+      const barContainer = document.querySelector('.progress-bar-container');
+      if (barContainer) barContainer.classList.remove('stalled');
       setupUiRunning = false;
     }
 
@@ -4200,16 +4297,104 @@
       }
     }
 
-    function updateProgress(percent, statusText, chkStep) {
+    function paintProgress() {
       const fill = document.getElementById('progress-fill');
-      const text = document.getElementById('progress-text');
       const pct = document.getElementById('progress-pct');
-      const bar = document.getElementById('progress-bar');
+      const value = Math.max(0, Math.min(100, displayedProgress));
+      if (fill) fill.style.width = `${value}%`;
+      if (pct) pct.innerText = `${Math.floor(value)}%`;
+    }
 
-      if (bar) bar.setAttribute('aria-valuenow', String(percent));
-      if (fill) fill.style.width = `${percent}%`;
-      if (text) text.innerText = statusText;
-      if (pct) pct.innerText = `${percent}%`;
+    function rotateWaitMessage(force) {
+      const waitEl = document.getElementById('progress-wait');
+      if (!waitEl) return;
+      const now = Date.now();
+      if (!force && now - lastWaitChange < 6000) return;
+      lastWaitChange = now;
+      const next = PROGRESS_WAIT_MESSAGES[waitMessageIndex % PROGRESS_WAIT_MESSAGES.length];
+      waitMessageIndex += 1;
+      waitEl.classList.remove('slide-in');
+      waitEl.classList.add('slide-out');
+      setTimeout(() => {
+        waitEl.innerText = next;
+        waitEl.classList.remove('slide-out');
+        waitEl.classList.add('slide-in');
+      }, 260);
+    }
+
+    function progressTick() {
+      const diff = targetProgress - displayedProgress;
+      if (diff > 0.05) {
+        displayedProgress = Math.min(targetProgress, displayedProgress + Math.max(0.25, diff * 0.35));
+      } else if (Date.now() - lastProgressAt > 9000 && displayedProgress < targetProgress + 2) {
+        displayedProgress = Math.min(targetProgress + 2, displayedProgress + 0.08);
+      }
+      paintProgress();
+
+      const barContainer = document.querySelector('.progress-bar-container');
+      const waitEl = document.getElementById('progress-wait');
+      const step2Active = document.getElementById('step-2')?.classList.contains('active');
+      const stalled = Date.now() - lastProgressAt > 8000;
+      if (barContainer) barContainer.classList.toggle('stalled', stalled && step2Active);
+
+      if (waitEl && step2Active && targetProgress < 100) {
+        waitEl.style.display = 'block';
+        rotateWaitMessage(false);
+      } else if (waitEl) {
+        waitEl.style.display = 'none';
+        waitEl.classList.remove('slide-in', 'slide-out');
+      }
+    }
+
+    function ensureProgressTimer() {
+      if (!progressTimer) progressTimer = setInterval(progressTick, 100);
+    }
+
+    function resetProgressDisplay() {
+      targetProgress = 0;
+      displayedProgress = 0;
+      lastProgressAt = Date.now();
+      lastWaitChange = 0;
+      waitMessageIndex = 0;
+      paintProgress();
+      const detail = document.getElementById('progress-detail');
+      if (detail) detail.innerText = '';
+      const waitEl = document.getElementById('progress-wait');
+      if (waitEl) {
+        waitEl.style.display = 'none';
+        waitEl.innerText = '';
+        waitEl.classList.remove('slide-in', 'slide-out');
+      }
+      const barContainer = document.querySelector('.progress-bar-container');
+      if (barContainer) barContainer.classList.remove('stalled');
+      const bar = document.getElementById('progress-bar');
+      if (bar) bar.setAttribute('aria-valuenow', '0');
+    }
+
+    function updateProgress(percent, statusText, chkStep) {
+      const text = document.getElementById('progress-text');
+      const detail = document.getElementById('progress-detail');
+      const bar = document.getElementById('progress-bar');
+      const numeric = Math.max(0, Math.min(100, Number(percent) || 0));
+
+      if (numeric < displayedProgress - 0.5) displayedProgress = numeric;
+      targetProgress = numeric;
+      lastProgressAt = Date.now();
+      if (bar) bar.setAttribute('aria-valuenow', String(numeric));
+
+      const raw = String(statusText || '');
+      const match = raw.match(/\(?\s*(\d{1,3})\s*%\s*\)?/);
+      let main = raw;
+      let sub = '';
+      if (match) {
+        main = raw.replace(match[0], '').replace(/\s{2,}/g, ' ').trim();
+        if (!main) main = 'جاري التنزيل...';
+        sub = `هذه المرحلة: ${match[1]}%`;
+      }
+      if (text) text.innerText = main;
+      if (detail) detail.innerText = sub;
+      ensureProgressTimer();
+      paintProgress();
 
       for (let i = 1; i <= 4; i++) {
         const item = document.getElementById(`chk-step-${i}`);
@@ -4281,6 +4466,8 @@
             btnRun.style.display = allowed ? 'inline-flex' : 'none';
             if (buildState === 'failed') setActionLabel(btnRun, 'أعد المحاولة');
           }
+          const firstHint = document.getElementById('first-build-hint');
+          if (firstHint) firstHint.style.display = buildState === 'idle' ? 'block' : 'none';
         } else if (dev.status === 'unauthorized') {
           statusText.innerText = `الهاتف متصل، لكن يتطلب الموافقة!`;
           statusText.style.color = 'var(--warning)';
@@ -4431,6 +4618,8 @@
       if (buildState === 'running') return;
       buildState = 'running';
       resetBuildUi();
+      const firstHint = document.getElementById('first-build-hint');
+      if (firstHint) firstHint.style.display = 'none';
       document.getElementById('device-guide-box').style.display = 'none';
       document.getElementById('device-ctrl-btns').style.display = 'none';
       if (!window.pywebview || !window.pywebview.api) {
@@ -4537,6 +4726,8 @@
       buildState = 'success';
       setBuildStep(3, 'done');
       setBuildCta('hidden');
+      const firstHint = document.getElementById('first-build-hint');
+      if (firstHint) firstHint.style.display = 'none';
       if (taskActive) taskActive.innerText = 'Build Succeeded';
 
       setTimeout(() => {

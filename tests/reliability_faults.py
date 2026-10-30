@@ -34,6 +34,26 @@ def new_page(browser):
     return page
 
 
+def test_progress_smooth_and_rotating(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("""() => {
+        switchMainView('wizard'); showStep(2); resetProgressDisplay();
+        updateProgress(10, 'نبدأ التجهيز...', 1);
+        updateProgress(80, 'جاري تنزيل أدوات Android SDK... 57%', 3);
+    }""")
+    page.wait_for_timeout(250)
+    shown = page.evaluate("parseInt(document.getElementById('progress-pct').innerText)")
+    check("progress: not an instant jump", shown < 80, f"shown={shown}")
+    main = page.locator("#progress-text").inner_text()
+    detail = page.locator("#progress-detail").inner_text()
+    check("progress: stage percent separated", "57" not in main and "57" in detail, f"main={main} detail={detail}")
+    page.wait_for_timeout(350)
+    wait_text = page.locator("#progress-wait").inner_text()
+    check("progress: rotating wait message", bool(wait_text.strip()), f"text={wait_text}")
+    check("progress: slide-in class", "slide-in" in (page.locator("#progress-wait").get_attribute("class") or ""))
+    page.close()
+
+
 def test_setup_guard_and_error_details(browser) -> None:
     page = new_page(browser)
     page.evaluate("""async () => {
@@ -245,6 +265,7 @@ def main() -> int:
         tests = [
             test_driver_alert_truth,
             test_setup_guard_and_error_details,
+            test_progress_smooth_and_rotating,
             test_build_success_loop,
             test_build_double_start,
             test_build_retry_resets,

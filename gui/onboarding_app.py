@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import re
 import time
 import socket
 import threading
@@ -96,6 +97,13 @@ def find_jdk():
 
 JDK_PORTABLE_URL = "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jdk/hotspot/normal/eclipse?project=jdk"
 JDK_MIN_ZIP_BYTES = 100 * 1024 * 1024
+
+
+def _percent_from_text(text):
+    match = re.search(r"(\d{1,3})\s*%", text or "")
+    if not match:
+        return None
+    return max(0, min(100, int(match.group(1))))
 
 
 def _jdk_report(progress, message):
@@ -831,7 +839,11 @@ class OnboardingApi:
 
                 # Stage 2: Java (JDK 21) & Gradle Toolchain (18% - 42%) -> Checklist Item 2
                 self._update_ui(win, 24, "نثبّت Java وأدوات بناء أندرويد...", 2)
-                jdk_path = ensure_jdk(progress=lambda message: self._update_ui(win, 24, message, 2))
+                def jdk_progress(message):
+                    sub = _percent_from_text(message)
+                    overall = 24 if sub is None else 24 + int(sub * 16 / 100)
+                    self._update_ui(win, overall, message, 2)
+                jdk_path = ensure_jdk(progress=jdk_progress)
                 if not jdk_path:
                     fail("تعذر تجهيز Java 21. تأكد من اتصال الإنترنت ثم أعد المحاولة.", 24)
                     return
@@ -888,8 +900,12 @@ class OnboardingApi:
 
                 # Stage 3.5: Android SDK (platform-tools, platforms, build-tools)
                 self._update_ui(win, 78, "نجهّز أدوات أندرويد (Android SDK)...", 3)
+                def sdk_progress(message):
+                    sub = _percent_from_text(message)
+                    overall = 80 if sub is None else 80 + int(sub * 6 / 100)
+                    self._update_ui(win, overall, message, 3)
                 sdk_result = android_sdk.install_android_sdk(
-                    progress=lambda message: self._update_ui(win, 80, message, 3)
+                    progress=sdk_progress
                 )
                 if not sdk_result.get("success"):
                     fail(sdk_result.get("error", "تعذر تجهيز Android SDK. تأكد من اتصال الإنترنت ثم أعد المحاولة."), 80)
