@@ -120,6 +120,10 @@ def main() -> int:
     if size < 5 * 1024 * 1024:
         print("APK looks too small:", size)
         return 9
+    artifact_dir = Path(os.environ.get("GITHUB_WORKSPACE", ROOT)) / "artifacts"
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(apk, artifact_dir / "app-debug.apk")
+    print("copied to:", artifact_dir / "app-debug.apk")
     print(f"total seconds: {round(time.time() - started, 1)}")
     print("ANDROID_BUILD_OK")
     return 0
