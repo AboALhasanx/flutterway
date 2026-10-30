@@ -34,6 +34,34 @@ def new_page(browser):
     return page
 
 
+def test_report_modal(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("""() => {
+        window.__clientErrors = 0;
+        window.pywebview.api.report_client_error = async () => { window.__clientErrors += 1; return {success: true}; };
+        window.pywebview.api.open_error_report = async (payload) => ({
+            success: true, opened: false,
+            github_url: 'https://github.com/AboALhasanx/flutterway/issues/new?title=test',
+            zip_path: 'C:\\\\temp\\\\report.zip', markdown: 'report'
+        });
+        openReportModal('setup', 'تعذر التجهيز', 'Error: pub get failed');
+    }""")
+    page.wait_for_timeout(150)
+    check("report-modal: visible", page.locator("#report-modal").is_visible())
+    check("report-modal: error summary", "تعذر التجهيز" in page.locator("#report-summary").inner_text())
+    page.fill("#report-description", "ضغطت ابدأ التجهيز")
+    page.click("#btn-report-github")
+    page.wait_for_timeout(250)
+    check("report-modal: github result", page.locator("#report-result").is_visible())
+    check("report-modal: result link", "issues/new" in (page.locator("#report-result-link a").get_attribute("href") or ""))
+    page.keyboard.press("Escape")
+    check("report-modal: escape closes", not page.locator("#report-modal").is_visible())
+    page.evaluate("window.dispatchEvent(new ErrorEvent('error', {message:'boom', error:new Error('boom')}))")
+    page.wait_for_timeout(150)
+    check("report-modal: client error logged", page.evaluate("window.__clientErrors") == 1)
+    page.close()
+
+
 def test_progress_smooth_and_rotating(browser) -> None:
     page = new_page(browser)
     page.evaluate("""() => {
@@ -286,6 +314,7 @@ def main() -> int:
         browser = playwright.chromium.launch(executable_path=str(CHROMIUM))
         tests = [
             test_driver_alert_truth,
+            test_report_modal,
             test_setup_guard_and_error_details,
             test_progress_smooth_and_rotating,
             test_build_progress_mapping,

@@ -9,6 +9,7 @@ import subprocess
 import shutil
 import zipfile
 import urllib.request
+import traceback
 import webview
 import winreg
 
@@ -34,6 +35,7 @@ try:
     from gui import android_apk
     from gui import dev_reset
     from gui import hot_reload
+    from gui import diagnostics
 except ImportError:
     from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     import companion_service
@@ -42,6 +44,7 @@ except ImportError:
     import android_apk
     import dev_reset
     import hot_reload
+    import diagnostics
 
 def _broadcast_environment_change():
     try:
@@ -253,6 +256,7 @@ class OnboardingApi:
             "setup_running": False
         }
         self.hot_reload = hot_reload.HotReloadSession()
+        diagnostics.configure_logging()
 
     def check_laptop_compatibility(self):
         try:
@@ -779,11 +783,16 @@ class OnboardingApi:
                     win.evaluate_js(f"finishRealBuild({json.dumps(res)});")
                 except Exception:
                     pass
+            diagnostics.log(
+                f"Build finished: success={res['success']} installed={res['installed_ok']} "
+                f"launched={res['launched_ok']} rc={build_returncode} msg={build_message}"
+            )
 
         def run_build_worker():
             try:
                 build_worker()
             except Exception as e:
+                diagnostics.log(f"Build worker crashed: {e}\n{traceback.format_exc()}", "error")
                 if win:
                     try:
                         failure = {
@@ -820,6 +829,7 @@ class OnboardingApi:
             def fail(message, percent=0):
                 self.state["is_complete"] = False
                 self.state["setup_error"] = message
+                diagnostics.log(f"Setup failed at {percent}%: {message}", "error")
                 try:
                     print(f"[Onboarding] FAILED: {message}")
                 except Exception:
@@ -1237,6 +1247,59 @@ class OnboardingApi:
     def hot_reload_screenshot(self):
         return companion_service.capture_device_screenshot_b64(self._active_serial())
 
+    # ------------------------------------------------------------------ diagnostics
+    def _make_error_report(self, payload=None):
+        payload = payload or {}
+        message = payload.get("message") or payload.get("description") or "بلاغ يدوي من المستخدم"
+        return diagnostics.build_report(
+            message=message,
+            stack=payload.get("stack", ""),
+            phase=payload.get("phase", "manual"),
+            description=payload.get("description", ""),
+            include_logs=bool(payload.get("include_logs", True)),
+            source=payload.get("source", "app"),
+            extra=payload.get("extra") or {},
+        )
+
+    def report_client_error(self, payload=None):
+        report = diagnostics.capture_client_error(payload or {})
+        return {"success": True, "message": report.get("message", "")}
+
+    def get_error_report(self, payload=None):
+        report = self._make_error_report(payload)
+        return {
+            "success": True,
+            "report": report,
+            "markdown": diagnostics.report_markdown(report),
+            "github_url": diagnostics.github_issue_url(report),
+            "info": diagnostics.diagnostics_info(),
+        }
+
+    def open_error_report(self, payload=None):
+        report = self._make_error_report(payload)
+        zip_path = diagnostics.save_report_zip(report)
+        url = diagnostics.github_issue_url(report)
+        opened = diagnostics.open_github_issue(report)
+        return {
+            "success": True,
+            "opened": opened,
+            "github_url": url,
+            "zip_path": zip_path,
+            "markdown": diagnostics.report_markdown(report),
+        }
+
+    def save_error_report(self, payload=None):
+        report = self._make_error_report(payload)
+        zip_path = diagnostics.save_report_zip(report)
+        return {"success": True, "zip_path": zip_path, "markdown": diagnostics.report_markdown(report)}
+
+    def get_diagnostics_info(self):
+        return diagnostics.diagnostics_info()
+
+    def copy_error_report(self, payload=None):
+        report = self._make_error_report(payload)
+        return {"success": True, "markdown": diagnostics.report_markdown(report)}
+
 # --- Agent Testing Harness for Modern Onboarding UI ---
 def start_harness(api, window_holder):
     def server():
@@ -1349,6 +1412,8 @@ def harness_enabled():
 
 
 def main():
+    diagnostics.install_exception_hooks()
+    diagnostics.log("FlutterWay starting")
     html_path = get_html_path()
     window_holder = {"window": None}
     api = OnboardingApi(window_holder)

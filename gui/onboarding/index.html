@@ -390,6 +390,75 @@
       color: var(--text);
     }
 
+    .report-summary {
+      max-height: 170px;
+      overflow: auto;
+      margin: 0 0 12px;
+      padding: 10px;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      color: var(--text-muted);
+      user-select: text;
+      direction: auto;
+    }
+
+    .report-textarea {
+      width: 100%;
+      min-height: 90px;
+      resize: vertical;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .report-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .report-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .report-status {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-top: 10px;
+    }
+
+    .report-result {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      background: var(--success-bg);
+      border: 1px solid var(--success);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--success);
+      line-height: 1.6;
+    }
+
+    .report-result a {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
     .dev-action-box {
       background: var(--bg);
       border: 1px solid var(--card-border);
@@ -2183,6 +2252,7 @@
               <button class="more-item" onclick="switchCompanionTab('device')">استوديو الهاتف المتصل</button>
               <button class="more-item" onclick="switchCompanionTab('hotreload')">التحديث الفوري (Hot Reload)</button>
               <button class="more-item" onclick="switchMainView('wizard')">معالج البداية</button>
+              <button class="more-item" onclick="openReportModal('manual')">أبلغ عن مشكلة</button>
             </div>
           </div>
         </div>
@@ -2809,6 +2879,7 @@
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
               <button class="btn-secondary" onclick="startSetup()" style="font-size: 12px;">إعادة المحاولة</button>
               <button id="btn-copy-setup-error" class="btn-secondary" onclick="copySetupError()" style="font-size: 12px;">نسخ الخطأ</button>
+              <button class="btn-secondary" onclick="openSetupErrorReport()" style="font-size: 12px;">أبلغ عن المشكلة</button>
             </div>
           </div>
         </div>
@@ -2909,6 +2980,10 @@
                 <span>تثبيت التطبيق وتشغيله على هاتفك</span>
               </div>
             </div>
+
+            <button id="btn-build-report" class="btn-secondary" style="display: none; margin-top: 10px; font-size: 12px;" onclick="openBuildErrorReport()">
+              أبلغ عن مشكلة البناء
+            </button>
 
             <!-- Real build log, collapsed by default for beginners -->
             <details id="build-log-details" class="build-log-details">
@@ -3158,6 +3233,45 @@
         <div id="dev-console-box" style="display: none; background: #000; border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; max-height: 140px; overflow-y: auto; direction: ltr; text-align: left; font-family: monospace; font-size: 12px; color: #10b981;">
           <div id="dev-console-lines"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORT A PROBLEM MODAL -->
+  <div id="report-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="report-title" style="display: none;">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="icon" style="width: 16px; height: 16px; color: var(--warning);">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </span>
+          <span id="report-title" style="font-size: 16px; font-weight: 800; color: var(--text);">أبلغ عن مشكلة</span>
+        </div>
+        <button class="modal-close-btn" onclick="closeReportModal()" aria-label="إغلاق">×</button>
+      </div>
+
+      <p class="report-note">
+        ساعدنا نصلح المشكلة. راجع البيانات قبل الإرسال — ما نرسل اسمك أو ملفاتك أو كود مشروعك.
+      </p>
+      <pre id="report-summary" class="report-summary"></pre>
+
+      <label for="report-description" style="display: block; font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 6px;">شنو كنت تسوي لما صار الخطأ؟</label>
+      <textarea id="report-description" class="report-textarea" placeholder="مثلاً: ضغطت ابدأ التجهيز ووقفت عند 24%..."></textarea>
+
+      <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+        <input type="checkbox" id="report-include-logs" checked>
+        أرفق آخر سجل تشخيص (منقّى من المسارات الشخصية)
+      </label>
+
+      <div class="report-actions">
+        <button id="btn-report-github" class="btn-primary" style="padding: 10px 18px; font-size: 12px;" onclick="submitGithubReport()">فتح بلاغ في GitHub</button>
+        <button id="btn-report-save" class="btn-secondary" style="font-size: 12px;" onclick="saveReportFile()">حفظ ملف تشخيص</button>
+        <button id="btn-report-copy" class="btn-secondary" style="font-size: 12px;" onclick="copyReportText()">نسخ التشخيص</button>
+      </div>
+      <div id="report-status" class="report-status" role="status" aria-live="polite"></div>
+      <div id="report-result" class="report-result">
+        <div id="report-result-text"></div>
+        <div id="report-result-link" style="margin-top: 6px;"></div>
       </div>
     </div>
   </div>
@@ -4357,6 +4471,229 @@
       }
     }
 
+    // ========================================================
+    // ERROR REPORTING (local + opt-in GitHub issue)
+    // ========================================================
+    let reportContext = { phase: 'manual', message: '', stack: '' };
+    let reportOpener = null;
+    let lastClientError = null;
+    let reportBusy = false;
+    let lastClientKey = '';
+
+    function rememberClientError(payload) {
+      const key = `${payload.message || ''}|${(payload.stack || '').slice(0, 200)}`;
+      if (key === lastClientKey) return;
+      lastClientKey = key;
+      lastClientError = payload;
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.report_client_error) {
+        try {
+          window.pywebview.api.report_client_error(payload);
+        } catch (e) {}
+      }
+    }
+
+    window.addEventListener('error', event => {
+      if (!event) return;
+      rememberClientError({
+        message: event.message || 'JS error',
+        stack: (event.error && event.error.stack) || '',
+        phase: activeCompanionTab || 'webview',
+        source: event.filename || '',
+        line: event.lineno || 0
+      });
+    });
+
+    window.addEventListener('unhandledrejection', event => {
+      const reason = event && event.reason;
+      rememberClientError({
+        message: (reason && (reason.message || String(reason))) || 'Unhandled promise rejection',
+        stack: (reason && reason.stack) || '',
+        phase: activeCompanionTab || 'webview'
+      });
+    });
+
+    function openReportModal(phase, message, stack) {
+      reportContext = {
+        phase: phase || 'manual',
+        message: message || (lastClientError && lastClientError.message) || '',
+        stack: stack || (lastClientError && lastClientError.stack) || ''
+      };
+      if (phase === 'setup') {
+        const summary = document.getElementById('setup-error-text')?.innerText || '';
+        const details = document.getElementById('setup-error-details')?.innerText || '';
+        reportContext.message = message || summary;
+        reportContext.stack = stack || details;
+      }
+      reportOpener = document.activeElement;
+      const modal = document.getElementById('report-modal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      const summary = document.getElementById('report-summary');
+      if (summary) {
+        summary.innerText = [
+          `المرحلة: ${reportContext.phase}`,
+          reportContext.message || 'بلاغ يدوي',
+          reportContext.stack ? `\n${reportContext.stack.slice(0, 1200)}` : ''
+        ].join('\n').trim();
+      }
+      const desc = document.getElementById('report-description');
+      if (desc) desc.value = '';
+      const logs = document.getElementById('report-include-logs');
+      if (logs) logs.checked = true;
+      const status = document.getElementById('report-status');
+      if (status) status.innerText = '';
+      const result = document.getElementById('report-result');
+      if (result) result.style.display = 'none';
+      setReportBusy(false);
+      if (desc) desc.focus();
+    }
+
+    function closeReportModal() {
+      const modal = document.getElementById('report-modal');
+      if (modal) modal.style.display = 'none';
+      if (reportOpener && typeof reportOpener.focus === 'function') reportOpener.focus();
+    }
+
+    function openSetupErrorReport() {
+      openReportModal('setup');
+    }
+
+    function openBuildErrorReport() {
+      const message = document.getElementById('build-task-active')?.innerText || 'فشل البناء';
+      const lines = (document.getElementById('build-terminal-lines')?.innerText || '').split('\n');
+      openReportModal('build', message, lines.slice(-25).join('\n'));
+    }
+
+    function setReportBusy(busy) {
+      reportBusy = busy;
+      ['btn-report-github', 'btn-report-save', 'btn-report-copy'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = busy;
+      });
+    }
+
+    function buildReportPayload() {
+      return {
+        message: reportContext.message || 'بلاغ يدوي من المستخدم',
+        stack: reportContext.stack || '',
+        phase: reportContext.phase || 'manual',
+        description: document.getElementById('report-description')?.value || '',
+        include_logs: !!document.getElementById('report-include-logs')?.checked,
+        source: 'webview',
+        extra: { client_error: lastClientError }
+      };
+    }
+
+    function showReportResult(text, url, zipPath) {
+      const result = document.getElementById('report-result');
+      const textEl = document.getElementById('report-result-text');
+      const linkEl = document.getElementById('report-result-link');
+      if (textEl) textEl.innerText = text;
+      if (linkEl) {
+        linkEl.innerHTML = '';
+        if (url) {
+          const link = document.createElement('a');
+          link.href = url;
+          link.target = '_blank';
+          link.rel = 'noreferrer';
+          link.textContent = 'فتح صفحة البلاغ';
+          linkEl.appendChild(link);
+        }
+        if (zipPath) {
+          const path = document.createElement('div');
+          path.style.cssText = 'margin-top:6px; direction:ltr; text-align:left; word-break:break-all;';
+          path.textContent = zipPath;
+          linkEl.appendChild(path);
+        }
+      }
+      if (result) result.style.display = 'block';
+    }
+
+    async function submitGithubReport() {
+      if (reportBusy) return;
+      const status = document.getElementById('report-status');
+      if (!window.pywebview || !window.pywebview.api || !window.pywebview.api.open_error_report) {
+        if (status) status.innerText = 'جسر التطبيق غير جاهز. جرّب «حفظ ملف تشخيص».';
+        return;
+      }
+      setReportBusy(true);
+      if (status) status.innerText = 'نجهّز البلاغ ونفتح GitHub...';
+      try {
+        const res = await window.pywebview.api.open_error_report(buildReportPayload());
+        if (!res || res.success === false) throw new Error((res && res.error) || 'تعذر تجهيز البلاغ');
+        if (status) status.innerText = res.opened ? 'تم فتح GitHub في المتصفح. راجع البلاغ واضغط Submit.' : 'تعذر فتح المتصفح — افتح الرابط يدوياً.';
+        showReportResult('تم تجهيز البلاغ.', res.github_url, res.zip_path);
+      } catch (e) {
+        if (status) status.innerText = `تعذر إرسال البلاغ: ${e}`;
+      } finally {
+        setReportBusy(false);
+      }
+    }
+
+    async function saveReportFile() {
+      if (reportBusy) return;
+      const status = document.getElementById('report-status');
+      if (!window.pywebview || !window.pywebview.api || !window.pywebview.api.save_error_report) {
+        if (status) status.innerText = 'جسر التطبيق غير جاهز.';
+        return;
+      }
+      setReportBusy(true);
+      if (status) status.innerText = 'نحفظ ملف التشخيص...';
+      try {
+        const res = await window.pywebview.api.save_error_report(buildReportPayload());
+        if (!res || res.success === false) throw new Error((res && res.error) || 'تعذر الحفظ');
+        if (status) status.innerText = 'تم حفظ ملف التشخيص.';
+        showReportResult('تم حفظ الملف. أرفقه في البلاغ إذا احتجت.', '', res.zip_path);
+      } catch (e) {
+        if (status) status.innerText = `تعذر الحفظ: ${e}`;
+      } finally {
+        setReportBusy(false);
+      }
+    }
+
+    async function copyReportText() {
+      if (reportBusy) return;
+      const status = document.getElementById('report-status');
+      if (!window.pywebview || !window.pywebview.api || !window.pywebview.api.copy_error_report) {
+        if (status) status.innerText = 'جسر التطبيق غير جاهز.';
+        return;
+      }
+      setReportBusy(true);
+      try {
+        const res = await window.pywebview.api.copy_error_report(buildReportPayload());
+        if (!res || res.success === false) throw new Error((res && res.error) || 'تعذر التجهيز');
+        await navigator.clipboard.writeText(res.markdown || '');
+        if (status) status.innerText = 'تم نسخ التشخيص.';
+      } catch (e) {
+        if (status) status.innerText = `تعذر النسخ: ${e}`;
+      } finally {
+        setReportBusy(false);
+      }
+    }
+
+    document.addEventListener('keydown', event => {
+      const modal = document.getElementById('report-modal');
+      if (!modal || modal.style.display === 'none') return;
+      if (event.key === 'Escape') {
+        closeReportModal();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusables = Array.from(
+        modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      ).filter(el => !el.disabled && el.offsetParent !== null);
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+
     function paintProgress() {
       const fill = document.getElementById('progress-fill');
       const pct = document.getElementById('progress-pct');
@@ -4759,6 +5096,8 @@
 
     function resetBuildUi() {
       resetBuildProgress();
+      const reportBtn = document.getElementById('btn-build-report');
+      if (reportBtn) reportBtn.style.display = 'none';
       const btn = document.getElementById('btn-run-test');
       if (btn) setActionLabel(btn, 'ابدأ بناء وتجربة التطبيق الآن');
       setBuildCta('hidden');
@@ -4786,6 +5125,8 @@
       setBuildStep(1, 'error');
       appendLiveBuildLog(`[ERROR] ${message}`);
       failBuildProgress();
+      const reportBtn = document.getElementById('btn-build-report');
+      if (reportBtn) reportBtn.style.display = 'inline-flex';
       const task = document.getElementById('build-task-active');
       if (task) task.innerText = 'Build Failed';
       const details = document.getElementById('build-log-details');
@@ -4892,6 +5233,8 @@
         buildState = 'failed';
         setBuildStep(3, 'error');
         failBuildProgress();
+        const reportBtn = document.getElementById('btn-build-report');
+        if (reportBtn) reportBtn.style.display = 'inline-flex';
         if (taskActive) taskActive.innerText = 'Build Failed';
         const reason = (res && (res.message || res.error)) || 'فشل البناء أو تثبيت التطبيق على الهاتف. راجع سجل الأخطاء أعلاه.';
         appendLiveBuildLog(`[ERROR] ${reason}`);
@@ -4907,6 +5250,8 @@
       buildState = 'success';
       setBuildStep(3, 'done');
       setBuildCta('hidden');
+      const reportBtn = document.getElementById('btn-build-report');
+      if (reportBtn) reportBtn.style.display = 'none';
       setBuildProgressTarget(100, 'اكتمل البناء');
       buildProgressShown = 100;
       paintBuildProgress();

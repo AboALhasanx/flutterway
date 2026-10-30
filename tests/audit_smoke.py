@@ -87,6 +87,13 @@ def static_checks() -> None:
     assert 'id="doctor-all-details"' in html_src, "full doctor checks must stay available in details"
     assert 'id="doctor-ok-note"' in html_src, "doctor must confirm when everything is healthy"
     assert 'id="btn-proj-hotreload"' in html_src, "active project must link to hot reload"
+    assert 'id="report-modal"' in html_src, "error report modal must exist"
+    assert "openReportModal" in html_src, "error report modal must be reachable"
+    assert "report_client_error" in html_src, "JS errors must be captured locally"
+    assert "open_error_report" in app_src, "backend must build/open GitHub reports"
+    assert "GITHUB_REPO" in (ROOT / "gui" / "diagnostics.py").read_text(encoding="utf-8")
+    assert "install_exception_hooks" in app_src, "Python crashes must be logged"
+    assert (ROOT / ".github" / "ISSUE_TEMPLATE" / "bug_report.yml").exists()
     assert "font-size: 10px" not in html_src and "font-size:10px" not in html_src, "no body text below 12px"
     assert "font-size: 11px" not in html_src and "font-size:11px" not in html_src, "no body text below 12px"
     assert "prefers-reduced-motion" in html_src, "motion must respect reduced-motion"

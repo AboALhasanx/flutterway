@@ -16,6 +16,8 @@ a = Analysis(
         'gui.elf_strip',
         'gui.hot_reload',
         'gui.paths',
+        'gui.diagnostics',
+        'gui.version',
         'gui.vscode_integration',
         'psutil',
         'webview',
