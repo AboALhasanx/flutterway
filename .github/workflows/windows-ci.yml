@@ -60,7 +60,7 @@ jobs:
           path: dist/FlutterWayNative/**
 
   flutter-download:
-    name: Verify pinned Flutter download
+    name: Install and run pinned Flutter
     if: github.event_name == 'workflow_dispatch' && inputs.download_flutter
     runs-on: windows-latest
     steps:
@@ -68,5 +68,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Download and verify the pinned archive
-        run: python tests/verify_flutter_download.py
+      - name: Install, extract, and run flutter --version
+        run: python tests/verify_flutter_install.py
