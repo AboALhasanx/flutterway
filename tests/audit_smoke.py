@@ -63,6 +63,9 @@ def static_checks() -> None:
         assert r"C:\flutter_test_app" not in source, f"hardcoded template path in {source_path.name}"
 
     assert "gui.paths" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.paths"
+    assert "gui.android_sdk" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.android_sdk"
+    assert "def install_android_sdk" in (ROOT / "gui" / "android_sdk.py").read_text(encoding="utf-8")
+    assert "fix_android_sdk" in COMPANION.read_text(encoding="utf-8")
     print("[static] passed")
 
 
@@ -71,6 +74,7 @@ def paths_checks() -> None:
     import tempfile
 
     from gui import paths
+    from gui import android_sdk as sdk_bootstrap
 
     assert os.path.exists(paths.onboarding_html()), "onboarding HTML must resolve"
     assert os.path.exists(paths.driver_inf_path()), "USB driver INF must resolve"
@@ -81,6 +85,13 @@ def paths_checks() -> None:
     assert paths.jdk_home(), "JDK must be discoverable on this host"
     assert os.path.isdir(paths.gradle_user_home()), "Gradle home must exist"
     assert os.path.isdir(paths.android_sdk_root()), "Android SDK must resolve"
+
+    if sdk_bootstrap.sdk_ready():
+        installed = sdk_bootstrap.install_android_sdk(persist=False)
+        assert installed.get("success"), installed
+        print("[sdk] ready path passed")
+    else:
+        print("[sdk] skipped download path (SDK is not fully installed on this host)")
 
     original = {
         "FLUTTERWAY_FLUTTER_ROOT": os.environ.get("FLUTTERWAY_FLUTTER_ROOT"),

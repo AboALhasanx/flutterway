@@ -9,6 +9,7 @@ a = Analysis(
         ('assets', 'assets')
     ],
     hiddenimports=[
+        'gui.android_sdk',
         'gui.companion_service',
         'gui.paths',
         'gui.vscode_integration',

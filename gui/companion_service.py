@@ -13,9 +13,11 @@ import subprocess
 try:
     from gui.vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     from gui import paths
+    from gui import android_sdk as sdk_bootstrap
 except ImportError:
     from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     import paths
+    import android_sdk as sdk_bootstrap
 
 def get_adb_path():
     return paths.adb_path()
@@ -120,7 +122,7 @@ def get_smart_doctor_report():
     android_sdk = paths.android_sdk_root()
     platforms = sorted(glob.glob(os.path.join(android_sdk, "platforms", "android-*")))
     build_tools = sorted(glob.glob(os.path.join(android_sdk, "build-tools", "*")))
-    sdk_ok = os.path.exists(os.path.join(android_sdk, "platform-tools", "adb.exe")) and bool(platforms)
+    sdk_ok = sdk_bootstrap.sdk_ready(android_sdk)
     api_label = os.path.basename(platforms[-1]).replace("android-", "API ") if platforms else "API غير مثبت"
     tools_label = os.path.basename(build_tools[-1]) if build_tools else "Build-Tools غير مثبتة"
     items.append({
@@ -129,8 +131,8 @@ def get_smart_doctor_report():
         "status": "PASS" if sdk_ok else "WARN",
         "badge": f"{api_label} | {tools_label}" if sdk_ok else "بحاجة لتجهيز",
         "detail": f"المسار: {android_sdk} | {api_label} | {tools_label}",
-        "auto_fixable": False,
-        "fix_id": ""
+        "auto_fixable": not sdk_ok,
+        "fix_id": "fix_android_sdk" if not sdk_ok else ""
     })
 
     # 4. Android Licenses
@@ -235,6 +237,13 @@ def heal_doctor_item(fix_id):
         elif fix_id == "fix_vscode":
             res = configure_vscode(paths.flutter_root())
             return res
+
+        elif fix_id == "fix_android_sdk":
+            result = sdk_bootstrap.install_android_sdk()
+            return {
+                "success": bool(result.get("success")),
+                "message": result.get("message") or result.get("error") or "تمت محاولة تجهيز Android SDK"
+            }
 
         elif fix_id == "fix_path":
             # Add the discovered Flutter and Java bin directories to the User PATH.

@@ -22,10 +22,12 @@ try:
     from gui.vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     from gui import companion_service
     from gui import paths
+    from gui import android_sdk
 except ImportError:
     from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     import companion_service
     import paths
+    import android_sdk
 
 def set_user_env(name, value):
     """Sets a User environment variable permanently in the Windows Registry."""
@@ -681,8 +683,34 @@ class OnboardingApi:
                     self._update_ui(win, 75, "تم اكتمال تنزيل وتسجيل محرك فلاتر بنجاح", 3)
                 time.sleep(0.4)
 
+                # Stage 3.5: Android SDK (platform-tools, platforms, build-tools)
+                self._update_ui(win, 78, "جاري تجهيز Android SDK وأدوات adb...", 3)
+                sdk_result = android_sdk.install_android_sdk(
+                    progress=lambda message: self._update_ui(win, 80, message, 3)
+                )
+                if not sdk_result.get("success"):
+                    fail(sdk_result.get("error", "تعذر تجهيز Android SDK. تأكد من اتصال الإنترنت ثم أعد المحاولة."), 80)
+                    return
+                self._update_ui(win, 86, "تم تجهيز Android SDK وأدوات adb بنجاح", 3)
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = 0
+                creationflags = subprocess.CREATE_NO_WINDOW
+                try:
+                    subprocess.run(
+                        [flutter_bat, "config", "--android-sdk", sdk_result["sdk_root"]],
+                        capture_output=True,
+                        text=True,
+                        startupinfo=startupinfo,
+                        creationflags=creationflags,
+                        timeout=30,
+                    )
+                except Exception as e:
+                    print("Flutter android-sdk config error:", e)
+                time.sleep(0.3)
+
                 # Stage 4: VS Code Configuration & Extensions (75% - 90%) -> Checklist Item 4
-                self._update_ui(win, 84, "جاري ربط محرر VS Code وتثبيت إضافات فلاتر...", 4)
+                self._update_ui(win, 88, "جاري ربط محرر VS Code وتثبيت إضافات فلاتر...", 4)
                 vscode_ok = False
                 try:
                     vscode_res = configure_vscode(flutter_target)
@@ -691,7 +719,7 @@ class OnboardingApi:
                     print("VS Code setup error:", e)
 
                 # Stage 5: Starter Project Setup on Desktop (90% - 100%) -> Checklist Item 4
-                self._update_ui(win, 92, "جاري تجهيز أول مشروع فلاتر حقيقي على الديسكتوب...", 4)
+                self._update_ui(win, 94, "جاري تجهيز أول مشروع فلاتر حقيقي على الديسكتوب...", 4)
                 project_path = paths.default_project_path()
                 if not self._ensure_starter_project(project_path):
                     fail("تم تثبيت Flutter لكن تعذر إنشاء مشروع البداية. راجع سجل الأخطاء ثم أعد المحاولة.", 92)
