@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
     inputs:
       download_flutter:
-        description: "Download the pinned Flutter archive and verify its SHA-256 (slow)"
+        description: "Download the pinned Flutter archive, extract it, and run flutter --version"
+        type: boolean
+        default: false
+      build_apk:
+        description: "Install the Android SDK and build a real debug APK (slow)"
         type: boolean
         default: false
 
@@ -70,3 +74,22 @@ jobs:
           python-version: "3.12"
       - name: Install, extract, and run flutter --version
         run: python tests/verify_flutter_install.py
+
+  android-build:
+    name: Install Android SDK and build APK
+    if: github.event_name == 'workflow_dispatch' && inputs.build_apk
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Android SDK and build a debug APK
+        run: python tests/verify_android_build.py
+      - name: Upload APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutterway-demo-debug-apk
+          path: C:/Users/**/AppData/Local/Temp/fw-ci-project-*/demo_app/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: warn
