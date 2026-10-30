@@ -1724,6 +1724,23 @@
       flex-wrap: wrap;
     }
 
+    .project-action-status {
+      width: 100%;
+      font-size: var(--fs-caption);
+      line-height: 1.6;
+      color: var(--text-muted);
+      padding: 0 4px;
+      margin-top: -8px;
+    }
+
+    .project-action-status.error {
+      color: var(--danger);
+    }
+
+    .project-action-status.ok {
+      color: var(--success);
+    }
+
     .proj-options {
       position: relative;
     }
@@ -2161,6 +2178,8 @@
             </div>
           </div>
 
+          <div id="project-action-status" class="project-action-status" role="status" aria-live="polite" style="display: none;"></div>
+
           <div class="project-creator-card">
             <div style="font-size: 15px; font-weight: 800; color: var(--text);">مشروع جديد</div>
             <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
@@ -2505,6 +2524,16 @@
         </div>
 
         <!-- Diagnostic Result -->
+        <div id="laptop-check-error" class="state-box error" role="alert" style="display: none; margin-bottom: 16px;">
+          <div>
+            <div class="state-title">تعذر فحص اللابتوب</div>
+            <div class="state-desc" id="laptop-check-error-text">صار خطأ غير متوقع.</div>
+            <div class="state-actions" style="justify-content: flex-start;">
+              <button class="btn-secondary" onclick="checkLaptopSpecs()">أعد المحاولة</button>
+            </div>
+          </div>
+        </div>
+
         <div class="diag-result-card" id="diag-result-box">
           <div class="diag-header">
             <div style="font-size: 13px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px;">
@@ -2994,6 +3023,7 @@
     let hrSuppressInput = false;
     let hrLastContent = '';
     let hrRunning = false;
+    let buildState = 'idle';
     window.appInit = null;
 
     // Main View Switching (Wizard vs Companion)
@@ -3581,32 +3611,49 @@
       return card;
     }
 
+    function setDoctorStatus(text, kind) {
+      const el = document.getElementById('doctor-summary-line');
+      if (!el) return;
+      el.innerText = text;
+      el.style.color = kind === 'error' ? 'var(--danger)' : kind === 'ok' ? 'var(--success)' : '';
+    }
+
     async function healSingleDoctorItem(fixId) {
       if (window.pywebview && window.pywebview.api) {
         try {
           const res = await window.pywebview.api.heal_doctor_item(fixId);
-          showRescueToast(res.message || "تم الإصلاح بنجاح!", res.success);
+          const msg = res.message || res.error || "تعذر الإصلاح";
+          setDoctorStatus(msg, res.success ? 'ok' : 'error');
           runSmartDoctorScan();
         } catch (e) {
-          console.error(e);
+          setDoctorStatus(`تعذر الإصلاح: ${e}`, 'error');
         }
       }
     }
 
     async function healAllDoctorIssues() {
       const btn = document.getElementById('btn-doctor-heal-all');
-      btn.innerHTML = `<span>جاري الإصلاح...</span>`;
-      if (window.pywebview && window.pywebview.api) {
-        try {
-          const res = await window.pywebview.api.heal_all_doctor_items();
-          btn.innerHTML = `<span>تم الإصلاح بنجاح!</span>`;
-          setTimeout(() => {
-            btn.innerHTML = `<span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span>أصلح كل المشاكل</span>`;
-          }, 2000);
-          runSmartDoctorScan();
-        } catch (e) {
-          console.error(e);
+      if (btn.disabled) return;
+      btn.disabled = true;
+      setActionLabel(btn, 'جاري الإصلاح...');
+      try {
+        if (!window.pywebview || !window.pywebview.api) return;
+        const res = await window.pywebview.api.heal_all_doctor_items();
+        if (res && res.success === false) {
+          setDoctorStatus(res.error || 'تعذر إصلاح بعض المشاكل. راجع البطاقات.', 'error');
+          setActionLabel(btn, 'أصلح كل المشاكل');
+          return;
         }
+        setDoctorStatus('تم الإصلاح بنجاح.', 'ok');
+        setActionLabel(btn, 'تم الإصلاح');
+        runSmartDoctorScan();
+      } catch (e) {
+        setDoctorStatus(`تعذر الإصلاح: ${e}`, 'error');
+      } finally {
+        setTimeout(() => {
+          setActionLabel(btn, 'أصلح كل المشاكل');
+          btn.disabled = false;
+        }, 1800);
       }
     }
 
@@ -3623,6 +3670,19 @@
           renderHome();
         } catch (e) {
           console.error(e);
+          const container = document.getElementById('recent-projects-list');
+          if (container) {
+            container.innerHTML = `
+              <div class="state-box error" role="alert">
+                <div>
+                  <div class="state-title">تعذر تحميل المشاريع</div>
+                  <div class="state-desc">تأكد من صلاحيات المجلد ثم أعد المحاولة.</div>
+                  <div class="state-actions" style="justify-content: flex-start;">
+                    <button class="btn-secondary" onclick="loadRecentProjectsList()">إعادة المحاولة</button>
+                  </div>
+                </div>
+              </div>`;
+          }
         }
       }
     }
@@ -3733,54 +3793,91 @@
       if (recentProjectsAll.length) paintRecentProjects();
     }
 
+    function setProjectStatus(text, kind) {
+      const el = document.getElementById('project-action-status');
+      if (!el) return;
+      el.innerText = text || '';
+      el.className = `project-action-status${kind ? ` ${kind}` : ''}`;
+      el.style.display = text ? 'block' : 'none';
+    }
+
     async function createNewLectureProject() {
       const inp = document.getElementById('input-lecture-name');
       const name = inp.value.trim();
       if (!name) {
-        alert("يرجى كتابة اسم المشروع باللغة الإنجليزية أولاً.");
+        setProjectStatus('اكتب اسم المشروع أولاً.', 'error');
+        inp.focus();
         return;
       }
       const btn = document.getElementById('btn-create-lecture-proj');
-      btn.innerHTML = `<span>جاري التجهيز والإنشاء...</span>`;
-      if (window.pywebview && window.pywebview.api) {
-        try {
-          const res = await window.pywebview.api.create_lecture_project(name);
-          btn.innerHTML = `<span>تم الإنشاء بنجاح!</span>`;
-          setTimeout(() => {
-            btn.innerHTML = `<span>أنشئ مشروعي</span>`;
-            inp.value = '';
-          }, 1500);
-          selectActiveProject(res.name, res.path);
-          loadRecentProjectsList();
-        } catch (e) {
-          console.error(e);
+      if (btn.disabled) return;
+      btn.disabled = true;
+      setActionLabel(btn, 'جاري الإنشاء...');
+      setProjectStatus('');
+      try {
+        if (!window.pywebview || !window.pywebview.api) return;
+        const res = await window.pywebview.api.create_lecture_project(name);
+        if (!res || res.success === false || !res.path) {
+          setProjectStatus((res && (res.error || res.message)) || 'تعذر إنشاء المشروع. جرّب اسماً آخر أو تحقق من المساحة.', 'error');
+          return;
         }
+        setActionLabel(btn, 'تم إنشاء المشروع');
+        setProjectStatus('تم إنشاء المشروع بنجاح.', 'ok');
+        inp.value = '';
+        selectActiveProject(res.name || name, res.path);
+        loadRecentProjectsList();
+      } catch (e) {
+        setProjectStatus(`تعذر إنشاء المشروع: ${e}`, 'error');
+      } finally {
+        setTimeout(() => {
+          setActionLabel(btn, 'أنشئ مشروعي');
+          btn.disabled = false;
+        }, 1600);
       }
     }
 
-    function openActiveProjectVSCode() {
+    async function openActiveProjectVSCode() {
       const path = getActiveProjectPath();
       if (!path) return;
-      if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api.open_project_in_vscode(path);
+      setProjectStatus('جاري فتح VS Code...');
+      try {
+        if (!window.pywebview || !window.pywebview.api) return;
+        const res = await window.pywebview.api.open_project_in_vscode(path);
+        if (res && res.success === false) {
+          setProjectStatus(res.error || 'تعذر فتح VS Code.', 'error');
+          return;
+        }
+        setProjectStatus('تم فتح VS Code.', 'ok');
+        setTimeout(() => setProjectStatus(''), 2500);
+      } catch (e) {
+        setProjectStatus(`تعذر فتح VS Code: ${e}`, 'error');
       }
     }
 
     async function cleanActiveProject() {
       const path = getActiveProjectPath();
       const btn = document.getElementById('btn-clean-project');
-      if (!path) return;
-      btn.innerHTML = `<span>جاري التنظيف...</span>`;
-      if (window.pywebview && window.pywebview.api) {
-        try {
-          const res = await window.pywebview.api.clean_project(path);
-          btn.innerHTML = `<span>تم تنظيف الكاش!</span>`;
-          setTimeout(() => {
-            btn.innerHTML = `<span>تنظيف البناء</span>`;
-          }, 1500);
-        } catch (e) {
-          console.error(e);
+      if (!path || !btn || btn.disabled) return;
+      btn.disabled = true;
+      setActionLabel(btn, 'جاري التنظيف...');
+      setProjectStatus('');
+      try {
+        if (!window.pywebview || !window.pywebview.api) return;
+        const res = await window.pywebview.api.clean_project(path);
+        if (res && res.success === false) {
+          setProjectStatus(res.error || 'تعذر تنظيف البناء. تأكد أن المشروع غير مفتوح في برنامج آخر.', 'error');
+          return;
         }
+        setActionLabel(btn, 'تم التنظيف');
+        setProjectStatus('تم تنظيف البناء.', 'ok');
+        setTimeout(() => setProjectStatus(''), 2500);
+      } catch (e) {
+        setProjectStatus(`تعذر تنظيف البناء: ${e}`, 'error');
+      } finally {
+        setTimeout(() => {
+          setActionLabel(btn, 'تنظيف البناء');
+          btn.disabled = false;
+        }, 1600);
       }
     }
 
@@ -3922,24 +4019,47 @@
       }
     }
 
+    function showLaptopError(message) {
+      const box = document.getElementById('laptop-check-error');
+      const text = document.getElementById('laptop-check-error-text');
+      if (text) text.innerText = message;
+      if (box) box.style.display = 'flex';
+    }
+
     async function checkLaptopSpecs() {
       const btn = document.getElementById('btn-check-laptop');
-      btn.innerHTML = `<span>جاري الفحص...</span>`;
-      if (window.pywebview && window.pywebview.api) {
-        try {
+      if (btn.disabled) return;
+      const errorBox = document.getElementById('laptop-check-error');
+      if (errorBox) errorBox.style.display = 'none';
+      btn.disabled = true;
+      setActionLabel(btn, 'جاري الفحص...');
+      let ok = false;
+      try {
+        if (window.pywebview && window.pywebview.api) {
           const res = await window.pywebview.api.check_laptop_compatibility();
+          if (!res || res.success === false) {
+            showLaptopError((res && (res.error || res.message)) || 'تعذر قراءة مواصفات اللابتوب.');
+            setActionLabel(btn, 'أعد المحاولة');
+            return;
+          }
           displaySpecsResult(res);
-        } catch (e) {
-          console.error(e);
+          ok = true;
+        } else {
+          displaySpecsResult({
+            ram_gb: 11.7,
+            free_disk_gb: 65.1,
+            vt_enabled: false,
+            recommended_mode: 'usb',
+            reason: 'هاتف USB هو المسار الجاهز فوراً.'
+          });
+          ok = true;
         }
-      } else {
-        displaySpecsResult({
-          ram_gb: 11.7,
-          free_disk_gb: 65.1,
-          vt_enabled: false,
-          recommended_mode: 'usb',
-          reason: 'ميزة المحاكاة (Virtualization) غير مفعلة في معالجك (BIOS). خيار (هاتف USB) هو الأسرع والجاهز للعمل معك فوراً وبدون أي تعقيد أو تجميد للحاسبة!'
-        });
+      } catch (e) {
+        showLaptopError(`تعذر فحص اللابتوب: ${e}`);
+        setActionLabel(btn, 'أعد المحاولة');
+      } finally {
+        btn.disabled = false;
+        if (ok) setActionLabel(btn, 'افحص لابتوبي');
       }
     }
 
@@ -3962,11 +4082,17 @@
       selectChoice(res.recommended_mode || 'usb');
     }
 
-    function startSetup() {
+    async function startSetup() {
       resetSetupError();
       showStep(2);
-      if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api.start_onboarding(selectedMode);
+      if (!window.pywebview || !window.pywebview.api) return;
+      try {
+        const res = await window.pywebview.api.start_onboarding(selectedMode);
+        if (res && res.success === false) {
+          onboardingFailed(res.error || 'تعذر بدء التجهيز. أعد المحاولة.');
+        }
+      } catch (e) {
+        onboardingFailed(`تعذر بدء التجهيز: ${e}`);
       }
     }
 
@@ -4056,8 +4182,9 @@
       const radar = document.getElementById('device-radar-icon');
       const btnRun = document.getElementById('btn-run-test');
       const driverAlert = document.getElementById('missing-driver-alert');
+      const hasDevices = Array.isArray(res.devices) && res.devices.length > 0;
 
-      if (res.missing_driver) {
+      if (res.missing_driver && !hasDevices) {
         if (driverAlert) driverAlert.style.display = 'block';
       } else {
         if (driverAlert) driverAlert.style.display = 'none';
@@ -4072,7 +4199,11 @@
           radar.style.borderColor = 'var(--success)';
           radar.style.background = 'var(--success-bg)';
           radar.style.color = 'var(--success)';
-          if (btnRun) btnRun.style.display = 'inline-flex';
+          if (btnRun) {
+            const allowed = buildState === 'idle' || buildState === 'failed';
+            btnRun.style.display = allowed ? 'inline-flex' : 'none';
+            if (buildState === 'failed') setActionLabel(btnRun, 'أعد المحاولة');
+          }
         } else if (dev.status === 'unauthorized') {
           statusText.innerText = `الهاتف متصل، لكن يتطلب الموافقة!`;
           statusText.style.color = 'var(--warning)';
@@ -4097,23 +4228,51 @@
       }
     }
 
-    function installDrivers() {
+    async function installDrivers() {
       const btn = document.getElementById('btn-install-drivers');
-      btn.innerHTML = `<span>جاري تثبيت التعريفات...</span>`;
-      if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api.install_usb_drivers();
+      if (!btn || btn.disabled) return;
+      btn.disabled = true;
+      setActionLabel(btn, 'جاري تثبيت التعريفات...');
+      try {
+        if (!window.pywebview || !window.pywebview.api) return;
+        const res = await window.pywebview.api.install_usb_drivers();
+        if (res && res.success === false) {
+          setActionLabel(btn, 'تعذر التثبيت — جرّب يدوياً');
+          return;
+        }
+        setActionLabel(btn, 'تم تثبيت التعريفات');
+        checkDeviceNow();
+      } catch (e) {
+        setActionLabel(btn, 'تعذر التثبيت — جرّب يدوياً');
+      } finally {
+        setTimeout(() => {
+          setActionLabel(btn, 'تثبيت تعريفات USB الشاملة الآن بنقرة واحدة');
+          btn.disabled = false;
+        }, 2200);
       }
     }
 
-    function restartAdb() {
+    async function restartAdb() {
       const btn = document.getElementById('btn-fix-adb');
-      btn.innerHTML = `<span>جاري التصفية...</span>`;
-      if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api.restart_adb();
+      if (!btn || btn.disabled) return;
+      btn.disabled = true;
+      setActionLabel(btn, 'جاري إعادة التشغيل...');
+      try {
+        if (!window.pywebview || !window.pywebview.api) return;
+        const res = await window.pywebview.api.restart_adb();
+        if (res && res.success === false) {
+          setActionLabel(btn, 'تعذر — جرّب إعادة التوصيل');
+          return;
+        }
+        setActionLabel(btn, 'تمت إعادة التشغيل');
+        checkDeviceNow();
+      } catch (e) {
+        setActionLabel(btn, 'تعذر — جرّب إعادة التوصيل');
+      } finally {
         setTimeout(() => {
-          btn.innerHTML = `<span>حل مشاكل الاتصال (إعادة تشغيل ADB)</span>`;
-          checkDeviceNow();
-        }, 1500);
+          setActionLabel(btn, 'حل مشاكل الاتصال (إعادة تشغيل ADB)');
+          btn.disabled = false;
+        }, 2000);
       }
     }
 
@@ -4123,16 +4282,91 @@
       alert("تم نسخ نص البحث بنجاح! الصقه في بحث يوتيوب متبوعاً باسم موديل جهازك.");
     }
 
-    function runRealGradleBuild(projectPath) {
-      document.getElementById('btn-run-test').style.display = 'none';
+    const BUILD_CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    const BUILD_X_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+    function setActionLabel(btn, text) {
+      if (!btn) return;
+      const labels = Array.from(btn.querySelectorAll('span')).filter(
+        span => !span.classList.contains('icon') && !span.querySelector('svg')
+      );
+      const target = labels[labels.length - 1];
+      if (target) target.innerText = text;
+      else btn.innerText = text;
+    }
+
+    function setBuildStep(stepNum, state) {
+      const el = document.getElementById(`bstep-${stepNum}`);
+      if (!el) return;
+      el.className = state ? `build-step-row ${state}` : 'build-step-row';
+      const icon = el.querySelector('.bstep-icon');
+      if (icon) {
+        icon.innerHTML = `<span class="icon" style="width: 8px; height: 8px;">${state === 'error' ? BUILD_X_ICON : BUILD_CHECK_ICON}</span>`;
+      }
+    }
+
+    function setBuildCta(mode) {
+      const btn = document.getElementById('btn-run-test');
+      if (!btn) return;
+      if (mode === 'failed') {
+        btn.style.display = 'inline-flex';
+        setActionLabel(btn, 'أعد المحاولة');
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
+    function resetBuildUi() {
+      const btn = document.getElementById('btn-run-test');
+      if (btn) setActionLabel(btn, 'ابدأ بناء وتجربة التطبيق الآن');
+      setBuildCta('hidden');
+      const bench = document.getElementById('benchmark-card');
+      if (bench) bench.style.display = 'none';
+      const consoleBox = document.getElementById('build-console');
+      if (consoleBox) consoleBox.style.display = 'block';
+      setBuildStep(1, 'active');
+      setBuildStep(2, '');
+      setBuildStep(3, '');
+      const timer = document.getElementById('build-elapsed-timer');
+      if (timer) timer.innerText = '00:00';
+      const task = document.getElementById('build-task-active');
+      if (task) task.innerText = 'Compiling...';
+      const commentary = document.getElementById('build-commentary-text');
+      if (commentary) commentary.innerText = '🚀 نجهّز مشروعك للبناء... أول مرة قد تأخذ دقيقة.';
+      const terminal = document.getElementById('build-terminal-lines');
+      if (terminal) terminal.innerHTML = '<div style="color: #64748b;">$ flutter build apk --debug -v</div>';
+      const details = document.getElementById('build-log-details');
+      if (details) details.open = false;
+    }
+
+    function failBuildStart(message) {
+      buildState = 'failed';
+      setBuildStep(1, 'error');
+      appendLiveBuildLog(`[ERROR] ${message}`);
+      const task = document.getElementById('build-task-active');
+      if (task) task.innerText = 'Build Failed';
+      const details = document.getElementById('build-log-details');
+      if (details) details.open = true;
+      setBuildCta('failed');
+    }
+
+    async function runRealGradleBuild(projectPath) {
+      if (buildState === 'running') return;
+      buildState = 'running';
+      resetBuildUi();
       document.getElementById('device-guide-box').style.display = 'none';
       document.getElementById('device-ctrl-btns').style.display = 'none';
-      document.getElementById('build-console').style.display = 'block';
-      const logDetails = document.getElementById('build-log-details');
-      if (logDetails) logDetails.open = false;
-
-      if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api.start_real_gradle_build(projectPath || null);
+      if (!window.pywebview || !window.pywebview.api) {
+        buildState = 'idle';
+        return;
+      }
+      try {
+        const res = await window.pywebview.api.start_real_gradle_build(projectPath || null);
+        if (res && res.success === false) {
+          failBuildStart(res.error || 'تعذر بدء عملية البناء.');
+        }
+      } catch (e) {
+        failBuildStart(`تعذر بدء عملية البناء: ${e}`);
       }
     }
 
@@ -4204,17 +4438,13 @@
     function finishRealBuild(res) {
       const consoleBox = document.getElementById('build-console');
       const benchmarkCard = document.getElementById('benchmark-card');
-      const s3 = document.getElementById('bstep-3');
-      const btnRun = document.getElementById('btn-run-test');
       const ctrlBtns = document.getElementById('device-ctrl-btns');
       const taskActive = document.getElementById('build-task-active');
       const ok = !!res && res.success === true && res.installed_ok === true;
 
       if (!ok) {
-        if (s3) {
-          s3.className = 'build-step-row error';
-          s3.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-        }
+        buildState = 'failed';
+        setBuildStep(3, 'error');
         if (taskActive) taskActive.innerText = 'Build Failed';
         const reason = (res && (res.message || res.error)) || 'فشل البناء أو تثبيت التطبيق على الهاتف. راجع سجل الأخطاء أعلاه.';
         appendLiveBuildLog(`[ERROR] ${reason}`);
@@ -4222,19 +4452,15 @@
         if (logDetails) logDetails.open = true;
         if (consoleBox) consoleBox.style.display = 'block';
         if (benchmarkCard) benchmarkCard.style.display = 'none';
-        if (btnRun) {
-          btnRun.style.display = 'inline-flex';
-          const label = btnRun.querySelectorAll('span')[1];
-          if (label) label.innerText = 'أعد المحاولة';
-        }
+        setBuildCta('failed');
         if (ctrlBtns) ctrlBtns.style.display = 'flex';
         return;
       }
 
-      if (s3) {
-        s3.className = 'build-step-row done';
-        s3.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
-      }
+      buildState = 'success';
+      setBuildStep(3, 'done');
+      setBuildCta('hidden');
+      if (taskActive) taskActive.innerText = 'Build Succeeded';
 
       setTimeout(() => {
         if (consoleBox) consoleBox.style.display = 'none';
@@ -4254,11 +4480,26 @@
       }, 700);
     }
 
-    function openVSCode() {
+    async function openVSCode() {
       const btn = document.getElementById('btn-open-vscode');
-      if (btn) btn.innerHTML = `<span>جاري فتح VS Code...</span>`;
-      if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api.open_vscode();
+      if (!btn || btn.disabled) return;
+      btn.disabled = true;
+      setActionLabel(btn, 'جاري فتح VS Code...');
+      try {
+        if (!window.pywebview || !window.pywebview.api) return;
+        const res = await window.pywebview.api.open_vscode();
+        if (res && res.success === false) {
+          setActionLabel(btn, 'تعذر فتح VS Code — تأكد من تثبيته');
+          return;
+        }
+        setActionLabel(btn, 'تم فتح VS Code');
+      } catch (e) {
+        setActionLabel(btn, 'تعذر فتح VS Code — تأكد من تثبيته');
+      } finally {
+        setTimeout(() => {
+          setActionLabel(btn, 'افتح VS Code وابدأ البرمجة الآن');
+          btn.disabled = false;
+        }, 2000);
       }
     }
 

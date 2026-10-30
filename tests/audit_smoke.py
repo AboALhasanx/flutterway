@@ -127,6 +127,10 @@ def static_checks() -> None:
     assert "def get_dev_reset_status" in app_src
     assert "def dev_reset_action" in app_src
     assert "def dev_mode_enabled" in app_src
+    assert "build_running" in app_src, "duplicate builds must be blocked"
+    assert "setup_running" in app_src, "duplicate setup runs must be blocked"
+    assert "def _looks_like_android_pnp" in app_src, "PnP driver hint must be filtered"
+    assert "res.missing_driver && !hasDevices" in html_src, "driver alert must not show without a device"
     assert "maximized=True" in app_src, "the app window must open maximized by default"
     assert "executeDevAction" in html_src
     assert 'id="btn-dev-scan"' in html_src
@@ -411,6 +415,17 @@ def ui_checks() -> None:
         assert "[ERROR] build failed" in page.locator("#build-terminal-lines").inner_text()
         assert "أعد المحاولة" in page.locator("#btn-run-test").inner_text()
 
+        # 3b) A retry must reset the previous failure state.
+        page.evaluate("""async () => {
+            window.pywebview = { api: { start_real_gradle_build: async () => ({success: true}) } };
+            await runRealGradleBuild();
+        }""")
+        assert page.locator("#build-elapsed-timer").inner_text() == "00:00"
+        assert "active" in (page.locator("#bstep-1").get_attribute("class") or "")
+        assert "error" not in (page.locator("#bstep-3").get_attribute("class") or "")
+        assert not page.locator("#benchmark-card").is_visible()
+        assert not page.locator("#btn-run-test").is_visible()
+
         # 4) A successful build with a failed install must also fail.
         page.evaluate(
             "finishRealBuild({success: true, installed_ok: false, message: 'install failed'})"
@@ -426,6 +441,11 @@ def ui_checks() -> None:
         assert page.locator("#benchmark-card").is_visible()
         assert "Test Phone" in page.locator("#benchmark-head-text").inner_text()
         assert page.locator("#stat-size").inner_text().strip() == "12.3 MB"
+        assert not page.locator("#btn-run-test").is_visible(), "success must not expose a rebuild CTA"
+        page.evaluate(
+            "handleDeviceResponse({success: true, devices: [{is_ready: true, model: 'Test Phone'}]})"
+        )
+        assert not page.locator("#btn-run-test").is_visible(), "device polling must not re-show rebuild after success"
 
         # 5b) Guided hot reload must replace the first Text literal.
         quick = page.evaluate("""() => {
@@ -451,7 +471,8 @@ def ui_checks() -> None:
         assert "بانتظار" in page.locator("#device-status-text").inner_text()
         assert not page.locator("#btn-run-test").is_visible()
 
-        # 7) A ready device must show the run button.
+        # 7) A ready device must show the run button only before any build success.
+        page.evaluate("buildState = 'idle'")
         page.evaluate(
             "handleDeviceResponse({success: true, devices: [{is_ready: true, model: 'Pixel'}]})"
         )

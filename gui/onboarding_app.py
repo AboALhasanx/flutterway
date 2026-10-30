@@ -117,6 +117,12 @@ def ensure_jdk():
         add_to_user_path(os.path.join(jdk, "bin"))
     return jdk
 
+def _looks_like_android_pnp(name):
+    """A PnP friendly name is a real Android candidate, not a random OtherDevices entry."""
+    lowered = (name or "").strip().lower()
+    return "android" in lowered or "adb" in lowered
+
+
 class OnboardingApi:
     def __init__(self, window_holder):
         self.window_holder = window_holder
@@ -130,7 +136,9 @@ class OnboardingApi:
             "project_path": paths.default_project_path(),
             "app_running_on_phone": False,
             "missing_drivers": False,
-            "setup_error": None
+            "setup_error": None,
+            "build_running": False,
+            "setup_running": False
         }
         self.hot_reload = hot_reload.HotReloadSession()
 
@@ -228,15 +236,18 @@ class OnboardingApi:
             if not devices:
                 if time.time() - _last_pnp_check > 15:
                     try:
-                        ps_cmd = 'Get-PnpDevice | Where-Object { ($_.FriendlyName -like "*Android*" -or $_.Class -eq "OtherDevices") -and $_.Status -ne "OK" } | Select-Object -ExpandProperty FriendlyName -First 1'
+                        ps_cmd = 'Get-PnpDevice -PresentOnly | Where-Object { ($_.FriendlyName -like "*Android*" -or $_.FriendlyName -like "*ADB*") -and $_.Status -ne "OK" } | Select-Object -ExpandProperty FriendlyName -First 5'
                         pnp_res = subprocess.run(
                             ['powershell', '-NoProfile', '-Command', ps_cmd],
                             capture_output=True, text=True, startupinfo=startupinfo, creationflags=creationflags, timeout=2
                         )
-                        out = pnp_res.stdout.strip()
-                        if out:
+                        candidates = [
+                            line.strip() for line in pnp_res.stdout.splitlines()
+                            if _looks_like_android_pnp(line)
+                        ]
+                        if candidates:
                             missing_driver = True
-                            missing_name = out
+                            missing_name = candidates[0]
                     except Exception:
                         pass
                     _last_pnp_check = time.time()
@@ -376,6 +387,9 @@ class OnboardingApi:
     def start_real_gradle_build(self, project_path=None, serial=None):
         """Asynchronously runs the REAL Flutter Gradle build on the selected project,
         streaming live logs to the UI console and installing the fresh APK on the connected device."""
+        if self.state.get("build_running"):
+            return {"success": False, "error": "في عملية بناء شغالة بالفعل. انتظرها تكمل أو أغلق التطبيق."}
+        self.state["build_running"] = True
         if project_path and os.path.isdir(project_path):
             self.state["project_path"] = project_path
         win = self.window_holder.get("window")
@@ -654,10 +668,34 @@ class OnboardingApi:
                 except Exception:
                     pass
 
-        threading.Thread(target=build_worker, daemon=True).start()
+        def run_build_worker():
+            try:
+                build_worker()
+            except Exception as e:
+                if win:
+                    try:
+                        failure = {
+                            "success": False,
+                            "installed_ok": False,
+                            "message": f"توقف البناء بشكل غير متوقع: {e}",
+                        }
+                        win.evaluate_js(f"finishRealBuild({json.dumps(failure)});")
+                    except Exception:
+                        pass
+            finally:
+                self.state["build_running"] = False
+
+        try:
+            threading.Thread(target=run_build_worker, daemon=True).start()
+        except Exception as e:
+            self.state["build_running"] = False
+            return {"success": False, "error": f"تعذر بدء عملية البناء: {e}"}
         return {"success": True}
 
     def start_onboarding(self, mode="usb"):
+        if self.state.get("setup_running"):
+            return {"success": False, "error": "التجهيز شغال بالفعل. انتظر يكمل."}
+        self.state["setup_running"] = True
         self.state["selected_mode"] = mode
         self.state["current_step"] = 2
         self.state["setup_error"] = None
@@ -802,7 +840,18 @@ class OnboardingApi:
             except Exception as e:
                 fail(f"خطأ غير متوقع أثناء التجهيز: {e}", 0)
 
-        threading.Thread(target=worker, daemon=True).start()
+        def run_setup_worker():
+            try:
+                worker()
+            finally:
+                self.state["setup_running"] = False
+
+        try:
+            threading.Thread(target=run_setup_worker, daemon=True).start()
+        except Exception as e:
+            self.state["setup_running"] = False
+            self.state["setup_error"] = f"تعذر بدء عملية التجهيز: {e}"
+            return {"success": False, "error": self.state["setup_error"]}
         return {"success": True}
 
     def _ensure_starter_project(self, project_path):

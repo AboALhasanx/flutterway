@@ -170,6 +170,22 @@ pyinstaller FlutterWayNative.spec --noconfirm
 
 ---
 
+## 🧪 الاختبارات
+
+| الأمر | التغطية |
+|---|---|
+| `python tests/audit_smoke.py` | ثوابت، واجهة، حالات بناء، A11y |
+| `python tests/student_journey.py` | رحلة طالب حقيقية (22 شاشة) |
+| `python tests/reliability_faults.py` | **36 اختبار فشل** بدون جهاز (نجاح كاذب/ازدواج/حالة عالقة) |
+| `python tests/test_build_guard.py` | منع بناء/تجهيز متزامن |
+| `python tests/test_pnp_filter.py` | منع تنبيه تعريف USB الكاذب |
+| `python tests/custom_project_journey.py` | بناء وتثبيت حقيقي (يتطلب هاتف) |
+| `python tests/hot_reload_journey.py` | Hot Reload حقيقي (يتطلب هاتف) |
+
+تفاصيل حزمة الفشل: [`docs/RELIABILITY_TESTS.md`](docs/RELIABILITY_TESTS.md)
+
+---
+
 ## 🧑‍🎓 اختبار المستخدم (Phase 6)
 
 عدة اختبار كاملة لخمسة طلاب مبتدئين: سكربت الجلسة، المهام، الموافقة، استبيان SUS، مقياس SEQ، جدول الملاحظات، ومعايير القبول.
