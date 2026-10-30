@@ -39,19 +39,36 @@ def test_report_modal(browser) -> None:
     page.evaluate("""() => {
         window.__clientErrors = 0;
         window.pywebview.api.report_client_error = async () => { window.__clientErrors += 1; return {success: true}; };
+        window.pywebview.api.get_report_preview = async (payload) => ({
+            success: true,
+            markdown: '## معاينة\\n' + (payload.description || 'بدون وصف'),
+            manifest: ['report.json', 'report.md', 'environment.json', 'manifest.json'],
+            redactions: {paths: 2, emails: 1},
+            warnings: ['التنقية آلية'],
+            events_included: false
+        });
         window.pywebview.api.open_error_report = async (payload) => ({
             success: true, opened: false,
             github_url: 'https://github.com/AboALhasanx/flutterway/issues/new?title=test',
-            zip_path: 'C:\\\\temp\\\\report.zip', markdown: 'report'
+            zip_path: '', markdown: 'report'
         });
         openReportModal('setup', 'تعذر التجهيز', 'Error: pub get failed');
     }""")
-    page.wait_for_timeout(150)
+    page.wait_for_timeout(250)
     check("report-modal: visible", page.locator("#report-modal").is_visible())
     check("report-modal: error summary", "تعذر التجهيز" in page.locator("#report-summary").inner_text())
+    check("report-modal: preview matches backend", "## معاينة" in page.locator("#report-preview-text").inner_text())
+    check("report-modal: preview lists files", "report.json" in page.locator("#report-preview-files").inner_text())
+    check("report-modal: preview shows redactions", "paths: 2" in page.locator("#report-preview-redactions").inner_text())
+    check("report-modal: actions disabled before consent", page.locator("#btn-report-github").is_disabled())
     page.fill("#report-description", "ضغطت ابدأ التجهيز")
+    page.wait_for_timeout(700)
+    check("report-modal: preview follows description", "ضغطت ابدأ التجهيز" in page.locator("#report-preview-text").inner_text())
+    check("report-modal: still disabled without consent", page.locator("#btn-report-github").is_disabled())
+    page.check("#report-consent")
+    check("report-modal: consent enables actions", page.locator("#btn-report-github").is_enabled())
     page.click("#btn-report-github")
-    page.wait_for_timeout(250)
+    page.wait_for_timeout(300)
     check("report-modal: github result", page.locator("#report-result").is_visible())
     check("report-modal: result link", "issues/new" in (page.locator("#report-result-link a").get_attribute("href") or ""))
     page.keyboard.press("Escape")
@@ -59,6 +76,58 @@ def test_report_modal(browser) -> None:
     page.evaluate("window.dispatchEvent(new ErrorEvent('error', {message:'boom', error:new Error('boom')}))")
     page.wait_for_timeout(150)
     check("report-modal: client error logged", page.evaluate("window.__clientErrors") == 1)
+    page.close()
+
+
+def test_build_stage_truth(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("""() => {
+        switchMainView('wizard'); showStep(3); resetBuildUi();
+        finishRealBuild({success: false, stages: {build: 'failed', install: 'skipped', launch: 'skipped'}, message: 'gradle failed'});
+    }""")
+    step2 = page.locator("#bstep-2").get_attribute("class") or ""
+    step3 = page.locator("#bstep-3").get_attribute("class") or ""
+    check("build-stage: build failure marks build step", "error" in step2, step2)
+    check("build-stage: build failure leaves install neutral", "error" not in step3, step3)
+
+    page.evaluate("""() => {
+        resetBuildUi();
+        finishRealBuild({success: true, stages: {build: 'success', install: 'failed', launch: 'skipped'}, message: 'install failed'});
+    }""")
+    step3 = page.locator("#bstep-3").get_attribute("class") or ""
+    check("build-stage: install failure marks install step", "error" in step3, step3)
+    check("build-stage: install failure shows retry", page.locator("#btn-run-test").is_visible())
+
+    page.evaluate("""() => {
+        resetBuildUi();
+        finishRealBuild({success: true, installed_ok: true, launched_ok: false,
+            stages: {build: 'success', install: 'success', launch: 'unknown'}, device_name: 'Tab'});
+    }""")
+    page.wait_for_timeout(850)
+    head = page.locator("#benchmark-head-text").inner_text()
+    check("build-stage: launch unknown is partial", "تم تثبيت التطبيق" in head and "لم نتحقق" in head, head)
+    report_display = page.locator("#btn-build-report").evaluate("el => el.style.display")
+    check("build-stage: partial keeps report button", report_display == "inline-flex", report_display)
+    page.close()
+
+
+def test_hot_reload_conflict_ui(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("""async () => {
+        window.pywebview.api.hot_reload_save = async () => ({
+            success: false, code: 'external_change', message: 'الملف تغيّر من خارج FlutterWay.'
+        });
+        document.getElementById('hr-advanced').open = true;
+        switchMainView('companion'); switchCompanionTab('hotreload');
+        const editor = document.getElementById('hr-editor');
+        editor.value = 'changed';
+        hrLastContent = 'old';
+        await saveHotReload();
+    }""")
+    check("hot-reload-conflict: box visible", page.locator("#hr-conflict-box").is_visible())
+    check("hot-reload-conflict: explains the file changed", "تغيّر" in page.locator("#hr-conflict-text").inner_text())
+    check("hot-reload-conflict: offers both choices",
+          page.locator("#hr-conflict-box button").count() == 2)
     page.close()
 
 
@@ -70,8 +139,14 @@ def test_progress_smooth_and_rotating(browser) -> None:
         updateProgress(80, 'جاري تنزيل أدوات Android SDK... 57%', 3);
     }""")
     page.wait_for_timeout(250)
-    shown = page.evaluate("parseInt(document.getElementById('progress-pct').innerText)")
+    visible_state = page.evaluate("""() => ({
+        shown: parseInt(document.getElementById('progress-pct').innerText),
+        aria: document.getElementById('progress-bar').getAttribute('aria-valuenow')
+    })""")
+    shown = visible_state["shown"]
     check("progress: not an instant jump", shown < 80, f"shown={shown}")
+    aria = visible_state["aria"]
+    check("progress: visible percentage matches ARIA", aria == str(shown), f"shown={shown} aria={aria}")
     main = page.locator("#progress-text").inner_text()
     detail = page.locator("#progress-detail").inner_text()
     check("progress: stage percent separated", "57" not in main and "57" in detail, f"main={main} detail={detail}")
@@ -79,6 +154,28 @@ def test_progress_smooth_and_rotating(browser) -> None:
     wait_text = page.locator("#progress-wait").inner_text()
     check("progress: rotating wait message", bool(wait_text.strip()), f"text={wait_text}")
     check("progress: slide-in class", "slide-in" in (page.locator("#progress-wait").get_attribute("class") or ""))
+    stalled = page.evaluate("""() => {
+        displayedProgress = targetProgress;
+        lastProgressAt = Date.now() - 10000;
+        paintProgress();
+        const before = document.getElementById('progress-pct').innerText;
+        progressTick();
+        return {before, after: document.getElementById('progress-pct').innerText};
+    }""")
+    check("progress: stalled state does not invent percentage", stalled["after"] == stalled["before"], f"before={stalled['before']} after={stalled['after']}")
+    page.close()
+
+
+def test_progress_reduced_motion(browser) -> None:
+    page = new_page(browser)
+    page.emulate_media(reduced_motion="reduce")
+    page.evaluate("switchMainView('wizard'); showStep(2); resetProgressDisplay(); updateProgress(64, 'جاري التجهيز...', 2); progressTick()")
+    shown = page.evaluate("parseInt(document.getElementById('progress-pct').innerText)")
+    aria = page.locator("#progress-bar").get_attribute("aria-valuenow")
+    transition = page.locator("#progress-fill").evaluate("el => getComputedStyle(el).transitionDuration")
+    check("progress: reduced motion jumps to truthful value", shown == 64, f"shown={shown}")
+    check("progress: reduced motion ARIA matches", aria == str(shown), f"shown={shown} aria={aria}")
+    check("progress: reduced motion disables fill transition", transition == "0s", f"duration={transition}")
     page.close()
 
 
@@ -110,14 +207,29 @@ def test_build_progress_mapping(browser) -> None:
         appendLiveBuildLog('> Task :app:compileFlutterBuildDebug');
     }""")
     page.wait_for_timeout(350)
-    first = page.evaluate("parseInt(document.getElementById('build-progress-pct').innerText)")
+    visible_state = page.evaluate("""() => ({
+        shown: parseInt(document.getElementById('build-progress-pct').innerText),
+        aria: document.getElementById('build-progress-bar').getAttribute('aria-valuenow')
+    })""")
+    first = visible_state["shown"]
     label = page.locator("#build-progress-label").inner_text()
     check("build-progress: moves from Gradle task", first > 0, f"pct={first}")
     check("build-progress: estimated label", "تقديري" in label, label)
+    aria = visible_state["aria"]
+    check("build-progress: visible percentage matches ARIA", aria == str(first), f"pct={first} aria={aria}")
     page.evaluate("appendLiveBuildLog('[ADB] Installing on device...')")
     page.wait_for_timeout(450)
     second = page.evaluate("parseInt(document.getElementById('build-progress-pct').innerText)")
     check("build-progress: install milestone", second > first, f"first={first} second={second}")
+    stalled = page.evaluate("""() => {
+        buildProgressShown = buildProgressTarget;
+        buildProgressLastAt = Date.now() - 20000;
+        paintBuildProgress();
+        const before = document.getElementById('build-progress-pct').innerText;
+        buildProgressTick();
+        return {before, after: document.getElementById('build-progress-pct').innerText};
+    }""")
+    check("build-progress: stalled estimate does not creep", stalled["after"] == stalled["before"], f"before={stalled['before']} after={stalled['after']}")
     page.evaluate("finishRealBuild({success:true, installed_ok:true, device_name:'Phone', build_time:'1s', apk_size:'71 MB'})")
     page.wait_for_timeout(650)
     final = page.evaluate("parseInt(document.getElementById('build-progress-pct').innerText)")
@@ -316,7 +428,10 @@ def main() -> int:
             test_driver_alert_truth,
             test_report_modal,
             test_setup_guard_and_error_details,
+            test_build_stage_truth,
+            test_hot_reload_conflict_ui,
             test_progress_smooth_and_rotating,
+            test_progress_reduced_motion,
             test_build_progress_mapping,
             test_build_success_loop,
             test_build_double_start,

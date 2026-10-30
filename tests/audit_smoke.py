@@ -43,9 +43,18 @@ def static_checks() -> None:
     assert "def harness_enabled()" in app_src, "harness must be explicitly gated"
     assert "if harness_enabled():" in app_src, "main() must gate the harness"
 
-    assert "res.success === true && res.installed_ok === true" in html_src, (
-        "finishRealBuild must require both build and install success"
+    assert "const buildOk = stages.build ? stages.build === 'success'" in html_src, (
+        "finishRealBuild must read the build stage"
     )
+    assert "if (!buildOk || !installOk)" in html_src, (
+        "finishRealBuild must separate build failure from install failure"
+    )
+    assert "external_change" in html_src, "the UI must surface Hot Reload conflicts"
+    diag_src = (ROOT / "gui" / "diagnostics.py").read_text(encoding="utf-8")
+    assert 'archive.write(_log_path, "flutterway.log")' not in diag_src, (
+        "the raw local log must never be written into a report ZIP"
+    )
+    assert '"logs"' not in diag_src or "raw_log" in diag_src, "reports must not carry a raw logs key"
     assert "rep.score || 100" not in html_src, "the 0% -> 100% falsy bug must stay fixed"
     assert "if not jdk_path:" in app_src, "onboarding must stop when JDK setup fails"
     assert "if not self._ensure_starter_project(" in app_src, (
@@ -426,7 +435,8 @@ def ui_checks() -> None:
         )
         assert page.locator("#build-console").is_visible()
         assert not page.locator("#benchmark-card").is_visible()
-        assert "error" in (page.locator("#bstep-3").get_attribute("class") or "")
+        assert "error" in (page.locator("#bstep-2").get_attribute("class") or "")
+        assert "error" not in (page.locator("#bstep-3").get_attribute("class") or "")
         assert "[ERROR] build failed" in page.locator("#build-terminal-lines").inner_text()
         assert "أعد المحاولة" in page.locator("#btn-run-test").inner_text()
 
@@ -447,6 +457,7 @@ def ui_checks() -> None:
         )
         assert not page.locator("#benchmark-card").is_visible()
         assert "[ERROR] install failed" in page.locator("#build-terminal-lines").inner_text()
+        assert "error" in (page.locator("#bstep-3").get_attribute("class") or "")
 
         # 5) Only a successful build + install shows the celebration card.
         page.evaluate(

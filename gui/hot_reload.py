@@ -12,11 +12,13 @@ restart, and `q` to stop. No Enter key is required from the student.
 from __future__ import annotations
 
 import atexit
+import hashlib
 import os
 import re
 import subprocess
 import threading
 import time
+import uuid
 from collections import deque
 
 try:
@@ -45,6 +47,9 @@ class HotReloadSession:
         self.used_prebuilt = False
         self._last_request = 0.0
         self._stop_reader = False
+        self._base_hash = None
+        self._main_bom = False
+        self._main_newline = "\n"
         atexit.register(self.stop)
 
     # ------------------------------------------------------------------ helpers
@@ -158,6 +163,13 @@ class HotReloadSession:
             self.last_error = None
             self.last_reload_ms = None
             self.ready = False
+            try:
+                raw_main = self._read_bytes(main_dart)
+                self._base_hash = self._sha(raw_main)
+                self._main_bom = raw_main.startswith(b"\xef\xbb\xbf")
+                self._main_newline = "\r\n" if b"\r\n" in raw_main else "\n"
+            except Exception:
+                self._base_hash = None
             self.used_prebuilt = bool(apk)
             self.running = True
             command = self._command(serial, apk)
@@ -197,26 +209,118 @@ class HotReloadSession:
         self.stop()
         return {"success": False, "error": "انتهت المهلة قبل أن تستجيب جلسة Flutter."}
 
+    def _main_path(self) -> str:
+        return os.path.join(self.project_path, "lib", "main.dart")
+
+    @staticmethod
+    def _sha(data: bytes) -> str:
+        return hashlib.sha256(data).hexdigest()
+
+    @staticmethod
+    def _read_bytes(path: str) -> bytes:
+        with open(path, "rb") as handle:
+            return handle.read()
+
+    def _rotate_backup(self, path: str, data: bytes) -> None:
+        """Keep the last three versions as main.dart.bak / .bak.1 / .bak.2."""
+        try:
+            bak = path + ".bak"
+            if os.path.exists(bak):
+                for index in (2, 1):
+                    older = f"{path}.bak.{index}"
+                    newer = f"{path}.bak.{index - 1}" if index > 1 else bak
+                    if os.path.exists(newer):
+                        os.replace(newer, older)
+            with open(bak, "wb") as handle:
+                handle.write(data)
+                handle.flush()
+                os.fsync(handle.fileno())
+        except Exception:
+            pass
+
+    def _atomic_write(self, path: str, data: bytes) -> None:
+        part = f"{path}.tmp-{uuid.uuid4().hex[:8]}"
+        try:
+            with open(part, "wb") as handle:
+                handle.write(data)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(part, path)
+        finally:
+            if os.path.exists(part):
+                try:
+                    os.unlink(part)
+                except Exception:
+                    pass
+
     def read_main(self):
         if not self.project_path:
             return {"success": False, "error": "لم تبدأ جلسة Hot Reload بعد"}
-        path = os.path.join(self.project_path, "lib", "main.dart")
+        path = self._main_path()
         try:
-            with open(path, "r", encoding="utf-8") as handle:
-                return {"success": True, "content": handle.read(), "path": path}
+            raw = self._read_bytes(path)
+            self._base_hash = self._sha(raw)
+            self._main_bom = raw.startswith(b"\xef\xbb\xbf")
+            self._main_newline = "\r\n" if b"\r\n" in raw else "\n"
+            text = raw.decode("utf-8-sig", "replace")
+            return {"success": True, "content": text, "path": path, "hash": self._base_hash}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
-    def save(self, content):
+    def save(self, content, force_new: bool = False):
         with self.lock:
             if not self.project_path:
                 return {"success": False, "error": "لم تبدأ جلسة Hot Reload بعد"}
-            path = os.path.join(self.project_path, "lib", "main.dart")
+            path = self._main_path()
+            text = content or ""
+            max_bytes = 2 * 1024 * 1024
+            if len(text.encode("utf-8")) > max_bytes:
+                return {"success": False, "code": "too_large",
+                        "error": "الملف أكبر من 2 MB؛ لن نحفظه تلقائياً."}
+
+            if self._main_bom and not text.startswith("\ufeff"):
+                text = "\ufeff" + text
+            if self._main_newline == "\r\n":
+                text = text.replace("\r\n", "\n").replace("\n", "\r\n")
+            data = text.encode("utf-8")
+
             try:
-                with open(path, "w", encoding="utf-8") as handle:
-                    handle.write(content or "")
+                current = self._read_bytes(path)
+            except FileNotFoundError:
+                current = None
+            except Exception as exc:
+                return {"success": False, "error": f"تعذر قراءة الملف: {exc}"}
+
+            if force_new:
+                copy_path = os.path.join(self.project_path, "lib", "main.flutterway.dart")
+                try:
+                    self._atomic_write(copy_path, data)
+                except Exception as exc:
+                    return {"success": False, "error": f"تعذر حفظ النسخة: {exc}"}
+                return {"success": True, "saved": True, "reload_sent": False,
+                        "path": copy_path, "code": "saved_copy",
+                        "message": "حُفظت نسختك في main.flutterway.dart بدون لمس الأصل."}
+
+            current_hash = self._sha(current) if current is not None else None
+            if self._base_hash and current_hash != self._base_hash:
+                return {
+                    "success": False,
+                    "code": "external_change",
+                    "message": "الملف تغيّر من خارج FlutterWay. لم نحفظ فوق تعديلك.",
+                    "current_hash": current_hash,
+                    "base_hash": self._base_hash,
+                }
+
+            try:
+                if current is not None:
+                    self._rotate_backup(path, current)
+                self._atomic_write(path, data)
+                if self._read_bytes(path) != data:
+                    raise OSError("read-back mismatch")
             except Exception as exc:
                 return {"success": False, "error": f"تعذر حفظ الملف: {exc}"}
+
+            self._base_hash = self._sha(data)
             sent = False
             if self.running and self.ready:
                 sent = self._send("r")
@@ -224,6 +328,7 @@ class HotReloadSession:
                 "success": True,
                 "saved": True,
                 "reload_sent": sent,
+                "hash": self._base_hash,
                 "message": "تم الحفظ وإرسال Hot Reload" if sent else "تم الحفظ؛ الجلسة غير جاهزة بعد",
             }
 

@@ -171,8 +171,9 @@ def main() -> int:
                 report["metrics"]["progress_bar"] = {"ratio": round(ratio, 3), **bar}
                 if abs(ratio - 0.25) > 0.06:
                     finding("high", "Step 2 progress", f"شريط التقدم لا يعكس النسبة: {round(ratio * 100)}% بدل 25%.")
-            if bar.get("ariaNow") != "25":
-                finding("medium", "Accessibility", "aria-valuenow لا يطابق نسبة التقدم.")
+            aria_value = int(bar["ariaNow"]) if str(bar.get("ariaNow", "")).isdigit() else -1
+            if abs(aria_value - round(ratio * 100)) > 2:
+                finding("medium", "Accessibility", "aria-valuenow لا يطابق الجزء المرئي من شريط التقدم.")
             shot("03_step2_progress", "الخطوة 2: شكل التقدم (بدون تشغيل التثبيت)")
             page.evaluate("onboardingFailed('تعذر تنزيل Flutter SDK. تأكد من اتصال الإنترنت ثم أعد المحاولة.')")
             page.wait_for_timeout(250)

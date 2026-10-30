@@ -925,18 +925,24 @@
 
     .progress-bar-container {
       width: 100%;
-      height: 10px;
+      height: 12px;
       background: var(--bg);
-      border-radius: 5px;
+      border-radius: 999px;
       overflow: hidden;
       border: 1px solid var(--card-border);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
     }
 
     .progress-bar-fill {
       height: 100%;
-      width: 0%;
+      width: 100%;
       background: linear-gradient(90deg, var(--accent) 0%, #29b6f6 100%);
-      transition: width 0.12s linear;
+      border-radius: inherit;
+      transform: scaleX(var(--progress-scale, 0));
+      transform-origin: right center;
+      transition: transform 0.08s cubic-bezier(0.2, 0.7, 0.2, 1);
+      box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 32%, transparent);
+      will-change: transform;
     }
 
     .progress-detail {
@@ -1137,7 +1143,7 @@
 
     .build-progress-track {
       width: 100%;
-      height: 8px;
+      height: 10px;
       background: var(--bg);
       border: 1px solid var(--card-border);
       border-radius: 999px;
@@ -1146,9 +1152,13 @@
 
     .build-progress-fill {
       height: 100%;
-      width: 0%;
+      width: 100%;
       background: linear-gradient(90deg, var(--accent) 0%, #29b6f6 100%);
-      transition: width 0.12s linear;
+      border-radius: inherit;
+      transform: scaleX(var(--progress-scale, 0));
+      transform-origin: right center;
+      transition: transform 0.08s cubic-bezier(0.2, 0.7, 0.2, 1);
+      will-change: transform;
     }
 
     .build-progress-fill.error {
@@ -2174,6 +2184,11 @@
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
       }
+      .progress-bar-fill,
+      .build-progress-fill {
+        transition: none !important;
+        will-change: auto;
+      }
     }
   </style>
 </head>
@@ -2293,10 +2308,6 @@
               <div class="home-step-num"><span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span></div>
               <div><div class="home-step-title">افتح VS Code</div><div class="home-step-desc">عدّل مشروعك وابدأ الكتابة.</div></div>
             </button>
-            <button class="home-step" onclick="openHotReload(true)">
-              <div class="home-step-num"><span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span></div>
-              <div><div class="home-step-title">جرّب Hot Reload</div><div class="home-step-desc">غيّر نصاً وشاهد الهاتف يتحدّث.</div></div>
-            </button>
             <button class="home-step" onclick="switchCompanionTab('cheatsheet')">
               <div class="home-step-num"><span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span></div>
               <div><div class="home-step-title">تعلّم الأساسيات</div><div class="home-step-desc">مفكرة قصيرة للمبتدئين.</div></div>
@@ -2413,7 +2424,7 @@
         <!-- TAB 3: EMERGENCY RESCUE BOX -->
         <div id="tab-rescue" class="comp-tab-pane">
           <div class="hero-desc" style="text-align: right; margin-bottom: 12px; max-width: 100%;">
-            حلول فورية وسحرية لأكثر المشاكل المزعجة التي تواجه الطلاب أثناء المحاضرات دون الحاجة لكتابة أوامر بالترمينال:
+            حلول شائعة لمشاكل الطلاب أثناء المحاضرات. كل إجراء يوضّح ما سيغيّره قبل التنفيذ، ولا يوجد «حل سحري»:
           </div>
 
           <div class="rescue-grid">
@@ -2584,7 +2595,7 @@
                 <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
               </div>
               <div>
-                <div class="cheat-item-title">2. مفتاح الحل السحري في VS Code (Ctrl + .)</div>
+                <div class="cheat-item-title">2. الإصلاح السريع في VS Code (Ctrl + .)</div>
                 <div class="cheat-item-desc">
                   قف على أي ويدجت واضغط <strong>Ctrl + .</strong> لتغليفها داخل Padding أو Center أو Row أو استخراجها في دالة بلمح البصر!
                 </div>
@@ -2671,6 +2682,14 @@
                 <img id="hr-preview" class="hr-preview" alt="معاينة الهاتف" style="display: none;" />
                 <div id="hr-preview-empty" class="hr-preview-empty">تظهر شاشة الهاتف بعد بدء الجلسة.</div>
                 <button id="btn-hr-preview" class="btn-secondary" style="font-size: 12px; padding: 5px 10px;" onclick="refreshHotReloadPreview()">تحديث المعاينة</button>
+              </div>
+              <div id="hr-conflict-box" style="display: none; margin-top: 10px; padding: 10px; border: 1px solid var(--warning); border-radius: 8px; background: var(--warning-bg); font-size: 12px;">
+                <div style="font-weight: 800; color: var(--warning); margin-bottom: 6px;">الملف تغيّر من خارج FlutterWay — لم نحفظ فوقه.</div>
+                <div id="hr-conflict-text" style="color: var(--text-muted); margin-bottom: 8px;">اختر: حدّث المحرر من القرص، أو احفظ نسختك في ملف جديد.</div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <button class="btn-secondary" style="font-size: 12px;" onclick="resolveHotReloadConflict('disk')">حدّث من القرص</button>
+                  <button class="btn-secondary" style="font-size: 12px;" onclick="resolveHotReloadConflict('copy')">احفظ نسختي كملف جديد</button>
+                </div>
               </div>
             </div>
 
@@ -2953,7 +2972,7 @@
             </div>
 
             <div class="build-commentary" id="build-commentary-text" role="status" aria-live="polite">
-              🚀 نجهّز مشروعك للبناء... أول مرة قد تأخذ دقيقة.
+              🚀 نجهّز مشروعك للبناء... أول بناء قد يأخذ عدة دقائق حسب الجهاز والإنترنت.
             </div>
 
             <div class="build-progress-block">
@@ -3087,7 +3106,7 @@
                 <span class="icon" style="width: 14px; height: 14px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
               </div>
               <div>
-                <div class="cheat-item-title">3. زر التشغيل السحري F5</div>
+                <div class="cheat-item-title">3. زر التشغيل F5</div>
                 <div class="cheat-item-desc">اضغط F5 في الكيبورد لتشغيل وبناء التطبيق وإرساله لشاشة الهاتف.</div>
               </div>
             </div>
@@ -3251,16 +3270,28 @@
       </div>
 
       <p class="report-note">
-        ساعدنا نصلح المشكلة. راجع البيانات قبل الإرسال — ما نرسل اسمك أو ملفاتك أو كود مشروعك.
+        راجع التقرير قبل مشاركته. التنقية آلية وقد لا تخفي كل المعلومات الشخصية أو الأسرار.
       </p>
       <pre id="report-summary" class="report-summary"></pre>
+
+      <div style="margin: 10px 0;">
+        <div style="font-size: 12px; font-weight: 800; color: var(--text); margin-bottom: 6px;">المعاينة الكاملة لما سيُشارك</div>
+        <pre id="report-preview-text" class="report-summary" style="max-height: 220px; overflow: auto;">نجهّز المعاينة...</pre>
+        <div id="report-preview-files" style="font-size: 12px; color: var(--text-muted); margin-top: 6px;"></div>
+        <div id="report-preview-redactions" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;"></div>
+      </div>
 
       <label for="report-description" style="display: block; font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 6px;">شنو كنت تسوي لما صار الخطأ؟</label>
       <textarea id="report-description" class="report-textarea" placeholder="مثلاً: ضغطت ابدأ التجهيز ووقفت عند 24%..."></textarea>
 
       <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-        <input type="checkbox" id="report-include-logs" checked>
-        أرفق آخر سجل تشخيص (منقّى من المسارات الشخصية)
+        <input type="checkbox" id="report-include-logs" disabled>
+        السجل المحلي غير مرفق بالتقرير حالياً
+      </label>
+
+      <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text); margin-bottom: 12px;">
+        <input type="checkbox" id="report-consent" onchange="updateReportActions()">
+        <span>راجعت المحتوى أعلاه وأوافق على مشاركته. التنقية آلية وقد تحتاج مراجعة يدوية.</span>
       </label>
 
       <div class="report-actions">
@@ -3303,6 +3334,53 @@
     let hrQuickOriginal = '';
     let hrSuppressInput = false;
     let hrLastContent = '';
+    let hrConflict = false;
+
+    function showHrConflict(message) {
+      hrConflict = true;
+      const box = document.getElementById('hr-conflict-box');
+      const text = document.getElementById('hr-conflict-text');
+      if (text && message) text.innerText = message;
+      if (box) box.style.display = 'block';
+      setHrLog('⚠ ' + (message || 'الملف تغيّر من خارج FlutterWay. لم نحفظ فوقه.'));
+      setHrQuickHint('تعارض: الملف تغيّر خارج FlutterWay. اختر «حدّث من القرص» أو احفظ نسخة جديدة.', 'error');
+    }
+
+    function clearHrConflict(message) {
+      hrConflict = false;
+      const box = document.getElementById('hr-conflict-box');
+      if (box) box.style.display = 'none';
+      if (message) setHrQuickHint(message, 'ok');
+    }
+
+    async function resolveHotReloadConflict(mode) {
+      if (!window.pywebview || !window.pywebview.api) return;
+      try {
+        if (mode === 'disk') {
+          const read = await window.pywebview.api.hot_reload_read();
+          if (!read.success) { setHrLog(read.error || 'تعذر قراءة الملف'); return; }
+          const editor = document.getElementById('hr-editor');
+          if (editor) {
+            hrSuppressInput = true;
+            editor.value = read.content;
+            hrLastContent = read.content;
+            hrSuppressInput = false;
+          }
+          clearHrConflict('تم تحديث المحرر من الملف على القرص.');
+          refreshHotReloadPreview();
+        } else {
+          const editor = document.getElementById('hr-editor');
+          if (!editor) return;
+          const res = await window.pywebview.api.hot_reload_save(editor.value, true);
+          if (!res.success) { setHrLog(res.error || 'تعذر حفظ النسخة'); return; }
+          hrLastContent = editor.value;
+          clearHrConflict('حُفظت نسختك في main.flutterway.dart. الأصل لم يُلمس.');
+          setHrLog('→ ' + (res.message || 'حُفظت نسخة جديدة') + (res.path ? `: ${res.path}` : ''));
+        }
+      } catch (e) {
+        setHrLog(`خطأ أثناء معالجة التعارض: ${e}`);
+      }
+    }
     let hrRunning = false;
     let buildState = 'idle';
     let buildProgressTarget = 0;
@@ -3697,6 +3775,7 @@
     async function saveHotReload() {
       const editor = document.getElementById('hr-editor');
       if (!editor) return;
+      if (hrConflict) return;
       if (editor.value === hrLastContent) return;
       if (!window.pywebview || !window.pywebview.api) return;
       try {
@@ -3712,6 +3791,8 @@
           setTimeout(refreshHotReloadStatus, 1500);
           setTimeout(refreshHotReloadPreview, 1800);
           syncHotReloadQuickText();
+        } else if (res.code === 'external_change') {
+          showHrConflict(res.message);
         } else {
           setHrLog(res.error || 'تعذر حفظ الملف');
         }
@@ -4478,6 +4559,7 @@
     let reportOpener = null;
     let lastClientError = null;
     let reportBusy = false;
+    let reportPreviewTimer = null;
     let lastClientKey = '';
 
     function rememberClientError(payload) {
@@ -4539,12 +4621,21 @@
       const desc = document.getElementById('report-description');
       if (desc) desc.value = '';
       const logs = document.getElementById('report-include-logs');
-      if (logs) logs.checked = true;
+      if (logs) logs.checked = false;
+      const consent = document.getElementById('report-consent');
+      if (consent) consent.checked = false;
+      const preview = document.getElementById('report-preview-text');
+      if (preview) preview.innerText = 'نجهّز المعاينة...';
+      const files = document.getElementById('report-preview-files');
+      if (files) files.innerText = '';
+      const redactions = document.getElementById('report-preview-redactions');
+      if (redactions) redactions.innerText = '';
       const status = document.getElementById('report-status');
       if (status) status.innerText = '';
       const result = document.getElementById('report-result');
       if (result) result.style.display = 'none';
       setReportBusy(false);
+      refreshReportPreview();
       if (desc) desc.focus();
     }
 
@@ -4566,10 +4657,39 @@
 
     function setReportBusy(busy) {
       reportBusy = busy;
+      updateReportActions();
+    }
+
+    function updateReportActions() {
+      const consent = !!(document.getElementById('report-consent')?.checked);
+      const allowed = !reportBusy && consent;
       ['btn-report-github', 'btn-report-save', 'btn-report-copy'].forEach(id => {
         const btn = document.getElementById(id);
-        if (btn) btn.disabled = busy;
+        if (btn) btn.disabled = !allowed;
       });
+    }
+
+    async function refreshReportPreview() {
+      const textEl = document.getElementById('report-preview-text');
+      const filesEl = document.getElementById('report-preview-files');
+      const redactionsEl = document.getElementById('report-preview-redactions');
+      if (!window.pywebview || !window.pywebview.api || !window.pywebview.api.get_report_preview) {
+        if (textEl) textEl.innerText = 'المعاينة التفصيلية غير متاحة في هذا البناء. راجع الملخص أعلاه قبل الموافقة.';
+        return;
+      }
+      try {
+        const res = await window.pywebview.api.get_report_preview(buildReportPayload());
+        if (!res || res.success === false) throw new Error((res && res.error) || 'تعذر تجهيز المعاينة');
+        if (textEl) textEl.innerText = res.markdown || '';
+        if (filesEl) filesEl.innerText = `الملفات: ${(res.manifest || []).join('، ')}`;
+        if (redactionsEl) {
+          const counts = res.redactions || {};
+          const parts = Object.entries(counts).map(([key, value]) => `${key}: ${value}`);
+          redactionsEl.innerText = parts.length ? `ما أُخفي: ${parts.join('، ')}` : 'لم تُكتشف بيانات شخصية معروفة.';
+        }
+      } catch (e) {
+        if (textEl) textEl.innerText = `تعذر تجهيز المعاينة: ${e}`;
+      }
     }
 
     function buildReportPayload() {
@@ -4578,11 +4698,17 @@
         stack: reportContext.stack || '',
         phase: reportContext.phase || 'manual',
         description: document.getElementById('report-description')?.value || '',
-        include_logs: !!document.getElementById('report-include-logs')?.checked,
+        include_logs: false,
+        include_events: false,
         source: 'webview',
         extra: { client_error: lastClientError }
       };
     }
+
+    document.getElementById('report-description')?.addEventListener('input', () => {
+      if (reportPreviewTimer) clearTimeout(reportPreviewTimer);
+      reportPreviewTimer = setTimeout(refreshReportPreview, 450);
+    });
 
     function showReportResult(text, url, zipPath) {
       const result = document.getElementById('report-result');
@@ -4698,8 +4824,14 @@
       const fill = document.getElementById('progress-fill');
       const pct = document.getElementById('progress-pct');
       const value = Math.max(0, Math.min(100, displayedProgress));
-      if (fill) fill.style.width = `${value}%`;
-      if (pct) pct.innerText = `${Math.floor(value)}%`;
+      const visibleValue = Math.floor(value);
+      if (fill) fill.style.setProperty('--progress-scale', String(value / 100));
+      if (pct) pct.innerText = `${visibleValue}%`;
+      const bar = document.getElementById('progress-bar');
+      if (bar) {
+        bar.setAttribute('aria-valuenow', String(visibleValue));
+        bar.setAttribute('aria-valuetext', `${visibleValue}%`);
+      }
     }
 
     function rotateWaitMessage(force) {
@@ -4720,11 +4852,12 @@
     }
 
     function progressTick() {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const diff = targetProgress - displayedProgress;
-      if (diff > 0.05) {
-        displayedProgress = Math.min(targetProgress, displayedProgress + Math.max(0.25, diff * 0.35));
-      } else if (Date.now() - lastProgressAt > 9000 && displayedProgress < targetProgress + 2) {
-        displayedProgress = Math.min(targetProgress + 2, displayedProgress + 0.08);
+      if (reduceMotion) {
+        displayedProgress = targetProgress;
+      } else if (diff > 0.05) {
+        displayedProgress = Math.min(targetProgress, displayedProgress + Math.max(0.15, diff * 0.42));
       }
       paintProgress();
 
@@ -4765,7 +4898,10 @@
       const barContainer = document.querySelector('.progress-bar-container');
       if (barContainer) barContainer.classList.remove('stalled');
       const bar = document.getElementById('progress-bar');
-      if (bar) bar.setAttribute('aria-valuenow', '0');
+      if (bar) {
+        bar.setAttribute('aria-valuenow', '0');
+        bar.setAttribute('aria-valuetext', '0%');
+      }
     }
 
     function updateProgress(percent, statusText, chkStep) {
@@ -4780,7 +4916,6 @@
         displayedProgress = 100;
       }
       lastProgressAt = Date.now();
-      if (bar) bar.setAttribute('aria-valuenow', String(numeric));
 
       const raw = String(statusText || '');
       const match = raw.match(/\(?\s*(\d{1,3})\s*%\s*\)?/);
@@ -5020,17 +5155,22 @@
       const pct = document.getElementById('build-progress-pct');
       const bar = document.getElementById('build-progress-bar');
       const value = Math.max(0, Math.min(100, buildProgressShown));
-      if (fill) fill.style.width = `${value}%`;
-      if (pct) pct.innerText = `${Math.floor(value)}%`;
-      if (bar) bar.setAttribute('aria-valuenow', String(Math.round(buildProgressTarget)));
+      const visibleValue = Math.floor(value);
+      if (fill) fill.style.setProperty('--progress-scale', String(value / 100));
+      if (pct) pct.innerText = `${visibleValue}%`;
+      if (bar) {
+        bar.setAttribute('aria-valuenow', String(visibleValue));
+        bar.setAttribute('aria-valuetext', `${visibleValue}% — تقديري`);
+      }
     }
 
     function buildProgressTick() {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const diff = buildProgressTarget - buildProgressShown;
-      if (diff > 0.05) {
-        buildProgressShown = Math.min(buildProgressTarget, buildProgressShown + Math.max(0.25, diff * 0.35));
-      } else if (Date.now() - buildProgressLastAt > 12000 && buildProgressTarget < 96) {
-        buildProgressTarget = Math.min(buildProgressCeiling, buildProgressTarget + 0.05);
+      if (reduceMotion) {
+        buildProgressShown = buildProgressTarget;
+      } else if (diff > 0.05) {
+        buildProgressShown = Math.min(buildProgressTarget, buildProgressShown + Math.max(0.15, diff * 0.42));
       }
       paintBuildProgress();
     }
@@ -5066,12 +5206,15 @@
       const fill = document.getElementById('build-progress-fill');
       if (fill) {
         fill.classList.remove('error');
-        fill.style.width = '0%';
+        fill.style.setProperty('--progress-scale', '0');
       }
       const pct = document.getElementById('build-progress-pct');
       if (pct) pct.innerText = '0%';
       const bar = document.getElementById('build-progress-bar');
-      if (bar) bar.setAttribute('aria-valuenow', '0');
+      if (bar) {
+        bar.setAttribute('aria-valuenow', '0');
+        bar.setAttribute('aria-valuetext', '0%');
+      }
       if (buildProgressTimer) { clearInterval(buildProgressTimer); buildProgressTimer = null; }
     }
 
@@ -5113,7 +5256,7 @@
       const task = document.getElementById('build-task-active');
       if (task) task.innerText = 'Compiling...';
       const commentary = document.getElementById('build-commentary-text');
-      if (commentary) commentary.innerText = '🚀 نجهّز مشروعك للبناء... أول مرة قد تأخذ دقيقة.';
+      if (commentary) commentary.innerText = '🚀 نجهّز مشروعك للبناء... أول بناء قد يأخذ عدة دقائق.';
       const terminal = document.getElementById('build-terminal-lines');
       if (terminal) terminal.innerHTML = '<div style="color: #64748b;">$ flutter build apk --debug -v</div>';
       const details = document.getElementById('build-log-details');
@@ -5227,16 +5370,30 @@
       const benchmarkCard = document.getElementById('benchmark-card');
       const ctrlBtns = document.getElementById('device-ctrl-btns');
       const taskActive = document.getElementById('build-task-active');
-      const ok = !!res && res.success === true && res.installed_ok === true;
+      const reportBtn = document.getElementById('btn-build-report');
+      const stages = (res && res.stages) || {};
+      const buildOk = stages.build ? stages.build === 'success' : !!(res && res.success === true);
+      const installOk = stages.install ? stages.install === 'success' : !!(res && res.installed_ok);
+      const launchOk = stages.launch ? stages.launch === 'success' : !!(res && res.launched_ok);
 
-      if (!ok) {
+      if (!buildOk || !installOk) {
         buildState = 'failed';
-        setBuildStep(3, 'error');
+        if (!buildOk) {
+          setBuildStep(1, 'done');
+          setBuildStep(2, 'error');
+          setBuildStep(3, '');
+        } else {
+          setBuildStep(1, 'done');
+          setBuildStep(2, 'done');
+          setBuildStep(3, 'error');
+        }
         failBuildProgress();
-        const reportBtn = document.getElementById('btn-build-report');
         if (reportBtn) reportBtn.style.display = 'inline-flex';
-        if (taskActive) taskActive.innerText = 'Build Failed';
-        const reason = (res && (res.message || res.error)) || 'فشل البناء أو تثبيت التطبيق على الهاتف. راجع سجل الأخطاء أعلاه.';
+        if (taskActive) taskActive.innerText = buildOk ? 'Install Failed' : 'Build Failed';
+        const fallback = buildOk
+          ? 'تم البناء، لكن تعذر تثبيت التطبيق على الهاتف. تحقق من الكيبل والمساحة.'
+          : 'فشل البناء. راجع سجل الأخطاء أعلاه.';
+        const reason = (res && (res.message || res.error)) || fallback;
         appendLiveBuildLog(`[ERROR] ${reason}`);
         const logDetails = document.getElementById('build-log-details');
         if (logDetails) logDetails.open = true;
@@ -5247,25 +5404,31 @@
         return;
       }
 
-      buildState = 'success';
+      // Build + install verified. A launch that we could not observe is a
+      // partial result, not a celebration.
+      buildState = launchOk ? 'success' : 'partial';
+      setBuildStep(1, 'done');
+      setBuildStep(2, 'done');
       setBuildStep(3, 'done');
       setBuildCta('hidden');
-      const reportBtn = document.getElementById('btn-build-report');
-      if (reportBtn) reportBtn.style.display = 'none';
+      if (reportBtn) reportBtn.style.display = launchOk ? 'none' : 'inline-flex';
       setBuildProgressTarget(100, 'اكتمل البناء');
       buildProgressShown = 100;
       paintBuildProgress();
       const firstHint = document.getElementById('first-build-hint');
       if (firstHint) firstHint.style.display = 'none';
-      if (taskActive) taskActive.innerText = 'Build Succeeded';
+      if (taskActive) taskActive.innerText = launchOk ? 'Build Succeeded' : 'Installed — launch not verified';
 
       setTimeout(() => {
         if (consoleBox) consoleBox.style.display = 'none';
         if (benchmarkCard) benchmarkCard.style.display = 'block';
-        if (res.launched_ok === false) {
-          document.getElementById('benchmark-head-text').innerText = `تم تثبيت التطبيق على ${res.device_name}، لكنه لم يفتح بعد. جرّب فتحه من شاشة الهاتف.`;
-        } else if (res.device_name) {
-          document.getElementById('benchmark-head-text').innerText = `التطبيق يعمل الآن بنجاح على شاشة ${res.device_name}!`;
+        const head = document.getElementById('benchmark-head-text');
+        if (head) {
+          if (!launchOk) {
+            head.innerText = `تم تثبيت التطبيق على ${res.device_name || 'هاتفك'}، لكننا لم نتحقق من فتحه. افتحه من شاشة الهاتف.`;
+          } else if (res.device_name) {
+            head.innerText = `التطبيق يعمل الآن بنجاح على شاشة ${res.device_name}!`;
+          }
         }
         if (res.build_time) {
           document.getElementById('stat-speed').innerText = res.build_time;

@@ -238,6 +238,18 @@ def _looks_like_android_pnp(name):
     return "android" in lowered or "adb" in lowered
 
 
+def install_succeeded(returncode, output) -> bool:
+    """adb install is successful only with rc 0 *and* a Success line."""
+    text = str(output or "")
+    return returncode == 0 and "Success" in text
+
+
+def install_outcome(returncode, output) -> tuple[bool, str | None]:
+    if install_succeeded(returncode, output):
+        return True, None
+    return False, ("install_failed" if returncode else "install_unconfirmed")
+
+
 class OnboardingApi:
     def __init__(self, window_holder):
         self.window_holder = window_holder
@@ -473,18 +485,26 @@ class OnboardingApi:
 
         # 4. Install & Launch on Phone
         installed_ok = False
+        install_error = None
         if serial and apk_path:
             try:
-                subprocess.run(
+                i_res = subprocess.run(
                     [adb, "-s", serial, "install", "-r", apk_path],
-                    capture_output=True, startupinfo=startupinfo, creationflags=creationflags, timeout=35
+                    capture_output=True, text=True, timeout=35,
+                    startupinfo=startupinfo, creationflags=creationflags,
                 )
-                subprocess.run(
-                    [adb, "-s", serial, "shell", "monkey", "-p", app_id, "-c", "android.intent.category.LAUNCHER", "1"],
-                    capture_output=True, startupinfo=startupinfo, creationflags=creationflags, timeout=5
-                )
-                installed_ok = True
+                output = ((i_res.stdout or "") + "\n" + (i_res.stderr or "")).strip()
+                installed_ok, _code = install_outcome(i_res.returncode, output)
+                if not installed_ok:
+                    install_error = f"install rc={i_res.returncode}: {output[-300:]}"
+                    print("App install failed:", install_error)
+                else:
+                    subprocess.run(
+                        [adb, "-s", serial, "shell", "monkey", "-p", app_id, "-c", "android.intent.category.LAUNCHER", "1"],
+                        capture_output=True, startupinfo=startupinfo, creationflags=creationflags, timeout=5
+                    )
             except Exception as e:
+                install_error = str(e)
                 print("App install/launch error:", e)
 
         self.state["app_running_on_phone"] = installed_ok
@@ -493,6 +513,7 @@ class OnboardingApi:
             "success": installed_ok,
             "device_name": f"{manufacturer} {device_name}".strip(),
             "installed_ok": installed_ok,
+            "error": None if installed_ok else (install_error or "تعذر التحقق من التثبيت"),
             "message": (
                 f"تم تشغيل التطبيق بنجاح على {manufacturer} {device_name}!"
                 if installed_ok else
@@ -710,42 +731,50 @@ class OnboardingApi:
                 except Exception:
                     pass
 
+            install_returncode = None
+            launch_returncode = None
+            install_code = None
             if target_serial and apk_exists:
                 send_log(f"[ADB] جاري نقل وتثبيت التطبيق على {manufacturer} {device_model} ({target_serial})...")
                 try:
                     i_res = subprocess.run([adb, "-s", target_serial, "install", "-r", apk_path], capture_output=True, text=True, timeout=90, startupinfo=startupinfo, creationflags=creationflags)
-                    send_log(f"[ADB] نتيجة التثبيت: {i_res.stdout.strip() or 'Success'}")
+                    install_returncode = i_res.returncode
+                    install_output = ((i_res.stdout or "") + "\n" + (i_res.stderr or "")).strip()
+                    installed_ok, install_code = install_outcome(install_returncode, install_output)
+                    send_log(f"[ADB] نتيجة التثبيت (كود {install_returncode}): {install_output.splitlines()[-1] if install_output else 'بدون مخرجات'}")
 
-                    send_log(f"[ADB] جاري تشغيل شاشة التطبيق الرئيسية...")
-                    subprocess.run(
-                        [adb, "-s", target_serial, "shell", "monkey", "-p", app_id, "-c", "android.intent.category.LAUNCHER", "1"],
-                        capture_output=True, text=True, timeout=6, startupinfo=startupinfo, creationflags=creationflags
-                    )
-                    installed_ok = True
-                    launch_start = time.time()
-                    for _ in range(12):
-                        try:
-                            dump = subprocess.run(
-                                [adb, "-s", target_serial, "shell", "dumpsys", "activity", "activities"],
-                                capture_output=True, text=True, timeout=8, startupinfo=startupinfo, creationflags=creationflags
-                            )
-                            for line in dump.stdout.splitlines():
-                                if ("mResumedActivity" in line or "topResumedActivity" in line) and app_id in line:
-                                    launched_ok = True
-                                    break
-                        except Exception:
-                            pass
+                    if installed_ok:
+                        send_log("[ADB] جاري تشغيل شاشة التطبيق الرئيسية...")
+                        m_res = subprocess.run(
+                            [adb, "-s", target_serial, "shell", "monkey", "-p", app_id, "-c", "android.intent.category.LAUNCHER", "1"],
+                            capture_output=True, text=True, timeout=6, startupinfo=startupinfo, creationflags=creationflags
+                        )
+                        launch_returncode = m_res.returncode
+                        launch_start = time.time()
+                        for _ in range(12):
+                            try:
+                                dump = subprocess.run(
+                                    [adb, "-s", target_serial, "shell", "dumpsys", "activity", "activities"],
+                                    capture_output=True, text=True, timeout=8, startupinfo=startupinfo, creationflags=creationflags
+                                )
+                                for line in dump.stdout.splitlines():
+                                    if ("mResumedActivity" in line or "topResumedActivity" in line) and app_id in line:
+                                        launched_ok = True
+                                        break
+                            except Exception:
+                                pass
+                            if launched_ok:
+                                break
+                            time.sleep(1)
+                        launch_seconds = round(time.time() - launch_start, 1)
                         if launched_ok:
-                            break
-                        time.sleep(1)
-                    launch_seconds = round(time.time() - launch_start, 1)
-                    if launched_ok:
-                        send_log("[FlutterWay] ننتظر اكتمال أول إطار للتطبيق على الشاشة...")
-                        time.sleep(6)
-                        send_log("[FlutterWay] التطبيق يعمل الآن على شاشة جهازك!")
-                    else:
-                        send_log("[FlutterWay] تم تثبيت التطبيق، لكن لم نتحقق من فتحه بعد. افتحه من شاشة الهاتف.")
+                            send_log("[FlutterWay] ننتظر اكتمال أول إطار للتطبيق على الشاشة...")
+                            time.sleep(6)
+                            send_log("[FlutterWay] التطبيق يعمل الآن على شاشة جهازك!")
+                        else:
+                            send_log("[FlutterWay] تم تثبيت التطبيق، لكن لم نتحقق من فتحه بعد. افتحه من شاشة الهاتف.")
                 except Exception as e:
+                    install_code = "install_exception"
                     send_log(f"[ADB Error] تعذر التثبيت أو التشغيل: {e}")
 
             stop_ticker = True
@@ -775,8 +804,31 @@ class OnboardingApi:
                 "build_time": time_formatted,
                 "apk_size": f"{apk_size_mb} MB",
                 "build_returncode": build_returncode,
+                "install_returncode": install_returncode,
+                "launch_returncode": launch_returncode,
+                "install_code": install_code,
+                "stages": {
+                    "build": "success" if (build_success and apk_exists) else "failed",
+                    "install": "success" if installed_ok else ("failed" if install_code else "skipped"),
+                    "launch": "success" if launched_ok else ("unknown" if installed_ok else "skipped"),
+                },
                 "message": build_message
             }
+            diagnostics.log_event(
+                "build_finished",
+                build_id=build_returncode if build_returncode is not None else 0,
+                stage="build",
+                success=bool(res["success"]),
+                returncode=build_returncode,
+                error_code=None if build_success else "build_failed",
+            )
+            diagnostics.log_event(
+                "install_finished",
+                build_id=0,
+                success=bool(installed_ok),
+                returncode=install_returncode,
+                code=install_code,
+            )
 
             if win:
                 try:
@@ -822,6 +874,7 @@ class OnboardingApi:
         self.state["setup_error"] = None
         self.state["is_complete"] = False
         print(f"[Onboarding] Starting REAL setup flow with mode: {mode}")
+        diagnostics.log_event("setup_started", mode=str(mode))
 
         def worker():
             win = self.window_holder.get("window")
@@ -830,6 +883,7 @@ class OnboardingApi:
                 self.state["is_complete"] = False
                 self.state["setup_error"] = message
                 diagnostics.log(f"Setup failed at {percent}%: {message}", "error")
+                diagnostics.log_event("setup_failed", code="setup_failed", percent=int(percent or 0))
                 try:
                     print(f"[Onboarding] FAILED: {message}")
                 except Exception:
@@ -968,6 +1022,7 @@ class OnboardingApi:
                     self._update_ui(win, 98, "اكتمل Flutter والمشروع، لكن VS Code غير مثبت أو تعذر ضبطه. يمكنك تثبيته لاحقاً.", 4)
                 self.state["is_complete"] = True
                 self.state["project_path"] = project_path
+                diagnostics.log_event("setup_finished", vscode_ok=bool(vscode_ok))
 
                 # Transition to Step 3: Phone verification
                 time.sleep(0.6)
@@ -1211,6 +1266,8 @@ class OnboardingApi:
 
     def dev_reset_action(self, action, include_legacy=False, confirm=""):
         """Run one granular developer reset action and return its log."""
+        if not dev_mode_enabled():
+            return {"success": False, "logs": [], "error": "أدوات المطور غير مفعّلة."}
         return dev_reset.run(action, include_legacy=include_legacy, confirm=confirm)
 
     def set_build_mode(self, mode):
@@ -1230,13 +1287,20 @@ class OnboardingApi:
 
     def hot_reload_start(self, project_path=None):
         path = project_path or self.state.get("project_path") or paths.default_project_path()
-        return self.hot_reload.start(path, self._active_serial())
+        result = self.hot_reload.start(path, self._active_serial())
+        diagnostics.log_event(
+            "hot_reload_started",
+            used_prebuilt=bool((result or {}).get("used_prebuilt")),
+        )
+        if not result.get("success"):
+            diagnostics.log_event("hot_reload_finished", success=False, code="start_failed")
+        return result
 
     def hot_reload_read(self):
         return self.hot_reload.read_main()
 
-    def hot_reload_save(self, content):
-        return self.hot_reload.save(content)
+    def hot_reload_save(self, content, force_new=False):
+        return self.hot_reload.save(content, force_new=bool(force_new))
 
     def hot_reload_action(self, action):
         return self.hot_reload.action(action)
@@ -1251,15 +1315,40 @@ class OnboardingApi:
     def _make_error_report(self, payload=None):
         payload = payload or {}
         message = payload.get("message") or payload.get("description") or "بلاغ يدوي من المستخدم"
+        # ``include_logs`` is the legacy UI flag. Raw logs are never shareable,
+        # so it only maps to opt-in structured events when explicitly requested.
+        include_events = bool(payload.get("include_events", False))
         return diagnostics.build_report(
             message=message,
             stack=payload.get("stack", ""),
             phase=payload.get("phase", "manual"),
             description=payload.get("description", ""),
-            include_logs=bool(payload.get("include_logs", True)),
+            include_logs=False,
             source=payload.get("source", "app"),
             extra=payload.get("extra") or {},
+            include_events=include_events,
         )
+
+    def get_report_preview(self, payload=None):
+        """Return exactly what would be shared, for the consent screen."""
+        report = self._make_error_report(payload)
+        return {
+            "success": True,
+            "markdown": diagnostics.report_markdown(report),
+            "github_url": diagnostics.github_issue_url(report),
+            "manifest": ["report.json", "report.md", "environment.json", "manifest.json"]
+            + (["events.jsonl"] if report.get("limits", {}).get("events_included") else []),
+            "redactions": report.get("redactions", {}),
+            "warnings": ["التنقية آلية وقد لا تكتشف كل المعلومات الحساسة."],
+            "events_included": report.get("limits", {}).get("events_included", False),
+        }
+
+    def open_reports_folder(self):
+        try:
+            os.startfile(str(diagnostics.reports_dir()))
+            return {"success": True, "path": str(diagnostics.reports_dir())}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
 
     def report_client_error(self, payload=None):
         report = diagnostics.capture_client_error(payload or {})
@@ -1277,20 +1366,28 @@ class OnboardingApi:
 
     def open_error_report(self, payload=None):
         report = self._make_error_report(payload)
-        zip_path = diagnostics.save_report_zip(report)
         url = diagnostics.github_issue_url(report)
-        opened = diagnostics.open_github_issue(report)
+        result = diagnostics.open_github_issue(report)
+        if isinstance(result, dict):
+            opened = bool(result.get("opened"))
+            error = result.get("error")
+        else:  # defensive: older monkeypatched bool
+            opened, error = bool(result), None
         return {
             "success": True,
             "opened": opened,
             "github_url": url,
-            "zip_path": zip_path,
+            "zip_path": "",
+            "error": error,
             "markdown": diagnostics.report_markdown(report),
         }
 
     def save_error_report(self, payload=None):
+        payload = payload or {}
         report = self._make_error_report(payload)
-        zip_path = diagnostics.save_report_zip(report)
+        zip_path = diagnostics.save_report_zip(
+            report, include_events=bool(report.get("limits", {}).get("events_included"))
+        )
         return {"success": True, "zip_path": zip_path, "markdown": diagnostics.report_markdown(report)}
 
     def get_diagnostics_info(self):
