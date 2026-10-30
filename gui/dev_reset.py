@@ -85,8 +85,25 @@ def _env_status():
 
 def _vscode_status():
     settings_path = paths.vscode_settings_path()
+    extensions = []
+    code_cli = paths.vscode_cli()
+    if code_cli:
+        try:
+            result = subprocess.run(
+                [code_cli, "--list-extensions"],
+                capture_output=True,
+                text=True,
+                timeout=6,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+            extensions = [
+                line.strip() for line in result.stdout.splitlines()
+                if line.strip().lower() in ("dart-code.flutter", "dart-code.dart-code")
+            ]
+        except Exception:
+            pass
     if not os.path.exists(settings_path):
-        return {"path": settings_path, "exists": False, "keys": []}
+        return {"path": settings_path, "exists": False, "keys": [], "extensions": extensions}
     try:
         with open(settings_path, "r", encoding="utf-8") as handle:
             content = handle.read()
@@ -96,9 +113,9 @@ def _vscode_status():
         content = re.sub(r",\s*([\]}])", r"\1", content)
         data = json.loads(content)
         keys = [key for key in data if key.startswith("dart.")]
-        return {"path": settings_path, "exists": True, "keys": keys}
+        return {"path": settings_path, "exists": True, "keys": keys, "extensions": extensions}
     except Exception:
-        return {"path": settings_path, "exists": True, "keys": []}
+        return {"path": settings_path, "exists": True, "keys": [], "extensions": extensions}
 
 
 def _device_packages():
@@ -148,6 +165,10 @@ def status() -> dict:
         _target("android_legacy", "Android SDK القديم (C:\\Android)", LEGACY_ANDROID, managed=False, danger="high", with_size=False),
         _target("gradle_legacy", "Gradle Home القديم (C:\\g)", LEGACY_GRADLE, managed=False, danger="high", with_size=False),
     ]
+
+    jdk = paths.jdk_home()
+    if jdk and not os.path.abspath(jdk).lower().startswith(os.path.abspath(data).lower()):
+        legacy.append(_target("jdk_system", "JDK النظامي (Program Files)", jdk, managed=False, danger="high", with_size=False))
 
     return {
         "data_dir": data,
@@ -286,23 +307,65 @@ def reset_vscode(logs: list[str]) -> None:
     settings_path = paths.vscode_settings_path()
     if not os.path.exists(settings_path):
         logs.append("لا توجد إعدادات VS Code لحذفها")
+    else:
+        try:
+            with open(settings_path, "r", encoding="utf-8") as handle:
+                content = handle.read()
+            content = re.sub(r"^\s*//.*$", "", content, flags=re.MULTILINE)
+            content = re.sub(r",\s*([\]}])", r"\1", content)
+            data = json.loads(content)
+            removed = []
+            for key in ("dart.flutterSdkPath", "dart.previewFlutterUiGuides", "dart.openDevTools"):
+                if key in data:
+                    del data[key]
+                    removed.append(key)
+            with open(settings_path, "w", encoding="utf-8") as handle:
+                json.dump(data, handle, ensure_ascii=False, indent=2)
+            logs.append("تم حذف إعدادات Flutter من VS Code: " + (", ".join(removed) if removed else "لا شيء"))
+        except Exception as exc:
+            logs.append(f"تعذر تعديل إعدادات VS Code: {exc}")
+
+def reset_vscode_extensions(logs: list[str]) -> None:
+    cli = paths.vscode_cli()
+    if not cli:
+        logs.append("لم يتم العثور على VS Code لحذف الإضافات")
+        return
+    for extension in ("dart-code.flutter", "dart-code.dart-code"):
+        try:
+            result = subprocess.run(
+                [cli, "--uninstall-extension", extension],
+                capture_output=True,
+                text=True,
+                timeout=30,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+            logs.append(f"إلغاء تثبيت {extension}: {result.stdout.strip() or result.stderr.strip() or 'OK'}")
+        except Exception as exc:
+            logs.append(f"تعذر إلغاء تثبيت {extension}: {exc}")
+
+def reset_jdk(logs: list[str]) -> None:
+    jdk = paths.jdk_home()
+    if not jdk:
+        logs.append("لا يوجد JDK نظامي لحذفه")
         return
     try:
-        with open(settings_path, "r", encoding="utf-8") as handle:
-            content = handle.read()
-        content = re.sub(r"^\s*//.*$", "", content, flags=re.MULTILINE)
-        content = re.sub(r",\s*([\]}])", r"\1", content)
-        data = json.loads(content)
-        removed = []
-        for key in ("dart.flutterSdkPath", "dart.previewFlutterUiGuides", "dart.openDevTools"):
-            if key in data:
-                del data[key]
-                removed.append(key)
-        with open(settings_path, "w", encoding="utf-8") as handle:
-            json.dump(data, handle, ensure_ascii=False, indent=2)
-        logs.append("تم حذف إعدادات Flutter من VS Code: " + (", ".join(removed) if removed else "لا شيء"))
+        result = subprocess.run(
+            [
+                "winget", "uninstall",
+                "--id", "EclipseAdoptium.Temurin.21.JDK",
+                "--silent",
+                "--accept-source-agreements",
+                "--disable-interactivity",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=180,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+        tail = (result.stdout or result.stderr or "").strip().splitlines()[-3:]
+        logs.append(f"winget JDK uninstall (كود {result.returncode}): {' | '.join(tail) or 'بدون مخرجات'}")
     except Exception as exc:
-        logs.append(f"تعذر تعديل إعدادات VS Code: {exc}")
+        logs.append(f"تعذر إلغاء تثبيت JDK عبر winget: {exc}")
 
 
 def reset_device(logs: list[str]) -> None:
@@ -384,6 +447,20 @@ def run(action: str, include_legacy: bool = False, confirm: str = "") -> dict:
         reset_vscode(logs)
         return {"success": True, "logs": logs, "message": "تمت إزالة إعدادات VS Code"}
 
+    if action == "vscode_extensions":
+        reset_vscode_extensions(logs)
+        return {"success": True, "logs": logs, "message": "تمت محاولة إزالة إضافات Flutter/Dart"}
+
+    if action == "jdk":
+        if confirm != "DELETE":
+            return {
+                "success": False,
+                "logs": logs,
+                "error": "تأكيد مطلوب: اكتب DELETE لحذف JDK النظامي",
+            }
+        reset_jdk(logs)
+        return {"success": True, "logs": logs, "message": "تمت محاولة إزالة JDK"}
+
     if action == "device":
         reset_device(logs)
         return {"success": True, "logs": logs, "message": "تم إلغاء تثبيت التطبيقات التجريبية"}
@@ -398,6 +475,9 @@ def run(action: str, include_legacy: bool = False, confirm: str = "") -> dict:
         reset_environment(logs)
         reset_vscode(logs)
         reset_downloads(logs, include_legacy=include_legacy)
+        if include_legacy:
+            reset_vscode_extensions(logs)
+            reset_jdk(logs)
         return {"success": True, "logs": logs, "message": "تم المسح الشامل"}
 
     return {"success": False, "logs": logs, "error": f"إجراء غير معروف: {action}"}

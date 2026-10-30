@@ -2162,6 +2162,14 @@
 
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
           <button id="btn-dev-scan" class="btn-secondary" style="font-size: 12px; padding: 6px 14px;" onclick="refreshDevResetStatus()">فحص ما يمكن حذفه</button>
+          <label style="font-size: 11px; color: var(--text-muted); display: flex; gap: 6px; align-items: center;">
+            وضع بناء تطبيق الاختبار:
+            <select id="dev-build-mode" onchange="setDevBuildMode(this.value)" style="font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--card-border); background: var(--bg); color: var(--text);">
+              <option value="release">release (الأصغر)</option>
+              <option value="profile">profile</option>
+              <option value="debug">debug (Hot Reload — يُجرّد تلقائياً)</option>
+            </select>
+          </label>
           <span id="dev-status-summary" style="font-size: 11px; color: var(--text-muted);">اضغط الفحص لمعاينة الملفات قبل الحذف</span>
         </div>
         <div id="dev-status-box" style="display: none; background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 11px; line-height: 1.6;"></div>
@@ -2203,8 +2211,11 @@
 
           <div class="dev-action-box">
             <div style="font-size: 12px; font-weight: 800; color: var(--text);">6. إعدادات VS Code</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يزيل مفاتيح dart.* فقط، بدون حذف الإضافات أو إعداداتك الأخرى.</div>
-            <button id="btn-dev-vscode-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('vscode')">إزالة إعدادات Flutter</button>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يزيل مفاتيح dart.* فقط. يمكنك أيضاً حذف إضافتي Flutter/Dart لإعادة اختبار تثبيتهما.</div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button id="btn-dev-vscode-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('vscode')">إزالة الإعدادات</button>
+              <button id="btn-dev-vscode-ext-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('vscode_extensions')">حذف الإضافات</button>
+            </div>
           </div>
 
           <div class="dev-action-box">
@@ -2219,9 +2230,15 @@
             <button id="btn-dev-build-reset" class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('build')">حذف كاش البناء</button>
           </div>
 
+          <div class="dev-action-box" style="border-color: var(--danger);">
+            <div style="font-size: 12px; font-weight: 800; color: var(--danger);">9. JDK النظامي</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">يحذف Eclipse Adoptium JDK 21 من Program Files عبر winget لاختبار تنزيله من جديد. يتطلب DELETE.</div>
+            <button id="btn-dev-jdk-reset" class="btn-primary" style="background: var(--danger); font-size: 11px; padding: 5px 12px;" onclick="executeDevAction('jdk')">حذف JDK</button>
+          </div>
+
           <div class="dev-action-box" style="grid-column: 1 / -1; border-color: var(--danger); background: rgba(239, 68, 68, 0.04);">
-            <div style="font-size: 12px; font-weight: 800; color: var(--danger);">9. مسح شامل (كل ما سبق)</div>
-            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">الهاتف + المشاريع + PATH + VS Code + التحميلات المنسّقة. فعّل الخيار لحذف مسارات C:\flutter و C:\Android و C:\g أيضاً.</div>
+            <div style="font-size: 12px; font-weight: 800; color: var(--danger);">10. مسح شامل (كل ما سبق)</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px;">الهاتف + المشاريع + PATH + VS Code + التحميلات. عند تفعيل الخيار: مسارات C:\flutter و C:\Android و C:\g، وإضافات VS Code، وJDK أيضاً.</div>
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
               <label style="font-size: 11px; color: var(--danger); display: flex; gap: 6px; align-items: center;">
                 <input type="checkbox" id="chk-dev-legacy-all"> احذف المسارات القديمة أيضاً
@@ -3091,7 +3108,7 @@
         const envRow = document.createElement('div');
         envRow.style.cssText = 'padding-top:6px; color:var(--text-muted); font-size:10px;';
         const envKeys = Object.keys(status.env?.variables || {});
-        envRow.textContent = `متغيرات البيئة: ${envKeys.length ? envKeys.join(', ') : 'لا شيء'} | VS Code keys: ${(status.vscode?.keys || []).length}`;
+        envRow.textContent = `متغيرات البيئة: ${envKeys.length ? envKeys.join(', ') : 'لا شيء'} | VS Code keys: ${(status.vscode?.keys || []).length} | إضافات Flutter/Dart: ${(status.vscode?.extensions || []).length}`;
         box.appendChild(envRow);
         const deviceRow = document.createElement('div');
         deviceRow.style.cssText = 'padding-top:4px; color:var(--warning); font-size:10px;';
@@ -3138,6 +3155,13 @@
       }
     }
 
+    async function setDevBuildMode(mode) {
+      if (window.pywebview && window.pywebview.api) {
+        const res = await window.pywebview.api.set_build_mode(mode);
+        if (res && res.success) appendDevLog(`[BUILD_MODE] ${mode}`);
+      }
+    }
+
     async function executeDevAction(action) {
       const consoleBox = document.getElementById('dev-console-box');
       if (!consoleBox) return;
@@ -3150,7 +3174,7 @@
         return;
       }
 
-      const destructive = ['projects', 'downloads', 'environment', 'vscode', 'device', 'build', 'all'];
+      const destructive = ['projects', 'downloads', 'environment', 'vscode', 'vscode_extensions', 'device', 'build', 'jdk', 'all'];
       if (destructive.includes(action)) {
         if (!window.confirm('تنفيذ هذا الإجراء؟ قد يحذف ملفات أو إعدادات.')) {
           appendDevLog('تم الإلغاء.');
@@ -3160,7 +3184,13 @@
 
       let includeLegacy = false;
       let confirmToken = '';
-      if (action === 'downloads_all') {
+      if (action === 'jdk') {
+        confirmToken = window.prompt('اكتب DELETE لتأكيد حذف JDK النظامي من Program Files') || '';
+        if (confirmToken !== 'DELETE') {
+          appendDevLog('تم الإلغاء: تأكيد DELETE غير صحيح.');
+          return;
+        }
+      } else if (action === 'downloads_all') {
         includeLegacy = true;
         confirmToken = window.prompt('اكتب DELETE لتأكيد حذف C:\\flutter و C:\\Android و C:\\g') || '';
         if (confirmToken !== 'DELETE') {
@@ -3239,6 +3269,8 @@
           const init = await window.pywebview.api.get_initial_app_state();
           const devBtn = document.getElementById('btn-dev-modal-toggle');
           if (devBtn) devBtn.style.display = init.dev_mode ? 'inline-flex' : 'none';
+          const modeSelect = document.getElementById('dev-build-mode');
+          if (modeSelect && init.build_mode) modeSelect.value = init.build_mode;
           if (init.has_setup) {
             switchMainView('companion');
           } else {

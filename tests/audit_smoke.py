@@ -65,6 +65,10 @@ def static_checks() -> None:
 
     assert "gui.paths" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.paths"
     assert "gui.android_sdk" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.android_sdk"
+    assert "gui.android_apk" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.android_apk"
+    assert "gui.elf_strip" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.elf_strip"
+    assert "def optimize_apk" in (ROOT / "gui" / "android_apk.py").read_text(encoding="utf-8")
+    assert "def strip_elf" in (ROOT / "gui" / "elf_strip.py").read_text(encoding="utf-8")
     assert "def install_android_sdk" in (ROOT / "gui" / "android_sdk.py").read_text(encoding="utf-8")
     assert "fix_android_sdk" in COMPANION.read_text(encoding="utf-8")
     companion_src = COMPANION.read_text(encoding="utf-8")
@@ -85,6 +89,7 @@ def static_checks() -> None:
     assert "get_application_id(project_path)" in app_src, "APK launch must use the real applicationId"
     assert "set_application_id(project_dir" in companion_src, "lecture projects need unique applicationIds"
     assert '"monkey", "-p", "com.example' not in app_src
+    assert "def get_connected_devices" in companion_src, "device discovery must exist"
     assert "gui.dev_reset" in SPEC.read_text(encoding="utf-8"), "PyInstaller must bundle gui.dev_reset"
     assert "def get_dev_reset_status" in app_src
     assert "def dev_reset_action" in app_src
@@ -93,6 +98,11 @@ def static_checks() -> None:
     assert 'id="btn-dev-scan"' in html_src
     assert 'id="chk-dev-legacy-all"' in html_src
     assert 'id="btn-dev-downloads-all"' in html_src
+    assert 'id="btn-dev-jdk-reset"' in html_src
+    assert 'id="btn-dev-vscode-ext-reset"' in html_src
+    assert 'id="dev-build-mode"' in html_src
+    assert "setDevBuildMode" in html_src
+    assert "def set_build_mode" in app_src
     assert "refreshDevResetStatus" in html_src
     clean_src = CLEAN.read_text(encoding="utf-8")
     assert "--uninstall-extensions" in clean_src, "extension removal must be opt-in"
@@ -172,14 +182,24 @@ def python_checks() -> None:
 
     from gui import companion_service
     from gui import dev_reset
+    from gui import android_apk, elf_strip
+
+    assert elf_strip.strip_elf(b"not an elf") == b"not an elf"
+    missing = os.path.join(tempfile.gettempdir(), "fw_missing.apk")
+    assert android_apk.optimize_apk(missing, lambda _msg: None) == missing
 
     dev_state = dev_reset.status()
     assert dev_state.get("targets"), "dev reset status must list removable targets"
     assert any(t["id"] == "flutter_legacy" for t in dev_state["targets"])
+    devices = companion_service.get_connected_devices()
+    assert isinstance(devices, list), "device discovery must always return a list"
+    if devices:
+        assert {"serial", "status", "model", "is_ready"} <= set(devices[0])
     assert dev_reset.run("ui").get("success"), "UI-only reset must be a safe no-op"
     assert not dev_reset.run("downloads_all").get("success"), (
         "legacy deletion must require the DELETE confirmation token"
     )
+    assert not dev_reset.run("jdk").get("success"), "JDK removal must require DELETE"
     assert not dev_reset.run("not-a-real-action").get("success")
     assert app.dev_mode_enabled() is True, "source runs must expose developer tools"
 

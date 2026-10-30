@@ -28,12 +28,14 @@ try:
     from gui import companion_service
     from gui import paths
     from gui import android_sdk
+    from gui import android_apk
     from gui import dev_reset
 except ImportError:
     from vscode_integration import get_vscode_status, configure_vscode, find_code_cli
     import companion_service
     import paths
     import android_sdk
+    import android_apk
     import dev_reset
 
 def _broadcast_environment_change():
@@ -334,6 +336,8 @@ class OnboardingApi:
         project_path = self.state.get("project_path") or paths.default_project_path()
         app_id = companion_service.get_application_id(project_path)
         apk_candidates = [
+            os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-release.apk"),
+            os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-profile.apk"),
             os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-debug.apk"),
             os.path.join(project_path, "build", "app", "outputs", "apk", "debug", "app-debug.apk")
         ]
@@ -348,6 +352,8 @@ class OnboardingApi:
                 "success": False,
                 "error": "لم يتم بناء ملف APK بعد. يرجى الضغط على زر بناء التطبيق الفعلي أولاً."
             }
+
+        apk_path = android_apk.optimize_apk(apk_path, print)
 
         # 4. Install & Launch on Phone
         installed_ok = False
@@ -446,7 +452,10 @@ class OnboardingApi:
             app_id = companion_service.get_application_id(project_path)
 
             send_log(f"$ cd {project_path}")
-            send_log("$ flutter build apk --debug -v")
+            build_mode = os.environ.get("FLUTTERWAY_BUILD_MODE", "debug").strip().lower()
+            if build_mode not in ("debug", "profile", "release"):
+                build_mode = "debug"
+            send_log(f"$ flutter build apk --{build_mode} -v")
 
             # 3. Locate flutter.bat and java
             flutter_bat = paths.flutter_bat()
@@ -484,10 +493,11 @@ class OnboardingApi:
                 except Exception:
                     pass
 
-            cmd = [flutter_bat, "build", "apk", "--debug", "-v"] + target_abi_flag
+            cmd = [flutter_bat, "build", "apk", f"--{build_mode}", "-v"] + target_abi_flag
             send_log(f"$ {' '.join(cmd)}")
 
             build_success = False
+            build_returncode = None
             try:
                 proc = subprocess.Popen(
                     cmd,
@@ -524,7 +534,8 @@ class OnboardingApi:
                         send_log(line)
 
                 proc.wait()
-                build_success = (proc.returncode == 0)
+                build_returncode = proc.returncode
+                build_success = (build_returncode == 0)
             except Exception as e:
                 send_log(f"خطأ أثناء استدعاء محرك فلاتر: {e}")
                 build_success = False
@@ -533,15 +544,19 @@ class OnboardingApi:
             elapsed_total = round(time.time() - t_start, 1)
 
             apk_candidates = [
+                os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-release.apk"),
+                os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-arm64-v8a-release.apk"),
+                os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-profile.apk"),
                 os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-debug.apk"),
-                os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-arm64-v8a-debug.apk"),
                 os.path.join(project_path, "build", "app", "outputs", "apk", "debug", "app-debug.apk")
             ]
             flutter_apk_dir = os.path.join(project_path, "build", "app", "outputs", "flutter-apk")
             if os.path.exists(flutter_apk_dir):
-                for f in os.listdir(flutter_apk_dir):
+                for f in sorted(os.listdir(flutter_apk_dir)):
                     if f.endswith(".apk"):
-                        apk_candidates.insert(0, os.path.join(flutter_apk_dir, f))
+                        candidate = os.path.join(flutter_apk_dir, f)
+                        if candidate not in apk_candidates:
+                            apk_candidates.append(candidate)
 
             apk_path = None
             for cand in apk_candidates:
@@ -551,6 +566,11 @@ class OnboardingApi:
 
             apk_exists = (apk_path is not None)
             apk_size_mb = 0
+            if apk_exists:
+                optimized_apk = android_apk.optimize_apk(apk_path, send_log)
+                if optimized_apk:
+                    apk_path = optimized_apk
+                apk_exists = os.path.exists(apk_path)
             if apk_exists:
                 apk_size_mb = round(os.path.getsize(apk_path) / (1024 * 1024), 1)
                 send_log(f"√ اكتمل البناء بنجاح! تم إنشاء {os.path.basename(apk_path)} ({apk_size_mb} MB)")
@@ -607,6 +627,7 @@ class OnboardingApi:
                 "installed_ok": installed_ok,
                 "build_time": time_formatted,
                 "apk_size": f"{apk_size_mb} MB",
+                "build_returncode": build_returncode,
                 "message": build_message
             }
 
@@ -842,7 +863,8 @@ class OnboardingApi:
                 "theme": self.state.get("theme", "dark"),
                 "doctor_report": report,
                 "recent_projects": companion_service.load_recent_projects(),
-                "dev_mode": dev_mode_enabled()
+                "dev_mode": dev_mode_enabled(),
+                "build_mode": os.environ.get("FLUTTERWAY_BUILD_MODE", "debug")
             }
         except Exception as e:
             return {
@@ -942,6 +964,14 @@ class OnboardingApi:
         """Run one granular developer reset action and return its log."""
         return dev_reset.run(action, include_legacy=include_legacy, confirm=confirm)
 
+    def set_build_mode(self, mode):
+        """Choose the test-app build mode: release (small), profile, or debug (large, hot reload)."""
+        mode = (mode or "").strip().lower()
+        if mode not in ("release", "profile", "debug"):
+            return {"success": False, "error": "وضع بناء غير معروف"}
+        os.environ["FLUTTERWAY_BUILD_MODE"] = mode
+        return {"success": True, "mode": mode}
+
 # --- Agent Testing Harness for Modern Onboarding UI ---
 def start_harness(api, window_holder):
     def server():
@@ -1007,8 +1037,8 @@ def start_harness(api, window_holder):
                         "btn-dev-modal-toggle", "btn-dev-soft-reset", "btn-dev-full-reset",
                         "btn-dev-scan", "btn-dev-ui-reset", "btn-dev-projects-reset",
                         "btn-dev-downloads-reset", "btn-dev-downloads-all", "btn-dev-env-reset",
-                        "btn-dev-vscode-reset", "btn-dev-device-reset", "btn-dev-build-reset",
-                        "btn-dev-all-reset"
+                        "btn-dev-vscode-reset", "btn-dev-vscode-ext-reset", "btn-dev-device-reset",
+                        "btn-dev-build-reset", "btn-dev-jdk-reset", "btn-dev-all-reset"
                     ]
                     if target in allowed_targets:
                         if win:

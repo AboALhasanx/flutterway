@@ -10,6 +10,7 @@ Run from the repository root:
 
 from __future__ import annotations
 
+import argparse
 import json
 import shutil
 import subprocess
@@ -49,7 +50,26 @@ def _last_build_result(fake: FakeWindow):
     return None
 
 
+def _print_build_logs(fake: FakeWindow) -> None:
+    prefix = "appendLiveBuildLog("
+    lines = []
+    for call in fake.calls:
+        if call.startswith(prefix):
+            raw = call[len(prefix):].strip()
+            if raw.endswith(");"):
+                raw = raw[:-2]
+            lines.append(raw[:400])
+    print("\n--- LAST BUILD LOGS ---")
+    for line in lines[-40:]:
+        print(line)
+    print("--- END BUILD LOGS ---")
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Build and install a temporary lecture project on a real device.")
+    parser.add_argument("--keep", action="store_true", help="Keep the temporary project and the build logs for inspection.")
+    args = parser.parse_args()
+
     adb = paths.adb_path()
     devices = subprocess.run([adb, "devices"], capture_output=True, text=True, timeout=10)
     ready = [line for line in devices.stdout.splitlines() if line.strip().endswith("device")]
@@ -91,6 +111,9 @@ def main() -> int:
         print(json.dumps(result, ensure_ascii=False, indent=2))
         if not result.get("success") or not result.get("installed_ok"):
             print("Build/install failed.")
+            _print_build_logs(fake)
+            if args.keep:
+                print("KEPT PROJECT:", project_path)
             return 6
 
         packages = subprocess.run(
@@ -111,7 +134,10 @@ def main() -> int:
             subprocess.run([adb, "uninstall", app_id], capture_output=True, text=True, timeout=15)
         except Exception:
             pass
-        shutil.rmtree(parent, ignore_errors=True)
+        if args.keep:
+            print("TEMP PROJECT KEPT:", parent)
+        else:
+            shutil.rmtree(parent, ignore_errors=True)
 
 
 if __name__ == "__main__":

@@ -83,6 +83,33 @@ def run_silent(cmd_args, **kwargs):
     creationflags = subprocess.CREATE_NO_WINDOW
     return subprocess.run(cmd_args, capture_output=True, text=True, startupinfo=startupinfo, creationflags=creationflags, **kwargs)
 
+def get_connected_devices():
+    """Return attached Android devices with serial, status, and model."""
+    adb = get_adb_path()
+    devices = []
+    try:
+        result = run_silent([adb, "devices", "-l"])
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            if not line or line.startswith("List of devices") or line.startswith("*"):
+                continue
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            model = "هاتف أندرويد"
+            for part in parts[2:]:
+                if part.startswith("model:"):
+                    model = part.split("model:", 1)[1].replace("_", " ")
+            devices.append({
+                "serial": parts[0],
+                "status": parts[1],
+                "model": model,
+                "is_ready": parts[1] == "device",
+            })
+    except Exception as exc:
+        print("ADB devices error:", exc)
+    return devices
+
 def kill_gradle_daemons():
     """Terminate Gradle/Kotlin daemons only; never touch unrelated Java apps."""
     targets = []

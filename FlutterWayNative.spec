@@ -9,9 +9,11 @@ a = Analysis(
         ('assets', 'assets')
     ],
     hiddenimports=[
+        'gui.android_apk',
         'gui.android_sdk',
         'gui.companion_service',
         'gui.dev_reset',
+        'gui.elf_strip',
         'gui.paths',
         'gui.vscode_integration',
         'psutil',
