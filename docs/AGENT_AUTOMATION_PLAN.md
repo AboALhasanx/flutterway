@@ -7,6 +7,8 @@
 > **الهدف:** أن يستطيع أي Agent Harness — Codex، Claude Code، OpenCode، أو غيره —
 > تشغيل FlutterWay بأمان دون النقر على الواجهة خطوة بخطوة.
 >
+> **Issue التتبّع:** [#1](https://github.com/AboALhasanx/flutterway/issues/1)
+>
 > **آخر تحديث:** 2026-10-31
 
 ---

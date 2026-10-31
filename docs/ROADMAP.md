@@ -44,6 +44,7 @@
 
 ## المرحلة الخامسة: تكامل الوكلاء (Agent Automation) — رؤية مستقبلية
 > التفاصيل الكاملة ودراسة التهديدات: [`docs/AGENT_AUTOMATION_PLAN.md`](AGENT_AUTOMATION_PLAN.md)
+> التتبّع: [Issue #1](https://github.com/AboALhasanx/flutterway/issues/1)
 >
 > الهدف أن تستخدم FlutterWay من أي Agent Harness (Codex، Claude Code، OpenCode، وغيرها)
 > عبر CLI/JSON وMCP، بنفس الخدمات والحمايات التي تستخدمها الواجهة.
