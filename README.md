@@ -187,6 +187,7 @@ pyinstaller FlutterWayNative.spec --noconfirm
 تفاصيل حزمة الفشل: [`docs/RELIABILITY_TESTS.md`](docs/RELIABILITY_TESTS.md)
 تقرير اختبار البيئة النظيفة: [`docs/CLEAN_SLATE_TEST.md`](docs/CLEAN_SLATE_TEST.md)
 تبليغ الأخطاء: [`docs/ERROR_REPORTING.md`](docs/ERROR_REPORTING.md)
+تكامل الوكلاء (خطة مستقبلية): [`docs/AGENT_AUTOMATION_PLAN.md`](docs/AGENT_AUTOMATION_PLAN.md)
 
 ---
 
