@@ -82,6 +82,7 @@ Get the latest files from [GitHub Releases](https://github.com/AboALhasanx/flutt
 
 - The installer is per-user and does not require administrator privileges.
 - Uninstalling FlutterWay is designed to preserve the user's SDKs, projects, and data under `%LOCALAPPDATA%\FlutterWay`.
+- **Recommended:** use the single-file installer. If you use the portable ZIP, verify its SHA-256 first, then right-click the downloaded ZIP → **Properties** → select **Unblock** → **Apply**, and only then extract it. Windows may otherwise propagate its Internet download marker to `Python.Runtime.dll`, preventing the app's .NET component from starting. If you already extracted it, unblock the ZIP and extract a fresh copy.
 - **SmartScreen:** unsigned releases can show a “Windows protected your PC” warning. A single-file installer does not remove that warning; code signing and reputation are separate requirements. Verify downloads against the SHA-256 file published with the release.
 
 ---
