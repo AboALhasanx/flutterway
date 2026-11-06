@@ -91,6 +91,8 @@ jobs:
           if ($proc.ExitCode -ne 0) { throw "Setup failed: $($proc.ExitCode)" }
           if (-not (Test-Path (Join-Path $target 'FlutterWayNative.exe'))) { throw 'Installed app executable is missing' }
           if (-not (Test-Path (Join-Path $target '_internal\onboarding\index.html'))) { throw 'Installed UI resources are missing' }
+          python tests/verify_packaged_gui.py (Join-Path $target 'FlutterWayNative.exe')
+          if ($LASTEXITCODE -ne 0) { throw "Installed app startup smoke test failed: $LASTEXITCODE" }
           $uninstaller = Join-Path $target 'unins000.exe'
           if (-not (Test-Path $uninstaller)) { throw 'Uninstaller is missing' }
           $remove = Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') -Wait -PassThru
@@ -104,6 +106,27 @@ jobs:
         with:
           name: FlutterWay-Setup
           path: dist/installer/FlutterWay-Setup-*.exe*
+
+  packaged-runtime:
+    name: Packaged app startup (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: FlutterWay-windows-x64
+          path: ${{ runner.temp }}/FlutterWayNative
+      - name: Launch package and verify the real main window
+        shell: pwsh
+        run: python tests/verify_packaged_gui.py (Join-Path $env:RUNNER_TEMP 'FlutterWayNative\FlutterWayNative.exe')
 
   flutter-download:
     name: Install and run pinned Flutter
