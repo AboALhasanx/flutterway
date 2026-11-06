@@ -65,7 +65,9 @@ jobs:
           Invoke-WebRequest 'https://github.com/jrsoftware/issrc/releases/download/is-6_7_3/innosetup-6.7.3.exe' -OutFile $installer
           $actual = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($actual -ne '9c73c3bae7ed48d44112a0f48e66742c00090bdb5bef71d9d3c056c66e97b732') { throw "Inno Setup checksum mismatch: $actual" }
-          $installDir = Join-Path $env:RUNNER_TEMP 'Inno Setup 6'
+          # Avoid spaces because Inno's silent installer command-line parser
+          # can split an unquoted /DIR= value passed through Start-Process.
+          $installDir = Join-Path $env:RUNNER_TEMP 'InnoSetup673'
           $proc = Start-Process -FilePath $installer -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',( '/DIR=' + $installDir )) -Wait -PassThru
           if ($proc.ExitCode -ne 0) { throw "Inno Setup installer failed: $($proc.ExitCode)" }
           if (-not (Test-Path (Join-Path $installDir 'ISCC.exe'))) { throw 'ISCC.exe missing after install' }
@@ -73,7 +75,7 @@ jobs:
         shell: pwsh
         run: |
           $version = (Select-String -Path 'gui/version.py' -Pattern '^__version__\s*=\s*"([^"]+)"').Matches[0].Groups[1].Value
-          & (Join-Path $env:RUNNER_TEMP 'Inno Setup 6\ISCC.exe') "/DAppVersion=$version" 'installer/FlutterWay.iss'
+          & (Join-Path $env:RUNNER_TEMP 'InnoSetup673\ISCC.exe') "/DAppVersion=$version" 'installer/FlutterWay.iss'
           if ($LASTEXITCODE -ne 0) { throw "ISCC failed: $LASTEXITCODE" }
           $setup = Get-ChildItem 'dist/installer/FlutterWay-Setup-*.exe' | Select-Object -First 1
           if (-not $setup -or $setup.Length -lt 10MB) { throw 'Installer is missing or unexpectedly small' }
