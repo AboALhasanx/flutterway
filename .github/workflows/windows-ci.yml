@@ -58,10 +58,50 @@ jobs:
         run: |
           python -c "from pathlib import Path; p=Path('dist/FlutterWayNative/FlutterWayNative.exe'); assert p.exists(), 'exe missing'; print('exe bytes', p.stat().st_size)"
           python -c "from pathlib import Path; files=list(Path('dist/FlutterWayNative').rglob('flutter_releases_windows.json')); assert files, 'bundled manifest missing'; print('manifest copies', len(files))"
+      - name: Install pinned Inno Setup
+        shell: pwsh
+        run: |
+          $installer = Join-Path $env:RUNNER_TEMP 'innosetup-6.7.3.exe'
+          Invoke-WebRequest 'https://github.com/jrsoftware/issrc/releases/download/is-6_7_3/innosetup-6.7.3.exe' -OutFile $installer
+          $actual = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne '9c73c3bae7ed48d44112a0f48e66742c00090bdb5bef71d9d3c056c66e97b732') { throw "Inno Setup checksum mismatch: $actual" }
+          $installDir = Join-Path $env:RUNNER_TEMP 'Inno Setup 6'
+          $proc = Start-Process -FilePath $installer -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',( '/DIR=' + $installDir )) -Wait -PassThru
+          if ($proc.ExitCode -ne 0) { throw "Inno Setup installer failed: $($proc.ExitCode)" }
+          if (-not (Test-Path (Join-Path $installDir 'ISCC.exe'))) { throw 'ISCC.exe missing after install' }
+      - name: Build single-file per-user installer
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path 'gui/version.py' -Pattern '^__version__\s*=\s*"([^"]+)"').Matches[0].Groups[1].Value
+          & (Join-Path $env:RUNNER_TEMP 'Inno Setup 6\ISCC.exe') "/DAppVersion=$version" 'installer/FlutterWay.iss'
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed: $LASTEXITCODE" }
+          $setup = Get-ChildItem 'dist/installer/FlutterWay-Setup-*.exe' | Select-Object -First 1
+          if (-not $setup -or $setup.Length -lt 10MB) { throw 'Installer is missing or unexpectedly small' }
+          $hash = (Get-FileHash $setup.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $($setup.Name)" | Set-Content -Path ($setup.FullName + '.sha256') -Encoding ascii
+          Write-Output "setup_bytes=$($setup.Length) sha256=$hash"
+      - name: Smoke-test per-user install and uninstall
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem 'dist/installer/FlutterWay-Setup-*.exe' | Select-Object -First 1
+          $target = Join-Path $env:RUNNER_TEMP 'FlutterWay-Installer-Smoke'
+          $proc = Start-Process -FilePath $setup.FullName -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',('/DIR=' + $target)) -Wait -PassThru
+          if ($proc.ExitCode -ne 0) { throw "Setup failed: $($proc.ExitCode)" }
+          if (-not (Test-Path (Join-Path $target 'FlutterWayNative.exe'))) { throw 'Installed app executable is missing' }
+          if (-not (Test-Path (Join-Path $target '_internal\onboarding\index.html'))) { throw 'Installed UI resources are missing' }
+          $uninstaller = Join-Path $target 'unins000.exe'
+          if (-not (Test-Path $uninstaller)) { throw 'Uninstaller is missing' }
+          $remove = Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') -Wait -PassThru
+          if ($remove.ExitCode -ne 0) { throw "Uninstall failed: $($remove.ExitCode)" }
+          if (Test-Path $target) { throw 'Uninstall left application files behind' }
       - uses: actions/upload-artifact@v4
         with:
           name: FlutterWay-windows-x64
           path: dist/FlutterWayNative/**
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlutterWay-Setup
+          path: dist/installer/FlutterWay-Setup-*.exe*
 
   flutter-download:
     name: Install and run pinned Flutter

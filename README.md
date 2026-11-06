@@ -136,20 +136,35 @@ flowchart TD
 
 ---
 
-## 🚀 تشغيل وبناء التطبيق المستقل (Standalone Executable)
+## 🚀 تنزيل FlutterWay على Windows
 
-التطبيق مجمع بالكامل كحزمة تنفيذية واحدة خفيفة لا تتطلب أي برامج وسيطة:
+- [تنزيل المثبّت الواحد من GitHub Releases](https://github.com/AboALhasanx/flutterway/releases/latest)
+- يبقى [ملف ZIP المحمول/الاحتياطي](https://github.com/AboALhasanx/flutterway/releases/latest) متاحاً.
+
+المثبّت per-user ولا يحتاج صلاحية Administrator، وإلغاء التثبيت لا يحذف
+بيانات المستخدم وSDKs ومشاريعه تحت `%LOCALAPPDATA%\FlutterWay`.
+
+> **SmartScreen:** المثبّت غير موقّع حالياً؛ تحويل ZIP إلى EXE لا يزيل تحذير
+> SmartScreen. نقيّم حالياً مسار توقيع مجاني للمشروع مفتوح المصدر، وقد تبقى تحذيرات
+> السمعة في الإصدارات الأولى بعد التوقيع.
+
+## 🚀 تشغيل وبناء التطبيق (Developer Notes)
+
+التطبيق يُبنى كمجلد PyInstaller ثم يجمعه Inno Setup في مثبّت EXE واحد.
 
 ```powershell
 # 1. تشغيل التطبيق مباشرة عبر Python
 python -m gui.onboarding_app
 
-# 2. بناء النسخة التنفيذية المستقلة للويندوز (Distributable Bundle)
-pyinstaller FlutterWayNative.spec --noconfirm
+# 2. بناء مجلد PyInstaller
+pyinstaller --clean --noconfirm FlutterWayNative.spec
 
-# الملف التنفيذي الناتج:
-# dist\FlutterWayNative\FlutterWayNative.exe (5.85 MB)
+# 3. بعد تثبيت Inno Setup 6.7.3، بناء مثبّت واحد
+ISCC.exe /DAppVersion=1.3.1 installer\FlutterWay.iss
 ```
+
+ملفات البناء: `dist\FlutterWayNative\` (مجلد محمول) و
+`dist\installer\FlutterWay-Setup-v1.3.1-windows-x64.exe` (مثبّت واحد).
 
 </div>
 
