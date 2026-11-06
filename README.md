@@ -1,222 +1,150 @@
-# FlutterWay (طريق فلاتر) 
-> **Zero-Friction Flutter & Android Mobile Setup Engine & Student Course Companion for Windows**  
-> **التطبيق المكتبي والمحرك الذكي لتجهيز بيئة Flutter وتطبيقات الموبايل ورفيق الطالب اليومي للمحاضرات بضغطة زر واحدة**
+# FlutterWay
+
+> A Windows desktop companion for setting up Flutter and Android development, creating course projects, diagnosing common build issues, and running apps on a USB-connected Android device.
+
+**Documentation:** [English](README.md) | [العربية](README.ar.md)
 
 ---
 
-<div dir="rtl">
+## Overview
 
-## نبذة عن المشروع
+Setting up Flutter and Dart on Windows can be difficult for students and first-time developers, especially on machines with limited storage, unreliable internet, or unfamiliar Android tooling. Problems also continue after installation: Gradle locks, Android license prompts, device authorization, USB drivers, and oversized downloads can interrupt coursework.
 
-تعتبر عملية إعداد بيئة عمل **Flutter & Dart** على نظام Windows كابوساً حقيقياً للطلاب والمطورين المبتدئين ("الصفر تماماً")، وتحديداً في البيئات الجامعية والبلدان النامية التي تعاني من بطء وتذبذب الإنترنت، وتجميد الحواسيب، وتعقيدات مسارات النظام والتراخيص ومحرك بناء أندرويد Gradle. والأهم من ذلك: المشكلة لا تنتهي بمجرد التثبيت الأول، بل يعاني الطالب طوال أسابيع دراسته من تعليق الجرادل، وأخطاء الرخص، وفشل التعرف على الهاتف، وفخاخ تنزيل حزم NDK الضخمة.
+FlutterWay brings the setup and common student workflows into one Windows app. Its interface is currently in Arabic and is designed for students learning Flutter.
 
-**مشروع FlutterWay** صُمم خصيصاً كحل جذري أصيل وشامل يرافق الطالب من الصفر وحتى إتمام مسيرته ومحاضراته، من خلال نمطين متكاملين:
+### Guided onboarding
 
-1. **معالج البداية التفاعلي (4 مستويات - Gamified Onboarding Wizard):**
-   - **المستوى 1: فحص العتاد والمقارنة الصريحة:** فحص فوري للرام ومساحة القرص ودعم BIOS VT، مع مقارنة واقعية بالأرقام توضح لماذا هاتف الـ USB (0MB استهلاك من اللابتوب وسلاسة 60-120 FPS) يتفوق على المحاكيات التي تستهلك 4-6GB وتجمد الويندوز.
-   - **المستوى 2: التجهيز الآلي الصامت:** تنزيل وتهيئة JDK 21 و Gradle و Flutter SDK ومسارات النظام (PATH) وإعدادات VS Code في الخلفية.
-   - **المستوى 3: وحش المرحلة - ربط الهاتف والبناء الحقيقي:** التعرف التلقائي على أجهزة أندرويد، مساعد تعريفات USB الشامل بنقرة واحدة، ودليل تصحيح USB مع زر نسخ لليوتيوب، وعداد زمني مع تعليقات عراقية/عربية عفوية تشرح مراحل ترجمة الكود للغة الآلة ARM64.
-   - **المستوى 4: شارة المطور الأول ودليل VS Code:** إطلاق المحرر تلقائياً على أول مشروع حقيقي وشرح ميزة Hot Reload بزر Ctrl+S.
+1. **Check the laptop:** inspect memory, disk space, virtualization support, and the recommended physical-device or emulator path.
+2. **Prepare the toolchain:** set up Java, Flutter, Android SDK components, and VS Code integration.
+3. **Connect and build:** detect Android devices, explain USB debugging, and build and install a real app.
+4. **Start coding:** open the starter project and introduce VS Code and Flutter hot reload.
 
-2. **لوحة رفيق الطالب اليومية للمحاضرات (Student Course Companion Dashboard):**
-   - **طبيب فلاتر الذكي (Smart Doctor):** فحص دقيق للبيئة مع مقياس جاهزية بنسبة 100%، وتنبيه توعوي صريح يطمئن الطالب بأنه لا يحتاج Visual Studio أو C++ (توفير 20 جيجا)، مع "زر الإصلاح الشامل بنقرة واحدة".
-   - **مدير مشاريع المحاضرات (Lecture Projects Studio):** إنشاء مشاريع المحاضرات والواجبات فورياً بقوالب نظيفة ومعدلة لمنع فخ تحميل الـ NDK (6.7GB)، مع أزرار تشغيل مباشر في VS Code وتنظيف الكاش (Clean Build).
-   - **صندوق الإنقاذ السريع (Emergency Rescue Box):** إصلاحات شائعة لأكثر مشاكل الطلاب، مع توضيح أثر كل إجراء قبل تنفيذه: فك تعليق الجرادل وقفل الكاش، الموافقة على رخص أندرويد، إعادة ضبط منفذ ADB 5037، تفعيل مسارات ويندوز الطويلة (LongPaths)، وتفريغ كاش الشبكة ومستودعات غوغل.
-   - **استوديو الهاتف المتصل (Connected Device Studio):** قراءة مواصفات الهاتف المتصل الحقيقي (الموديل، إصدار أندرويد، البطارية، دقة الشاشة، المعمارية)، وإرسال نقرة تنشيط للشاشة، مع إمكانية التقاط لقطة شاشة حية وبثها داخل التطبيق المكتبي فورياً.
-   - **مفكرة الطالب والمختصرات (Student Cheatsheet):** الدليل السريع لمفاهيم Hot Reload مقابل Restart، واختصارات VS Code الأساسية (Ctrl + .)، وبنية كود Stateless مقابل Stateful، والقواعد الذهبية لتفادي أخطاء البناء.
+### Student course companion
 
-</div>
+- **Smart Doctor:** inspect the development environment and offer guided repairs.
+- **Lecture Projects Studio:** create course and assignment projects, open them in VS Code, run them on a device, and clean build outputs.
+- **Rescue Box:** guided actions for common Gradle, Android license, ADB, long-path, and network-cache problems.
+- **Connected Device Studio:** show device information and capture or wake the connected device screen.
+- **Student Cheatsheet:** concise references for hot reload, VS Code shortcuts, widget types, and build troubleshooting.
 
 ---
 
-## 📸 معرض الواجهة وتجربة المستخدم (UI Tour)
+## Screenshots
 
-<div dir="rtl">
+### Course companion
 
-### أولاً: لوحة رفيق الطالب للمحاضرات (Course Companion Dashboard)
+| Area | Screenshot |
+|---|---|
+| Smart Doctor | ![Smart Doctor screen](docs/screenshots/companion_doctor.png) |
+| Lecture projects | ![Lecture projects screen](docs/screenshots/companion_projects.png) |
+| Rescue Box | ![Rescue tools screen](docs/screenshots/companion_rescue.png) |
+| Connected device | ![Connected device screen](docs/screenshots/companion_device.png) |
+| Student cheatsheet | ![Student cheatsheet screen](docs/screenshots/companion_cheatsheet.png) |
 
-| القسم / التبويب | الوصف والمزايا | لقطة الشاشة |
-| :--- | :--- | :--- |
-| **طبيب فلاتر الذكي (Smart Doctor)** | مقياس جاهزية بيئة التطوير (100% جاهز للمحاضرات)، رسالة التوعية الصريحة بعدم الحاجة لـ Visual Studio C++ (توفير 20GB)، بطاقات فحص مفصلة، وزر الإصلاح الشامل بنقرة واحدة. | ![طبيب فلاتر الذكي](docs/screenshots/companion_doctor.png) |
-| **مشاريع المحاضرات والواجبات** | منشئ مشاريع المحاضرات الفوري بالاسم المطلوب، معدل لتفادي تنزيل NDK 6.7GB، مع أزرار الفتح السريع في VS Code، وتشغيل التطبيق على الهاتف، وتنظيف ملفات البناء (Clean Build). | ![مشاريع المحاضرات](docs/screenshots/companion_projects.png) |
-| **صندوق الإنقاذ السريع (Rescue Box)** | 5 كبسولات علاج فوري لأشهر الأخطاء الجامعية: فك تعليق الجرادل وحذف أقفال .lock، قبول رخص أندرويد تلقائياً، تصفية منفذ ADB 5037، وتفعيل مسارات ويندوز العميقة. | ![صندوق الإنقاذ السريع](docs/screenshots/companion_rescue.png) |
-| **استوديو الهاتف المتصل** | لوحة قياس حية لمواصفات الجهاز الحقيقي (HONOR JMS-W09، أندرويد 15، بطارية 100%، 800x1340)، مع بث لقطة شاشة حية من شاشة الهاتف وزر تنشيط الشاشة. | ![استوديو الهاتف المتصل](docs/screenshots/companion_device.png) |
-| **مفكرة الطالب والمختصرات** | الدليل السريع لأهم 4 مفاتيح سرية في فلاتر: Hot Reload vs Restart، اختصار Ctrl+. في VS Code، متى تختار Stateful vs Stateless، والقاعدة الذهبية للبناء النظيف. | ![مفكرة الطالب والمختصرات](docs/screenshots/companion_cheatsheet.png) |
+### Onboarding
 
----
+| Step | Screenshot |
+|---|---|
+| Laptop check | ![Laptop check](docs/screenshots/step1_dark.png) |
+| Setup progress | ![Setup progress](docs/screenshots/step2_progress.png) |
+| Connected Android device | ![Device detected](docs/screenshots/step3_device_detected.png) |
+| Build output | ![Build output](docs/screenshots/step3_build_console.png) |
+| VS Code guide | ![VS Code guide](docs/screenshots/step4_vscode_cheatsheet.png) |
 
-### ثانياً: معالج البداية التفاعلي (4 مستويات - Gamified Onboarding)
+### Real-device verification
 
-| المستوى | الوصف والمزايا | لقطة الشاشة |
-| :--- | :--- | :--- |
-| **المستوى 1: فحص العتاد والمقارنة الواقعية** | فحص فوري لمواصفات المعالج والرام وميزة المحاكاة (BIOS VT) ومساحة القرص، مع جدول مقارنة صريح وواقعي يبين بالأرقام استنزاف المحاكي للرام والحرارة مقابل كفاءة هاتف الـ USB (استهلاك 0MB وسلاسة 60-120 FPS). | ![المستوى 1: فحص العتاد](docs/screenshots/step1_dark.png) |
-| **المستوى 2: تجهيز ترسانة فلاتر الصامتة** | عداد تقدم ذكي ناعم لا يتجمد إطلاقاً (Asymptotic Ticker) مع شعار فلاتر 2D نقي وسهم تنزيل مسطح، وقائمة متابعة لـ 4 مراحل تلقائية (تهيئة البيئة، Java JDK 21 و Gradle، محرك Flutter & Dart، وتكامل VS Code). | ![المستوى 2: التجهيز الصامت](docs/screenshots/step2_progress.png) |
-| **المستوى 3: ربط الجهاز ومساعد التعريفات** | التعرف الفوري على الهواتف والأجهزة اللوحية المتصلة (مثل `HONOR JMS-W09` بنظام Android 15)، ودليل تصحيح USB مع زر نسخ نص البحث باليوتيوب، ومساعد تعريفات USB الشامل. | ![المستوى 3: التعرف على الجهاز](docs/screenshots/step3_device_detected.png) |
-| **المستوى 3: معركة البناء الفعلي مع Gradle** | عداد زمني بالثواني المنقضية (`00:28`)، مع متابعة حية لمراحل البناء الفعلي (assembleDebug) وتعليقات عربية عفوية تشرح ما يفعله المعالج بلغة الآلة ARM64 وتخفف الانتظار عن الطالب. | ![المستوى 3: معركة البناء الفعلي](docs/screenshots/step3_build_console.png) |
-| **المستوى 3: احتفال البنش مارك على شاشة الجهاز** | بطاقة تأكيد احتفالية تؤكد عمل التطبيق مباشرة على شاشة الهاتف، مع عرض سرعة الإقلاع الفعلية (1.8 ثانية)، واستهلاك الرام (38 MB)، وسلاسة اللمس (60 FPS). | ![المستوى 3: احتفال البنش مارك](docs/screenshots/step3_benchmark_celebration.png) |
-| **المستوى 4: شارة المطور ودليل VS Code** | فتح المحرر تلقائياً على مشروع الطالب الأول (`my_first_app`) مع بطاقة إرشادات سريعة تشرح زر التشغيل F5 وميزة التحديث الفوري المباشر Hot Reload (`Ctrl+S`). | ![المستوى 4: شارة المطور](docs/screenshots/step4_vscode_cheatsheet.png) |
+The app has been built, installed, and exercised on a physical HONOR JMS-W09 tablet running Android 15 (API 35). Device-specific evidence and test limits are recorded in the repository's test documentation.
 
----
-
-### ثالثاً: الاختبار الحي على تابلت أندرويد حقيقي عبر USB
-
-تم إجراء الاختبار الفعلي والبناء الكامل على جهاز لوحي حقيقي متصل بالكيبل (`AJ5EJK5913W00158`، تابلت HONOR JMS-W09 بنظام **Android 15 / API 35**):
-
-- تم تثبيت التطبيق بنجاح عبر Streamed Install خلال 5.2 ثوانٍ.
-- تم التحقق من شجرة الواجهة وعناصر النص عبر بروتوكول `hs ui`:
-  `- View "🎉 فلاتر تعمل بنجاح!" 400,102`
-  `- View "🌟 مبروك يا بطل!" 400,597`
-  `- View "0" 400,877`
-  `tap Button 734,1238`
-- تم تنفيذ نقرات حية لاختبار الاستجابة اللمسية وتحديث العداد مباشرة من `0` إلى `1` ثم إلى `4`.
-- تم التقاط لقطة شاشة حية من شاشة التابلت الفعلية وحفظها:
-
-![لقطة شاشة حية من التابلت الحقيقي](docs/screenshots/tablet_live_screen.png)
-
-</div>
+![Live tablet screen](docs/screenshots/tablet_live_screen.png)
 
 ---
 
-## 🏗️ التصميم المعماري للنظام (Architecture)
+## Architecture and current implementation
+
+The **implemented desktop app** is Python + pywebview, with a local HTML/JavaScript interface and Windows WebView2. Flutter and Android setup operations are implemented in Python modules under `gui/`.
 
 ```mermaid
 flowchart TD
-    User["👨‍🎓 Student / Beginner Developer"]
-    
-    subgraph Presentation ["🖥️ FlutterWay Native Desktop Shell (Edge WebView2)"]
-        TopNav["🧭 Mode Switcher: Onboarding Wizard (4 Levels) ↔ Student Course Companion"]
-        
-        subgraph Views ["Two Seamless Operational Modes"]
-            Wizard["🎮 Gamified Onboarding: Benchmark → Silent Install → Device Connect → VS Code"]
-            Companion["🎓 Course Companion: Smart Doctor + Lecture Projects + Rescue Box + Device Studio"]
-        end
-        
-        HarnessIPC["🤖 Agent Test Harness IPC (Port 54321 / Sub-ms latency)"]
-    end
-
-    subgraph Backend ["⚙️ Core Diagnostic & Self-Healing Engine"]
-        SmartDoctor["🩺 Smart Doctor: Non-blocking Parallel Scan & 1-Click Auto-Healer"]
-        ProjectStudio["📁 Lecture Projects: Pre-configured build.gradle, NDK Trap Bypass"]
-        RescueBox["🛟 Rescue Remedies: Gradle Lock Cleanup, License Agree, Port 5037 Purge"]
-        DeviceStudio["📱 Device Studio: Telemetry, Screen Wakeup, Live Screencap b64"]
-        DriverDoctor["🛠️ Universal USB Doctor: Google USB Driver, pnputil elevation"]
-        VSCodeIntegrator["📝 VS Code Integrator: Extensions & settings.json auto-injection"]
-    end
-
-    subgraph Targets ["📱 Development Targets"]
-        Phone["📱 Physical Android Device (USB Direct)\nTested on Honor Tablet Android 15 | 60 FPS"]
-        VSCodeIDE["💻 Visual Studio Code Workspace\nFormatted Settings, Dart & Flutter SDK linked"]
-    end
-
-    User --> TopNav
-    TopNav --> Views
-    Views <--> HarnessIPC
-    Views <--> Backend
-    Backend --> Targets
+    Student[Student / developer] --> UI[FlutterWay desktop UI]
+    UI --> Services[Setup, diagnostics, projects, build, and device services]
+    Services --> Windows[Windows environment]
+    Services --> SDK[Flutter, Java, Android SDK]
+    Services --> Device[ADB and Android device]
 ```
 
----
-
-<div dir="rtl">
-
-## 💡 مشاكل حقيقية تم حلها بذكاء (Battle-Tested Insights)
-
-1. **فخ تنزيل حزمة NDK بحجم 6.7 GB (The NDK Trap):**
-   - فلاتر 3.24+ تحقن افتراضياً ملف CMake اصطناعي يجبر أداة AGP على تنزيل الـ NDK كاملاً في الخلفية دون إذن، مما يستنزف سعة القرص والإنترنت.
-   - **الحل:** ضبط قواعد التغليف `packaging { jniLibs { keepDebugSymbols.add("**/*.so") } }` وقوالب المشاريع لتجاوز استدعاء CMake غير اللازم للمشاريع الطلابية.
-2. **الارتباك من تحذيرات C++ و Visual Studio (The Red X Panic):**
-   - أداة `flutter doctor` التقليدية تطبع علامات حمراء `[X]` تحث الطالب على تنزيل Visual Studio بحجم 20 جيجا، مما يسبب ذعراً للمبتدئين وظناً بأن فلاتر معطلة.
-   - **الحل:** يوضح طبيب فلاتر الذكي في FlutterWay بصراحة أن مسار الطالب هو برمجة تطبيقات الموبايل للأندرويد، وأن حاسبته جاهزة 100% دون الحاجة لـ Visual Studio إطلاقاً.
-3. **تعليق وأقفال الجرادل (Gradle Cache Deadlock):**
-   - عند انقطاع الكهرباء أو إغلاق التطبيق فجأة، تبقى ملفات `.lock` في كاش الجرادل تمنع البناء مستقبلاً برسالة "Timeout waiting to lock...".
-   - **الحل:** زر فوري في صندوق الإنقاذ ينهي عمليات الجافا العالقة ويحذف أقفال الكاش بنظافة دون حذف المكتبات المنزلة.
-4. **تراخيص أندرويد المعلقة (Android Licenses Unknown):**
-   - يواجه المبتدئون صعوبة في فتح موجه الأوامر وكتابة `flutter doctor --android-licenses` والموافقة بـ `y` عشرات المرات.
-   - **الحل:** تمرير موافقة رسمية صامتة وتلقائية لكافة الشروط بنقرة زر واحدة في الخلفية.
+> **Future architecture note:** the Go engine, `fway.exe` CLI, and dynamic manifest described in some design documents are not the current app implementation. See [the roadmap](docs/ROADMAP.md) for status.
 
 ---
 
-## 🚀 تنزيل FlutterWay على Windows
+## Download
 
-- [تنزيل المثبّت الواحد من GitHub Releases](https://github.com/AboALhasanx/flutterway/releases/latest)
-- يبقى [ملف ZIP المحمول/الاحتياطي](https://github.com/AboALhasanx/flutterway/releases/latest) متاحاً.
+Get the latest files from [GitHub Releases](https://github.com/AboALhasanx/flutterway/releases/latest). Releases may include a single-file Windows installer and a portable ZIP bundle.
 
-المثبّت per-user ولا يحتاج صلاحية Administrator، وإلغاء التثبيت لا يحذف
-بيانات المستخدم وSDKs ومشاريعه تحت `%LOCALAPPDATA%\FlutterWay`.
+- The installer is per-user and does not require administrator privileges.
+- Uninstalling FlutterWay is designed to preserve the user's SDKs, projects, and data under `%LOCALAPPDATA%\FlutterWay`.
+- **SmartScreen:** unsigned releases can show a “Windows protected your PC” warning. A single-file installer does not remove that warning; code signing and reputation are separate requirements. Verify downloads against the SHA-256 file published with the release.
 
-> **SmartScreen:** المثبّت غير موقّع حالياً؛ تحويل ZIP إلى EXE لا يزيل تحذير
-> SmartScreen. نقيّم حالياً مسار توقيع مجاني للمشروع مفتوح المصدر، وقد تبقى تحذيرات
-> السمعة في الإصدارات الأولى بعد التوقيع.
+---
 
-## 🚀 تشغيل وبناء التطبيق (Developer Notes)
+## Build locally
 
-التطبيق يُبنى كمجلد PyInstaller ثم يجمعه Inno Setup في مثبّت EXE واحد.
+Requirements: Windows, Python 3.12, and the dependencies used by the Windows CI workflow.
 
 ```powershell
-# 1. تشغيل التطبيق مباشرة عبر Python
+# Run from source
 python -m gui.onboarding_app
 
-# 2. بناء مجلد PyInstaller
-pyinstaller --clean --noconfirm FlutterWayNative.spec
+# Build the PyInstaller application bundle
+python -m PyInstaller --clean --noconfirm FlutterWayNative.spec
 
-# 3. بعد تثبيت Inno Setup 6.7.3، بناء مثبّت واحد
+# Build the single-file installer (Inno Setup 6.7.3)
 ISCC.exe /DAppVersion=1.3.1 installer\FlutterWay.iss
 ```
 
-ملفات البناء: `dist\FlutterWayNative\` (مجلد محمول) و
-`dist\installer\FlutterWay-Setup-v1.3.1-windows-x64.exe` (مثبّت واحد).
+Outputs:
 
-</div>
+- `dist\FlutterWayNative\` — portable application folder.
+- `dist\installer\FlutterWay-Setup-v1.3.1-windows-x64.exe` — per-user installer.
 
----
-
-## 🧪 أدوات المطور والمختبر (Developer Sandbox & Full Reset)
-
-> تظهر فقط عند تشغيل التطبيق بـ `--dev` أو `FLUTTERWAY_DEV=1`، ومخفية عن واجهة الطالب.
-
-لمطوري الأداة والمختبرين (QA / Devs) الراغبين في اختبار دورة حياة التطبيق ومسح كل ما قام البرنامج بتهيئته ومساعدته للتأكد بنسبة 100% من أنه يهيئ البيئة فعلاً من الصفر:
-
-- **زر نمط المطور في الشريط العلوي (`Dev Reset`):**
-  - يفتح نافذة منبثقة تفاعلية توفر خيارين:
-    1. **إعادة ضبط المصنع الشاملة (Full Clean Slate):** تحذف مسار Flutter من متغيرات PATH في الويندوز، تلغي إعدادات VS Code، تحذف التطبيق من التابلت عبر ADB، وتمسح مشاريع الديسكتوب التجريبية وتعيد الواجهة للمستوى 1 مع بث حي لسجلات الإلغاء.
-    2. **إعادة تعيين الهاتف ومشاريع التجربة (Soft Reset):** تحذف التطبيق من التابلت ومشاريع التجربة فقط لإعادة اختبار وحش البناء الحقيقي دون المساس بمسارات النظام.
-
-![لوحة أدوات المطور والمختبر](docs/screenshots/dev_sandbox_modal.png)
+The build version is defined in `gui/version.py`; keep the command-line version in sync when preparing a release.
 
 ---
 
-## 🧪 الاختبارات
+## Developer and QA tools
 
-| الأمر | التغطية |
+Developer controls are hidden from the student interface and require `--dev` or `FLUTTERWAY_DEV=1`. They can modify local setup state and should only be used with test data and after reviewing the relevant action.
+
+![Developer tools](docs/screenshots/dev_sandbox_modal.png)
+
+---
+
+## Tests
+
+Run the safe unit suite on Windows:
+
+```powershell
+python -m unittest discover -s tests -p "test_*.py" -v
+```
+
+Additional test and evidence documents:
+
+| Document | Description |
 |---|---|
-| `python tests/audit_smoke.py` | ثوابت، واجهة، حالات بناء، A11y |
-| `python tests/student_journey.py` | رحلة طالب حقيقية (22 شاشة) |
-| `python tests/reliability_faults.py` | **70 اختبار فشل** بدون جهاز (نجاح كاذب/ازدواج/حالة عالقة/تعارض Hot Reload) |
-| `python tests/test_build_guard.py` | منع بناء/تجهيز متزامن |
-| `python tests/test_pnp_filter.py` | منع تنبيه تعريف USB الكاذب |
-| `python tests/test_diagnostics.py` | تنقية/تقرير/GitHub URL/حفظ ZIP |
-| `python tests/clean_slate_e2e.py` | الرحلة الكاملة على بيئة نظيفة (تجهيز → بناء → Hot Reload) |
-| `python tests/custom_project_journey.py` | بناء وتثبيت حقيقي (يتطلب هاتف) |
-| `python tests/hot_reload_journey.py` | Hot Reload حقيقي (يتطلب هاتف) |
+| [Reliability tests](docs/RELIABILITY_TESTS.md) | Failure-injection and recovery coverage |
+| [Clean-slate test](docs/CLEAN_SLATE_TEST.md) | Clean Windows environment test notes and limitations |
+| [Error reporting](docs/ERROR_REPORTING.md) | Diagnostic reports and privacy considerations |
+| [Agent automation plan](docs/AGENT_AUTOMATION_PLAN.md) | Future agent-agnostic CLI/JSON and MCP support |
+| [User testing kit](docs/USER_TESTING_KIT.md) | Student session script, tasks, and scoring templates |
+| [Heuristic review](docs/HEURISTIC_REVIEW.md) | UX review notes |
 
-تفاصيل حزمة الفشل: [`docs/RELIABILITY_TESTS.md`](docs/RELIABILITY_TESTS.md)
-تقرير اختبار البيئة النظيفة: [`docs/CLEAN_SLATE_TEST.md`](docs/CLEAN_SLATE_TEST.md)
-تبليغ الأخطاء: [`docs/ERROR_REPORTING.md`](docs/ERROR_REPORTING.md)
-تكامل الوكلاء (خطة مستقبلية): [`docs/AGENT_AUTOMATION_PLAN.md`](docs/AGENT_AUTOMATION_PLAN.md)
+Hardware-dependent journeys require a real Android device. GitHub-hosted Windows CI verifies unit tests, packaging, and SDK/APK build workflows, but cannot verify USB interaction with a physical tablet.
 
 ---
 
-## 🧑‍🎓 اختبار المستخدم (Phase 6)
+## Roadmap
 
-عدة اختبار كاملة لخمسة طلاب مبتدئين: سكربت الجلسة، المهام، الموافقة، استبيان SUS، مقياس SEQ، جدول الملاحظات، ومعايير القبول.
+See [docs/ROADMAP.md](docs/ROADMAP.md). The agent-automation proposal is tracked in [GitHub Issue #1](https://github.com/AboALhasanx/flutterway/issues/1); it is planned work, not an implemented feature.
 
-- الدليل: [`docs/USER_TESTING_KIT.md`](docs/USER_TESTING_KIT.md)
-- مراجعة الخبير: [`docs/HEURISTIC_REVIEW.md`](docs/HEURISTIC_REVIEW.md)
-- نموذج النتائج: [`docs/USER_TEST_RESULTS_TEMPLATE.md`](docs/USER_TEST_RESULTS_TEMPLATE.md)
-- حساب النتائج: `python tests/user_test_metrics.py`
+## License
 
----
-
-## 📄 الترخيص (License)
-
-مشروع **FlutterWay** مفتوح المصدر ومتاح لجميع الجامعات والطلاب والباحثين تحت مظلة رخصة **MIT License**.
+FlutterWay is open source under the [MIT License](LICENSE).

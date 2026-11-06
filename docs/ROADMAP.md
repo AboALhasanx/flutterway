@@ -1,60 +1,65 @@
-# خارطة طريق مشروع FlutterWay (Engineering Roadmap)
-> **مراحل دورة حياة تطوير وتوزيع الأداة (SDLC Implementation Phases)**
+# FlutterWay Engineering Roadmap
 
-> ⚠️ **رؤية مستقبلية:** بعض البنود هنا (محرك Go، `fway.exe`، manifest ديناميكي) غير منفّذة.
-> الحالة الفعلية في `STATUS` داخل خطة التحصين و`README.md`.
+> **Status:** This roadmap includes future architecture proposals. Some Go-engine items, the `fway.exe` CLI, and dynamic-manifest design are not implemented in the current Python + pywebview app. See [README](../README.md) for the current implementation.
 
----
-
-## المرحلة الأولى: بناء المحرك الأساسي (Core Engine in Go) - [الحالية]
-- [x] إعداد هيكل المستودع المعياري للغة Go.
-- [x] كتابة وتدقيق وثائق المتطلبات وهندسة البرمجيات (SRS & Architecture).
-- [x] تصميم ملف المانيفست الديناميكي (`manifests/toolchain-v1.json`).
-- [ ] كتابة موديول فحص النظام والـ Registry (`pkg/inspector`, `pkg/sysenv`).
-- [ ] كتابة موديول فحص الـ ADB والأجهزة المتصلة (`pkg/inspector/adb.go`).
-- [ ] كتابة محرك التحميل المجزأ القابل للاستئناف (`pkg/downloader`).
-- [ ] كتابة عمال التثبيت المتخصصين (`pkg/installer`).
-- [ ] بناء قاعدة القواعد المحلية للـ Doctor ومحرك الإصلاح التلقائي (`pkg/doctor`).
-- [ ] بناء واجهة الـ CLI الأساسية (`cmd/fway/main.go`).
+**Language:** [English](ROADMAP.md) | [العربية](ar/ROADMAP.md)
 
 ---
 
-## المرحلة الثانية: اختبارات الوحدة والتحقق (Unit & Integration Testing)
-- [ ] اختبار فحص المسارات العربية والمسافات (Path normalization tests).
-- [ ] محاكاة أخطاء الـ ADB وكشف احتكار المنفذ 5037 بواسطة BlueStacks/Nox.
-- [ ] اختبار التنزيل المجزأ والتحقق من بصمات SHA-256.
-- [ ] اختبار تشغيل أداة `fway doctor --json` على أجهزة ويندوز 10 و 11 مختلفة.
+## Phase 1: Core engine in Go — future proposal
+
+- [x] Create a modular Go repository structure.
+- [x] Draft and review software requirements and architecture documents.
+- [x] Design the dynamic toolchain manifest (`manifests/toolchain-v1.json`).
+- [ ] Implement system and registry inspection (`pkg/inspector`, `pkg/sysenv`).
+- [ ] Implement ADB and connected-device inspection (`pkg/inspector/adb.go`).
+- [ ] Implement resumable, chunked downloads (`pkg/downloader`).
+- [ ] Implement toolchain installers (`pkg/installer`).
+- [ ] Build local Doctor rules and repair engine (`pkg/doctor`).
+- [ ] Build the CLI entry point (`cmd/fway/main.go`).
 
 ---
 
-## المرحلة الثالثة: الواجهة الرسومية التفاعلية (Interactive GUI Layer)
-- [ ] بناء معالج التثبيت المرئي (Step-by-step Wizard) باللغة العربية.
-- [ ] شاشة متابعة حية لتقدم التحميل وفك الضغط مع نسبة مئوية ومؤشرات سرعة.
-- [ ] لوحة تحكم تشخيص مسار بناء الموبايل (Pipeline Diagnostic Dashboard).
-- [ ] أزرار الإصلاح التلقائي بنقرة واحدة (One-Click Auto-Fix Buttons).
+## Phase 2: Unit and integration testing
+
+- [ ] Test path normalization with spaces and non-ASCII characters.
+- [ ] Simulate ADB failures and port 5037 conflicts with BlueStacks/Nox.
+- [ ] Test resumable downloads and SHA-256 verification.
+- [ ] Test `fway doctor --json` on multiple Windows 10 and 11 environments.
 
 ---
 
-## المرحلة الرابعة: التوزيع وحزمة التثبيت الأوفلاين (Packaging & Distribution)
-- [ ] بناء سكريبت تجهيز حزمة الفلاشة الأوفلاين (`scripts/pack-offline-usb.ps1`).
-- [ ] إعداد ملف حزم البرنامج الموحد عبر Inno Setup (`installer.iss`) لإنتاج ملف واحد `FlutterWay_Setup_v1.0.exe`.
-- [ ] توثيق خطوات الاستخدام للطلاب ولأساتذة الجامعات ومسؤولي المختبرات.
+## Phase 3: Interactive GUI
+
+- [ ] Build the visual step-by-step setup wizard.
+- [ ] Provide live download and extraction progress with percentage and speed.
+- [ ] Build a mobile build-pipeline diagnostics dashboard.
+- [ ] Add one-click guided repair actions.
 
 ---
 
-## المرحلة الخامسة: تكامل الوكلاء (Agent Automation) — رؤية مستقبلية
-> التفاصيل الكاملة ودراسة التهديدات: [`docs/AGENT_AUTOMATION_PLAN.md`](AGENT_AUTOMATION_PLAN.md)
-> التتبّع: [Issue #1](https://github.com/AboALhasanx/flutterway/issues/1)
+## Phase 4: Packaging and offline distribution
+
+- [ ] Build the offline USB bundle script (`scripts/pack-offline-usb.ps1`).
+- [ ] Produce a single-file Windows installer using Inno Setup.
+- [ ] Document workflows for students, instructors, and university IT staff.
+
+---
+
+## Phase 5: Agent automation — future work
+
+> Full design and threat model: [Agent Automation Plan](AGENT_AUTOMATION_PLAN.md). Arabic translation: [`ar/AGENT_AUTOMATION_PLAN.md`](ar/AGENT_AUTOMATION_PLAN.md).
 >
-> الهدف أن تستخدم FlutterWay من أي Agent Harness (Codex، Claude Code، OpenCode، وغيرها)
-> عبر CLI/JSON وMCP، بنفس الخدمات والحمايات التي تستخدمها الواجهة.
+> Tracking: [GitHub Issue #1](https://github.com/AboALhasanx/flutterway/issues/1).
 
-- [ ] **P0:** تثبيت العقد (JSON Schema، الأخطاء، حالات jobs، نموذج الصلاحيات).
-- [ ] **P1:** `fway capabilities` و`fway doctor` بلا واجهة، وفصل خدمات التجهيز.
-- [ ] **P2:** `setup plan/apply` كعمليات قابلة للمتابعة والإلغاء.
-- [ ] **P3:** إنشاء مشروع، قائمة أجهزة، بناء APK، وتشغيل على جهاز محدد.
-- [ ] **P4:** خادم MCP محلي عبر stdio بأدوات مطابقة للـCLI.
-- [ ] **P5:** حزمة `fway.exe` + skill + توثيق + تحقق عبر harnessين مختلفين.
-- [ ] **P6 (اختياري):** Hot Reload وتصدير التشخيص، دون أي عملية حذف تلقائية.
+The goal is to make FlutterWay usable from any Agent Harness (Codex, Claude Code, OpenCode, and others) through a stable CLI/JSON contract and an optional MCP adapter, reusing the same services and safeguards as the GUI.
 
-**خارج النطاق:** الحذف النهائي، إعادة الضبط الكاملة، تنفيذ shell حر، والتحكم السحابي.
+- [ ] **P0:** Define the contract (JSON Schema, error codes, job states, and permission model).
+- [ ] **P1:** Implement headless `fway capabilities` and `fway doctor`; separate setup services from the GUI.
+- [ ] **P2:** Implement `setup plan/apply` as observable, cancellable jobs.
+- [ ] **P3:** Add project creation, device listing, APK builds, and execution on an explicitly selected device.
+- [ ] **P4:** Add a local stdio MCP server whose tools map to CLI operations.
+- [ ] **P5:** Package `fway.exe`, provide an optional skill and documentation, and verify with two different harnesses.
+- [ ] **P6 (optional):** Consider Hot Reload and diagnostics export; do not add automatic destructive actions.
+
+**Out of scope:** permanent deletion, full reset, arbitrary shell execution, and cloud control.
