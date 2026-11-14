@@ -107,32 +107,15 @@ def resolve_flutter_release(channel: str = "stable", timeout: int = 30) -> Flutt
 
 
 def _download(url: str, target: str, progress=None, timeout: int = 120) -> bool:
-    import urllib.request
+    def report(received: int, total: int) -> None:
+        if progress and total:
+            progress(min(100, int(received * 100 / total)))
 
-    part = target + ".part"
-    try:
-        request = urllib.request.Request(url, headers={"User-Agent": "FlutterWay/1.3"})
-        with urllib.request.urlopen(request, timeout=timeout) as response, open(part, "wb") as output:
-            total = int(response.headers.get("Content-Length") or 0)
-            done = 0
-            while True:
-                chunk = response.read(1024 * 1024)
-                if not chunk:
-                    break
-                output.write(chunk)
-                done += len(chunk)
-                if progress and total:
-                    progress(int(done * 100 / total))
-        os.replace(part, target)
-        return True
-    except Exception as exc:
-        print("Flutter archive download error:", exc)
-        try:
-            if os.path.exists(part):
-                os.remove(part)
-        except Exception:
-            pass
+    result = downloads.resumable_download(url, target, progress=report, timeout=timeout)
+    if not result.get("ok"):
+        print("Flutter archive download error:", result.get("error"))
         return False
+    return True
 
 
 def install_flutter_archive(target: str, release: FlutterRelease, progress=None,

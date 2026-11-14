@@ -12,13 +12,13 @@ import os
 import shutil
 import subprocess
 import tempfile
-import urllib.request
 import zipfile
 from typing import Callable
 
 try:
-    from gui import paths
+    from gui import downloads, paths
 except ImportError:
+    import downloads
     import paths
 
 CMDLINE_TOOLS_VERSION = "11076708"
@@ -65,18 +65,13 @@ def _sha256(path: str) -> str:
 def _download(url: str, destination: str, progress: Callable[[str], None] | None = None) -> None:
     if progress:
         progress(f"جاري تنزيل أدوات Android SDK من {url.split('/')[2]}...")
-    request = urllib.request.Request(url, headers={"User-Agent": "FlutterWay/1.0"})
-    with urllib.request.urlopen(request, timeout=60) as response, open(destination, "wb") as output:
-        total = int(response.headers.get("Content-Length") or 0)
-        received = 0
-        while True:
-            chunk = response.read(1024 * 256)
-            if not chunk:
-                break
-            output.write(chunk)
-            received += len(chunk)
-            if progress and total:
-                progress(f"جاري تنزيل أدوات Android SDK... {int(received * 100 / total)}%")
+    def report(received: int, total: int) -> None:
+        if progress and total:
+            progress(f"جاري تنزيل أدوات Android SDK... {int(received * 100 / total)}%")
+
+    result = downloads.resumable_download(url, destination, progress=report, timeout=60)
+    if not result.get("ok"):
+        raise RuntimeError(result.get("error") or "تعذر تنزيل أدوات Android SDK")
 
 
 def _download_verified(destination: str, progress: Callable[[str], None] | None = None) -> None:
@@ -113,6 +108,70 @@ def _sdkmanager(sdk_root: str) -> str:
     return candidate
 
 
+def _android_cli() -> str | None:
+    """Prefer Google's supported Android CLI when installed; retain sdkmanager fallback."""
+    return shutil.which("android") or shutil.which("android.exe")
+
+
+def _android_cli_packages(packages: list[str]) -> list[str]:
+    """Translate legacy SDK package paths to Android CLI's documented slash form."""
+    return [package.replace(";", "/") for package in packages]
+
+
+def _communicate_with_timeout(process: subprocess.Popen, input_text: str, timeout: int):
+    """Collect SDK-manager output and stop the whole process tree on timeout."""
+    try:
+        return process.communicate(input_text, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        # sdkmanager.bat and Android CLI can launch Java children. Killing only
+        # the wrapper leaves those children writing into the SDK during a retry.
+        if process.poll() is None and os.name == "nt":
+            try:
+                subprocess.run(
+                    ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                    startupinfo=_startupinfo(),
+                    creationflags=subprocess.CREATE_NO_WINDOW,
+                )
+            except Exception:
+                pass
+        if process.poll() is None:
+            process.kill()
+        try:
+            process.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate()
+        raise
+
+
+def _run_android_cli(sdk_root: str, packages: list[str], timeout: int = 900) -> tuple[int, str]:
+    cli = _android_cli()
+    if not cli:
+        raise RuntimeError("Android CLI is not installed")
+    env = os.environ.copy()
+    env["ANDROID_HOME"] = sdk_root
+    env["ANDROID_SDK_ROOT"] = sdk_root
+    java_home = paths.jdk_home()
+    if java_home:
+        env["JAVA_HOME"] = java_home
+        env["PATH"] = os.path.join(java_home, "bin") + ";" + env.get("PATH", "")
+    process = subprocess.Popen(
+        [cli, f"--sdk={sdk_root}", "--no-metrics", "sdk", "install", *_android_cli_packages(packages)],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        env=env,
+        startupinfo=_startupinfo(),
+        creationflags=subprocess.CREATE_NO_WINDOW,
+    )
+    output, _ = _communicate_with_timeout(process, "y\n" * 40, timeout)
+    return process.returncode, output or ""
+
+
 def _run_sdkmanager(sdk_root: str, args: list[str], timeout: int = 900) -> tuple[int, str]:
     manager = _sdkmanager(sdk_root)
     env = os.environ.copy()
@@ -133,7 +192,7 @@ def _run_sdkmanager(sdk_root: str, args: list[str], timeout: int = 900) -> tuple
         startupinfo=_startupinfo(),
         creationflags=subprocess.CREATE_NO_WINDOW,
     )
-    output, _ = process.communicate("y\n" * 40, timeout=timeout)
+    output, _ = _communicate_with_timeout(process, "y\n" * 40, timeout)
     return process.returncode, output or ""
 
 
@@ -203,24 +262,30 @@ def install_android_sdk(progress: Callable[[str], None] | None = None, persist: 
     archive = os.path.join(paths.data_dir(), "cache", f"commandlinetools-{CMDLINE_TOOLS_VERSION}.zip")
     os.makedirs(os.path.dirname(archive), exist_ok=True)
 
-    try:
-        if not os.path.exists(archive) or _sha256(archive).lower() != CMDLINE_TOOLS_SHA256:
-            _download_verified(archive, progress)
-        if progress:
-            progress("جاري فك ضغط أدوات Android command-line...")
-        _extract_cmdline_tools(archive, sdk_root)
-    except Exception as exc:
-        return {"success": False, "sdk_root": sdk_root, "error": f"تعذر تجهيز Android SDK: {exc}"}
+    use_android_cli = bool(_android_cli())
+    if not use_android_cli:
+        try:
+            if not os.path.exists(archive) or _sha256(archive).lower() != CMDLINE_TOOLS_SHA256:
+                _download_verified(archive, progress)
+            if progress:
+                progress("جاري فك ضغط أدوات Android command-line...")
+            _extract_cmdline_tools(archive, sdk_root)
+        except Exception as exc:
+            return {"success": False, "sdk_root": sdk_root, "error": f"تعذر تجهيز Android SDK: {exc}"}
 
     try:
         if progress:
-            progress("جاري قبول تراخيص Android SDK...")
-        _run_sdkmanager(sdk_root, ["--licenses"], timeout=180)
-        if progress:
-            progress("جاري تثبيت platform-tools وplatforms وbuild-tools...")
-        code, output = _run_sdkmanager(sdk_root, USB_PACKAGES, timeout=900)
+            progress("جاري تثبيت أدوات Android وقبول الرخص المطلوبة...")
+        if use_android_cli:
+            code, output = _run_android_cli(sdk_root, USB_PACKAGES, timeout=900)
+        else:
+            _run_sdkmanager(sdk_root, ["--licenses"], timeout=180)
+            if progress:
+                progress("جاري تثبيت platform-tools وplatforms وbuild-tools...")
+            code, output = _run_sdkmanager(sdk_root, USB_PACKAGES, timeout=900)
     except Exception as exc:
-        return {"success": False, "sdk_root": sdk_root, "error": f"تعذر تشغيل sdkmanager: {exc}"}
+        manager = "Android CLI" if use_android_cli else "sdkmanager"
+        return {"success": False, "sdk_root": sdk_root, "error": f"تعذر تشغيل {manager}: {exc}"}
 
     if not sdk_ready(sdk_root):
         tail = "\n".join(output.strip().splitlines()[-6:])

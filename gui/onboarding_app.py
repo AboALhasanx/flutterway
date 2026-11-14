@@ -52,6 +52,13 @@ except ImportError:
     import hot_reload
     import diagnostics
 
+
+def _js_call(function_name, *args):
+    """Build a JavaScript call using JSON literals for every argument."""
+    encoded_args = ", ".join(json.dumps(arg) for arg in args)
+    return f"{function_name}({encoded_args});"
+
+
 def _broadcast_environment_change():
     try:
         import ctypes
@@ -169,34 +176,22 @@ def _install_portable_jdk(progress=None):
     zip_path = os.path.join(cache, "temurin21.zip")
     if not os.path.exists(zip_path) or os.path.getsize(zip_path) < JDK_MIN_ZIP_BYTES:
         _jdk_report(progress, "ننزّل Java 21 المحمول (بدون صلاحيات مدير)...")
-        part_path = zip_path + ".part"
-        try:
-            request = urllib.request.Request(JDK_PORTABLE_URL, headers={"User-Agent": "FlutterWay/1.0"})
-            with urllib.request.urlopen(request, timeout=60) as response, open(part_path, "wb") as output:
-                total = int(response.headers.get("Content-Length") or 0)
-                downloaded = 0
-                last_tenth = -1
-                while True:
-                    chunk = response.read(1024 * 1024)
-                    if not chunk:
-                        break
-                    output.write(chunk)
-                    downloaded += len(chunk)
-                    if total:
-                        percent = int(downloaded * 100 / total)
-                        if percent // 10 != last_tenth:
-                            last_tenth = percent // 10
-                            _jdk_report(progress, f"ننزّل Java 21 المحمول... {percent}%")
-            if os.path.getsize(part_path) < JDK_MIN_ZIP_BYTES:
-                raise RuntimeError("ملف Java الذي نُزّل غير مكتمل")
-            os.replace(part_path, zip_path)
-        except Exception as exc:
-            try:
-                if os.path.exists(part_path):
-                    os.remove(part_path)
-            except Exception:
-                pass
-            print("Portable JDK download error:", exc)
+        last_tenth = -1
+        def report_download(downloaded, total):
+            nonlocal last_tenth
+            if total:
+                percent = int(downloaded * 100 / total)
+                if percent // 10 != last_tenth:
+                    last_tenth = percent // 10
+                    _jdk_report(progress, f"ننزّل Java 21 المحمول... {percent}%")
+
+        result = downloads.resumable_download(JDK_PORTABLE_URL, zip_path, progress=report_download)
+        if not result.get("ok"):
+            print("Portable JDK download error:", result.get("error"))
+            return None
+        if os.path.getsize(zip_path) < JDK_MIN_ZIP_BYTES:
+            print("Portable JDK download was shorter than the minimum expected size.")
+            os.remove(zip_path)
             return None
 
     expected = _adoptium_checksum()
@@ -325,8 +320,10 @@ class OnboardingApi:
             "missing_drivers": False,
             "setup_error": None,
             "build_running": False,
-            "setup_running": False
+            "setup_running": False,
+            "setup_stop_requested": False,
         }
+        self._setup_stop_event = threading.Event()
         self.hot_reload = hot_reload.HotReloadSession()
         diagnostics.configure_logging()
 
@@ -617,10 +614,8 @@ class OnboardingApi:
                             cur_phase = phase
 
                     if win:
-                        escaped_msg = cur_msg.replace("'", "\\'")
-                        js = f"updateBuildTicker({elapsed}, '{escaped_msg}', {cur_phase});"
                         try:
-                            win.evaluate_js(js)
+                            win.evaluate_js(_js_call("updateBuildTicker", elapsed, cur_msg, cur_phase))
                         except Exception:
                             pass
                     time.sleep(1.0)
@@ -631,9 +626,8 @@ class OnboardingApi:
             # Helper to stream live log to UI terminal
             def send_log(line):
                 if win and line:
-                    safe = line.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ").replace("\r", "")
                     try:
-                        win.evaluate_js(f"appendLiveBuildLog('{safe}');")
+                        win.evaluate_js(_js_call("appendLiveBuildLog", line))
                     except Exception:
                         pass
 
@@ -929,39 +923,67 @@ class OnboardingApi:
         if self.state.get("setup_running"):
             return {"success": False, "error": "التجهيز شغال بالفعل. انتظر يكمل."}
         self.state["setup_running"] = True
+        self.state["setup_stop_requested"] = False
+        self._setup_stop_event.clear()
         self.state["selected_mode"] = mode
         self.state["current_step"] = 2
         self.state["setup_error"] = None
         self.state["is_complete"] = False
+        previous_checkpoint = self._read_setup_checkpoint()
+        resumable_checkpoint = previous_checkpoint if previous_checkpoint and previous_checkpoint.get("status") != "complete" else None
+        diagnostics.log_event("setup_resumed" if resumable_checkpoint else "setup_started", mode=str(mode),
+                              previous_stage=(previous_checkpoint or {}).get("stage", "start"))
         print(f"[Onboarding] Starting REAL setup flow with mode: {mode}")
-        diagnostics.log_event("setup_started", mode=str(mode))
+        self._write_setup_checkpoint("starting", 0, "running")
 
         def worker():
             win = self.window_holder.get("window")
 
             def fail(message, percent=0):
                 self.state["is_complete"] = False
+                stopped = self._setup_stop_event.is_set()
+                if stopped:
+                    message = "تم الإيقاف عند نقطة آمنة. الملفات المكتملة والتنزيل الجزئي المحفوظان بأمان بقيا كما هما؛ اضغط إعادة المحاولة للمتابعة."
                 self.state["setup_error"] = message
-                diagnostics.log(f"Setup failed at {percent}%: {message}", "error")
-                diagnostics.log_event("setup_failed", code="setup_failed", percent=int(percent or 0))
+                self._write_setup_checkpoint(self.state.get("setup_checkpoint_stage", "unknown"), percent,
+                                             "stopped" if stopped else "failed")
+                diagnostics.log(f"Setup {'stopped safely' if stopped else 'failed'} at {percent}%: {message}", "warning" if stopped else "error")
+                diagnostics.log_event("setup_stopped" if stopped else "setup_failed", code="setup_stopped" if stopped else "setup_failed", percent=int(percent or 0))
                 try:
                     print(f"[Onboarding] FAILED: {message}")
                 except Exception:
                     pass
                 if win:
                     try:
-                        win.evaluate_js(f"onboardingFailed({json.dumps(message)});")
+                        hook = "onboardingStopped" if stopped else "onboardingFailed"
+                        win.evaluate_js(f"{hook}({json.dumps(message)});")
                     except Exception:
                         pass
 
             try:
+                def check_stop():
+                    if self._setup_stop_event.is_set():
+                        raise downloads.DownloadCancelled("setup stop requested")
+
+                def check_after_stage(percent):
+                    try:
+                        check_stop()
+                    except downloads.DownloadCancelled:
+                        fail("", percent)
+                        return True
+                    return False
+
                 # Stage 1: Environment & System Check (0% - 18%) -> Checklist Item 1
                 self._update_ui(win, 10, "جاري فحص إعدادات اللابتوب وتوفير أفضل مسار...", 1)
                 time.sleep(0.4)
                 self._update_ui(win, 18, "تم فحص الذاكرة ومساحة القرص وتوافق النظام بنجاح", 1)
+                self._write_setup_checkpoint("system_check", 18, "running")
+                if check_after_stage(18):
+                    return
                 time.sleep(0.3)
 
                 # Stage 2: Java (JDK 21) & Gradle Toolchain (18% - 42%) -> Checklist Item 2
+                self._write_setup_checkpoint("jdk", 18, "running")
                 self._update_ui(win, 24, "نثبّت Java وأدوات بناء أندرويد...", 2)
                 jdk_warnings = []
                 def jdk_progress(message):
@@ -969,9 +991,12 @@ class OnboardingApi:
                     overall = 24 if sub is None else 24 + int(sub * 16 / 100)
                     self._update_ui(win, overall, message, 2)
                 jdk_path = ensure_jdk(progress=jdk_progress, warnings=jdk_warnings)
+                if check_after_stage(40):
+                    return
                 if not jdk_path:
                     fail("تعذر تجهيز Java 21. تأكد من اتصال الإنترنت ثم أعد المحاولة.", 24)
                     return
+                self._write_setup_checkpoint("jdk", 40, "running")
                 if jdk_warnings:
                     self.state["env_warnings"] = list(jdk_warnings)
                     self._update_ui(win, 42, "تم تجهيز Java، لكن تعذر حفظ بعض متغيرات البيئة. سنكمل بالمسار المباشر.", 2)
@@ -980,6 +1005,8 @@ class OnboardingApi:
                 time.sleep(0.4)
 
                 # Stage 3: Flutter Toolchain & PATH Registration (42% - 75%) -> Checklist Item 3
+                if check_after_stage(42):
+                    return
                 flutter_target = paths.flutter_root()
                 flutter_bin = os.path.join(flutter_target, "bin")
                 flutter_bat = os.path.join(flutter_bin, "flutter.bat")
@@ -990,6 +1017,7 @@ class OnboardingApi:
                         return
 
                     self._update_ui(win, 48, "جاري تنزيل محرك Flutter & Dart الرسمي من السحابة...", 3)
+                    self._write_setup_checkpoint("flutter", 48, "running")
 
                     startupinfo = subprocess.STARTUPINFO()
                     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -1002,6 +1030,7 @@ class OnboardingApi:
                         return
 
                     def flutter_progress(pct):
+                        check_stop()
                         overall = 48 + int(max(0, min(100, int(pct))) * 22 / 100)
                         self._update_ui(win, overall, f"ننزّل Flutter {release.version}... {pct}%", 3)
 
@@ -1009,6 +1038,8 @@ class OnboardingApi:
                         flutter_target, release, progress=flutter_progress
                     )
                     if not installed.get("success"):
+                        if check_after_stage(48):
+                            return
                         fail(installed.get("error") or "تعذر تجهيز Flutter SDK.", 48)
                         return
                     self._update_ui(win, 70, f"تم تجهيز Flutter {release.version} (موثّق)", 3)
@@ -1016,6 +1047,10 @@ class OnboardingApi:
                     if not os.path.exists(flutter_bat):
                         fail("اكتمل التنزيل لكن flutter.bat غير موجود.", 48)
                         return
+
+                self._write_setup_checkpoint("flutter", 70, "running")
+                if check_after_stage(70):
+                    return
 
                 # Register the Flutter bin directory in the user PATH via the Registry
                 self._update_ui(win, 70, "نربط Flutter بالنظام...", 3)
@@ -1027,15 +1062,22 @@ class OnboardingApi:
 
                 # Stage 3.5: Android SDK (platform-tools, platforms, build-tools)
                 self._update_ui(win, 78, "نجهّز أدوات أندرويد (Android SDK)...", 3)
+                self._write_setup_checkpoint("android_sdk", 78, "running")
                 def sdk_progress(message):
+                    check_stop()
                     sub = _percent_from_text(message)
                     overall = 80 if sub is None else 80 + int(sub * 6 / 100)
                     self._update_ui(win, overall, message, 3)
                 sdk_result = android_sdk.install_android_sdk(
                     progress=sdk_progress
                 )
+                if check_after_stage(80):
+                    return
                 if not sdk_result.get("success"):
                     fail(sdk_result.get("error", "تعذر تجهيز Android SDK. تأكد من اتصال الإنترنت ثم أعد المحاولة."), 80)
+                    return
+                self._write_setup_checkpoint("android_sdk", 86, "running")
+                if check_after_stage(86):
                     return
                 if sdk_result.get("warnings"):
                     self._update_ui(win, 86, sdk_result.get("message") or "تم تجهيز الأدوات، لكن تعذر حفظ متغيرات البيئة.", 3)
@@ -1060,12 +1102,16 @@ class OnboardingApi:
 
                 # Stage 4: VS Code Configuration & Extensions (75% - 90%) -> Checklist Item 4
                 self._update_ui(win, 88, "نربط VS Code ونثبّت إضافات Flutter...", 4)
+                self._write_setup_checkpoint("vscode", 88, "running")
                 vscode_ok = False
                 try:
                     vscode_res = configure_vscode(flutter_target)
                     vscode_ok = bool(vscode_res and vscode_res.get("success"))
                 except Exception as e:
                     print("VS Code setup error:", e)
+                self._write_setup_checkpoint("vscode", 90, "running")
+                if check_after_stage(90):
+                    return
 
                 # Stage 5: Starter Project Setup on Desktop (90% - 100%) -> Checklist Item 4
                 self._update_ui(win, 94, "نجهّز أول مشروع Flutter على سطح المكتب...", 4)
@@ -1080,6 +1126,8 @@ class OnboardingApi:
                         message += "\n" + detail[-700:]
                     fail(message, 94)
                     return
+                if check_after_stage(94):
+                    return
 
                 time.sleep(0.4)
                 if vscode_ok:
@@ -1088,6 +1136,7 @@ class OnboardingApi:
                     self._update_ui(win, 98, "اكتمل Flutter والمشروع، لكن VS Code غير مثبت أو تعذر ضبطه. يمكنك تثبيته لاحقاً.", 4)
                 self.state["is_complete"] = True
                 self.state["project_path"] = project_path
+                self._write_setup_checkpoint("starter_project", 100, "complete")
                 diagnostics.log_event("setup_finished", vscode_ok=bool(vscode_ok))
 
                 # Transition to Step 3: Phone verification
@@ -1111,6 +1160,42 @@ class OnboardingApi:
             self.state["setup_error"] = f"تعذر بدء عملية التجهيز: {e}"
             return {"success": False, "error": self.state["setup_error"]}
         return {"success": True}
+
+    def stop_onboarding(self):
+        """Request a cooperative stop; active file downloads retain their .part checkpoint."""
+        if not self.state.get("setup_running"):
+            return {"success": False, "error": "لا توجد عملية تجهيز جارية."}
+        self.state["setup_stop_requested"] = True
+        self._setup_stop_event.set()
+        return {"success": True, "message": "سيتم الإيقاف عند أقرب نقطة آمنة."}
+
+    def _setup_checkpoint_path(self):
+        return os.path.join(paths.data_dir(), "cache", "setup-checkpoint.json")
+
+    def _read_setup_checkpoint(self):
+        try:
+            with open(self._setup_checkpoint_path(), "r", encoding="utf-8") as handle:
+                value = json.load(handle)
+            return value if isinstance(value, dict) else None
+        except (OSError, ValueError):
+            return None
+
+    def _write_setup_checkpoint(self, stage, percent, status):
+        """Atomically persist the latest safe stage; never persist secrets or user content."""
+        path = self._setup_checkpoint_path()
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        payload = {"stage": str(stage), "percent": int(percent or 0), "status": str(status),
+                   "updated_at": int(time.time())}
+        temporary = path + ".tmp"
+        try:
+            with open(temporary, "w", encoding="utf-8") as handle:
+                json.dump(payload, handle)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temporary, path)
+            self.state["setup_checkpoint_stage"] = str(stage)
+        except OSError as exc:
+            diagnostics.log(f"Could not persist setup checkpoint: {exc}", "warning")
 
     def _ensure_starter_project(self, project_path, progress=None):
         """Ensure a real Flutter project exists; copy a template or run flutter create."""
@@ -1220,9 +1305,7 @@ class OnboardingApi:
     def _update_ui(self, win, percent, text, chk_step):
         self.state["progress_percent"] = percent
         if win:
-            escaped_text = text.replace("'", "\\'")
-            js = f"updateProgress({percent}, '{escaped_text}', {chk_step});"
-            win.evaluate_js(js)
+            win.evaluate_js(_js_call("updateProgress", percent, text, chk_step))
 
     # --- Student Course Companion Dashboard API ---
     def get_initial_app_state(self):

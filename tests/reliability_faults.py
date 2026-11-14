@@ -200,6 +200,24 @@ def test_setup_guard_and_error_details(browser) -> None:
     page.close()
 
 
+def test_safe_setup_stop(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("switchMainView('wizard'); showStep(2);")
+    page.evaluate("""() => {
+        window.pywebview.api.stop_onboarding = async () => ({
+            success: true, message: 'سيتم الإيقاف عند أقرب نقطة آمنة.'
+        });
+    }""")
+    page.evaluate("requestSafeSetupStop()")
+    page.wait_for_timeout(30)
+    check("safe-stop: progress shows checkpoint notice", "نقطة آمنة" in page.locator("#progress-text").inner_text())
+    check("safe-stop: request button locked pending backend stop", page.locator("#btn-stop-setup").is_disabled())
+    page.evaluate("onboardingStopped('توقف آمن')")
+    check("safe-stop: retry state shown", page.locator("#setup-error-box").is_visible())
+    check("safe-stop: stop request can be retried", page.locator("#btn-stop-setup").is_enabled())
+    page.close()
+
+
 def test_build_progress_mapping(browser) -> None:
     page = new_page(browser)
     page.evaluate("""() => {
@@ -428,6 +446,7 @@ def main() -> int:
             test_driver_alert_truth,
             test_report_modal,
             test_setup_guard_and_error_details,
+            test_safe_setup_stop,
             test_build_stage_truth,
             test_hot_reload_conflict_ui,
             test_progress_smooth_and_rotating,
