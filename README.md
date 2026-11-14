@@ -85,6 +85,14 @@ Get the latest files from [GitHub Releases](https://github.com/AboALhasanx/flutt
 - **Recommended:** use the single-file installer. If you use the portable ZIP, verify its SHA-256 first, then right-click the downloaded ZIP → **Properties** → select **Unblock** → **Apply**, and only then extract it. Windows may otherwise propagate its Internet download marker to `Python.Runtime.dll`, preventing the app's .NET component from starting. If you already extracted it, unblock the ZIP and extract a fresh copy.
 - **SmartScreen:** unsigned releases can show a “Windows protected your PC” warning. A single-file installer does not remove that warning; code signing and reputation are separate requirements. Verify downloads against the SHA-256 file published with the release.
 
+### Offline Flutter project kit
+
+The [FlutterWay Offline Agent Kit (MEGA)](https://mega.nz/file/gy1TiJbK#kvhHFPNPDMgD06bZf5ozKk0TJOyIEI5xoPS44fZL4Ck) contains Flutter/Dart, Temurin JDK, a local project generator, and setup/warm-up scripts. Verify its SHA-256 and follow the [offline setup guide](docs/OFFLINE_AGENT_KIT.ar.md). Google Android SDK binaries are not redistributed; each computer needs a one-time official download and local license acceptance before Android builds can be prepared for offline use. Keep the large ZIP on MEGA rather than committing it to Git.
+
+See the [reliability and performance log](docs/RELIABILITY_RISK_LOG.md) for current findings, measured local test results, bounded download probes, and open risks.
+
+During onboarding, **Stop at a safe point** requests a cooperative stop, atomically records the last completed stage, and preserves partial downloads. Retry setup to reuse installed components and resume verified HTTP range downloads. Archives are promoted only after completion and checked against the expected SHA-256 before installation.
+
 ---
 
 ## Build locally
@@ -99,13 +107,13 @@ python -m gui.onboarding_app
 python -m PyInstaller --clean --noconfirm FlutterWayNative.spec
 
 # Build the single-file installer (Inno Setup 6.7.3)
-ISCC.exe /DAppVersion=1.3.1 installer\FlutterWay.iss
+ISCC.exe /DAppVersion=1.3.2 installer\FlutterWay.iss
 ```
 
 Outputs:
 
 - `dist\FlutterWayNative\` — portable application folder.
-- `dist\installer\FlutterWay-Setup-v1.3.1-windows-x64.exe` — per-user installer.
+- `dist\installer\FlutterWay-Setup-v1.3.2-windows-x64.exe` — per-user installer.
 
 The build version is defined in `gui/version.py`; keep the command-line version in sync when preparing a release.
 

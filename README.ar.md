@@ -152,6 +152,16 @@ flowchart TD
 > SmartScreen. نقيّم حالياً مسار توقيع مجاني للمشروع مفتوح المصدر، وقد تبقى تحذيرات
 > السمعة في الإصدارات الأولى بعد التوقيع.
 
+### حزمة مشروع Flutter المحلية للعمل أوفلاين
+
+لإنشاء مشاريع Flutter باستخدام Flutter SDK وJDK المضمّنين، استخدم [حزمة FlutterWay Offline Agent Kit من MEGA](https://mega.nz/file/gy1TiJbK#kvhHFPNPDMgD06bZf5ozKk0TJOyIEI5xoPS44fZL4Ck). تحقّق من SHA-256 قبل فك الضغط، ثم اتبع [دليل التنزيل والتجهيز والعمل المحلي دون إنترنت](docs/OFFLINE_AGENT_KIT.ar.md).
+
+> الحزمة لا توزّع Android SDK من Google. يلزم اتصال لمرة واحدة على كل حاسبة لتنزيله وقبول رخصته، ثم تهيئة اعتماديات المشروع للبناء دون إنترنت. لا ترفع ملف ZIP الضخم إلى Git؛ شاركه عبر رابط MEGA.
+
+سجل المخاطر وقياسات الأداء المحلية والاتصال بالإنترنت موثّق في [سجل الاعتمادية والأداء](docs/RELIABILITY_RISK_LOG.md). أثناء التجهيز تقدر تختار **«إيقاف التجهيز عند نقطة آمنة»**؛ يحفظ التطبيق المرحلة ويحتفظ بملف التنزيل الجزئي، وبعدها أعد المحاولة للمتابعة. التنزيلات الكبيرة تستأنف من آخر بايت مكتمل بعد التحقق من دعم الخادم لـHTTP Range، وتُفحص البصمة قبل التثبيت.
+
+تقدر تثبّت Android CLI الرسمي اختياريًا قبل التجهيز عبر `winget install --id Google.AndroidCLI`؛ FlutterWay يستخدمه إذا كان متاحًا، وإلا يرجع إلى أدوات Google command-line المثبتة بالطريقة الحالية.
+
 ## 🚀 تشغيل وبناء التطبيق (Developer Notes)
 
 التطبيق يُبنى كمجلد PyInstaller ثم يجمعه Inno Setup في مثبّت EXE واحد.
@@ -164,11 +174,11 @@ python -m gui.onboarding_app
 pyinstaller --clean --noconfirm FlutterWayNative.spec
 
 # 3. بعد تثبيت Inno Setup 6.7.3، بناء مثبّت واحد
-ISCC.exe /DAppVersion=1.3.1 installer\FlutterWay.iss
+ISCC.exe /DAppVersion=1.3.2 installer\FlutterWay.iss
 ```
 
 ملفات البناء: `dist\FlutterWayNative\` (مجلد محمول) و
-`dist\installer\FlutterWay-Setup-v1.3.1-windows-x64.exe` (مثبّت واحد).
+`dist\installer\FlutterWay-Setup-v1.3.2-windows-x64.exe` (مثبّت واحد).
 
 </div>
 
