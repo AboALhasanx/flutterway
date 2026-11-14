@@ -6,6 +6,6 @@ in the PyInstaller spec).  Inside a frozen exe there is no git repository, so
 relying on ``git rev-parse`` alone would report ``unknown``.
 """
 
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 BUILD_COMMIT = "unknown"
 BUILD_DATE = "unknown"

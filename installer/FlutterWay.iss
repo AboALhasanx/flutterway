@@ -1,9 +1,9 @@
 ; One-file per-user installer for the existing PyInstaller onedir bundle.
 ; Build with:
-;   ISCC.exe /DAppVersion=1.3.1 installer\FlutterWay.iss
+;   ISCC.exe /DAppVersion=1.3.2 installer\FlutterWay.iss
 
 #ifndef AppVersion
-  #define AppVersion "1.3.1"
+  #define AppVersion "1.3.2"
 #endif
 
 #define AppName "FlutterWay"
