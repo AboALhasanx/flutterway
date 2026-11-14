@@ -305,6 +305,11 @@ def install_outcome(returncode, output) -> tuple[bool, str | None]:
     return False, ("install_failed" if returncode else "install_unconfirmed")
 
 
+def build_artifact_usable(returncode, apk_path) -> bool:
+    """Only use an APK when this build succeeded and a build artifact exists."""
+    return returncode == 0 and bool(apk_path) and os.path.isfile(apk_path)
+
+
 class OnboardingApi:
     def __init__(self, window_holder):
         self.window_holder = window_holder
@@ -588,34 +593,31 @@ class OnboardingApi:
             self.state["project_path"] = project_path
         win = self.window_holder.get("window")
 
-        # Short, student-facing progress messages (no Gradle/DEX jargon).
+        # Time may reassure the student, but it must not claim a build stage is done.
         messages = [
-            (0, "🚀 بدأنا بناء التطبيق... أول مرة قد تأخذ دقيقة.", 1),
-            (15, "📦 نجهّز المكتبات التي يحتاجها مشروعك.", 2),
-            (45, "🔨 نبني التطبيق الآن... لا تغلق النافذة.", 2),
-            (85, "⏳ العملية تأخذ وقتاً أطول على بعض الأجهزة. نكمل.", 3),
-            (125, "📱 نجهّز ملف التطبيق للتثبيت.", 3),
-            (155, "⚡ اللمسات الأخيرة... بعدها يفتح التطبيق على هاتفك.", 3),
+            (0, "🚀 بدأ بناء التطبيق... أول مرة قد تأخذ عدة دقائق."),
+            (30, "📦 نجهّز تطبيقك الآن. اترك النافذة مفتوحة."),
+            (120, "⏳ ما زال البناء جارياً؛ أول مرة قد تستغرق وقتاً أطول."),
+            (300, "⏳ البناء مستمر، وسنخبرك عند اكتماله."),
         ]
+        stop_ticker = False
 
         def build_worker():
+            nonlocal stop_ticker
             t_start = time.time()
-            stop_ticker = False
 
             # Ticker thread to update UI in real-time
             def ticker():
                 while not stop_ticker:
                     elapsed = int(time.time() - t_start)
                     cur_msg = messages[0][1]
-                    cur_phase = messages[0][2]
-                    for sec, msg, phase in messages:
+                    for sec, msg in messages:
                         if elapsed >= sec:
                             cur_msg = msg
-                            cur_phase = phase
 
                     if win:
                         try:
-                            win.evaluate_js(_js_call("updateBuildTicker", elapsed, cur_msg, cur_phase))
+                            win.evaluate_js(_js_call("updateBuildTicker", elapsed, cur_msg))
                         except Exception:
                             pass
                     time.sleep(1.0)
@@ -642,7 +644,42 @@ class OnboardingApi:
 
             # 2. Resolve project path
             project_path = self.state.get("project_path") or paths.default_project_path()
-            self._ensure_starter_project(project_path)
+            try:
+                project_ready = self._ensure_starter_project(project_path)
+            except Exception as exc:
+                self.state["starter_project_error"] = str(exc)
+                project_ready = False
+            if not project_ready:
+                stop_ticker = True
+                reason = self.state.get("starter_project_error") or "تعذر تجهيز مشروع البناء."
+                send_log(f"[ERROR] {reason}")
+                failure = {
+                    "success": False,
+                    "installed_ok": False,
+                    "stages": {
+                        "setup": "failed",
+                        "build": "skipped",
+                        "install": "skipped",
+                        "launch": "skipped",
+                    },
+                    "message": f"تعذر تجهيز مشروع البناء: {reason}",
+                }
+                if win:
+                    try:
+                        win.evaluate_js(f"finishRealBuild({json.dumps(failure)});")
+                    except Exception:
+                        pass
+                return
+            if win:
+                try:
+                    win.evaluate_js(_js_call(
+                        "updateBuildStage", 1, "done", "تم تجهيز المشروع. نبدأ بناء التطبيق..."
+                    ))
+                    win.evaluate_js(_js_call(
+                        "updateBuildStage", 2, "active", "بدأ بناء التطبيق. أول مرة قد تأخذ عدة دقائق."
+                    ))
+                except Exception:
+                    pass
             app_id = companion_service.get_application_id(project_path)
 
             send_log(f"$ cd {project_path}")
@@ -734,20 +771,22 @@ class OnboardingApi:
                 send_log(f"خطأ أثناء استدعاء محرك فلاتر: {e}")
                 build_success = False
 
-            apk_candidates = [
-                os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-release.apk"),
-                os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-arm64-v8a-release.apk"),
-                os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-profile.apk"),
-                os.path.join(project_path, "build", "app", "outputs", "flutter-apk", "app-debug.apk"),
-                os.path.join(project_path, "build", "app", "outputs", "apk", "debug", "app-debug.apk")
-            ]
             flutter_apk_dir = os.path.join(project_path, "build", "app", "outputs", "flutter-apk")
+            apk_candidates = [
+                os.path.join(flutter_apk_dir, f"app-{build_mode}.apk"),
+                os.path.join(flutter_apk_dir, f"app-arm64-v8a-{build_mode}.apk"),
+                os.path.join(
+                    project_path, "build", "app", "outputs", "apk", build_mode, f"app-{build_mode}.apk"
+                ),
+            ]
             if os.path.exists(flutter_apk_dir):
                 for f in sorted(os.listdir(flutter_apk_dir)):
-                    if f.endswith(".apk"):
+                    lower_name = f.lower()
+                    if lower_name.endswith(f"-{build_mode}.apk") and lower_name not in {
+                        os.path.basename(candidate).lower() for candidate in apk_candidates
+                    }:
                         candidate = os.path.join(flutter_apk_dir, f)
-                        if candidate not in apk_candidates:
-                            apk_candidates.append(candidate)
+                        apk_candidates.append(candidate)
 
             apk_path = None
             for cand in apk_candidates:
@@ -755,13 +794,25 @@ class OnboardingApi:
                     apk_path = cand
                     break
 
-            apk_exists = (apk_path is not None)
+            apk_exists = build_artifact_usable(build_returncode, apk_path)
             apk_size_mb = 0
             if apk_exists:
+                if win:
+                    try:
+                        win.evaluate_js(_js_call(
+                            "updateBuildStage", 2, "done", "اكتمل البناء. نجهّز ملف التثبيت..."
+                        ))
+                        win.evaluate_js(_js_call(
+                            "updateBuildStage", 3, "active", "اكتمل البناء؛ نثبّت التطبيق على الهاتف الآن."
+                        ))
+                    except Exception:
+                        pass
                 optimized_apk = android_apk.optimize_apk(apk_path, send_log)
                 if optimized_apk:
                     apk_path = optimized_apk
                 apk_exists = os.path.exists(apk_path)
+            elif not build_success:
+                send_log("لم ينجح البناء؛ لن نستخدم ملف APK قديماً.")
             if apk_exists:
                 apk_size_mb = round(os.path.getsize(apk_path) / (1024 * 1024), 1)
                 send_log(f"√ اكتمل البناء بنجاح! تم إنشاء {os.path.basename(apk_path)} ({apk_size_mb} MB)")
@@ -895,9 +946,11 @@ class OnboardingApi:
             )
 
         def run_build_worker():
+            nonlocal stop_ticker
             try:
                 build_worker()
             except Exception as e:
+                stop_ticker = True
                 diagnostics.log(f"Build worker crashed: {e}\n{traceback.format_exc()}", "error")
                 if win:
                     try:
@@ -928,6 +981,7 @@ class OnboardingApi:
         self.state["selected_mode"] = mode
         self.state["current_step"] = 2
         self.state["setup_error"] = None
+        self.state["env_warnings"] = []
         self.state["is_complete"] = False
         previous_checkpoint = self._read_setup_checkpoint()
         resumable_checkpoint = previous_checkpoint if previous_checkpoint and previous_checkpoint.get("status") != "complete" else None
@@ -998,7 +1052,7 @@ class OnboardingApi:
                     return
                 self._write_setup_checkpoint("jdk", 40, "running")
                 if jdk_warnings:
-                    self.state["env_warnings"] = list(jdk_warnings)
+                    self.state["env_warnings"].extend(jdk_warnings)
                     self._update_ui(win, 42, "تم تجهيز Java، لكن تعذر حفظ بعض متغيرات البيئة. سنكمل بالمسار المباشر.", 2)
                 else:
                     self._update_ui(win, 40, "تم تثبيت Java وأدوات أندرويد بنجاح", 2)
@@ -1055,6 +1109,7 @@ class OnboardingApi:
                 # Register the Flutter bin directory in the user PATH via the Registry
                 self._update_ui(win, 70, "نربط Flutter بالنظام...", 3)
                 if not add_to_user_path(flutter_bin):
+                    self.state["env_warnings"].append("لم يُضف مسار Flutter إلى PATH؛ سيعمل التطبيق بالمسار المباشر.")
                     self._update_ui(win, 72, "تم تنزيل Flutter، لكن تعذر ربطه بالنظام. سنكمل بالمسار المباشر.", 3)
                 else:
                     self._update_ui(win, 75, "تم تنزيل Flutter وربطه بالنظام", 3)
@@ -1080,6 +1135,7 @@ class OnboardingApi:
                 if check_after_stage(86):
                     return
                 if sdk_result.get("warnings"):
+                    self.state["env_warnings"].extend(str(warning) for warning in sdk_result["warnings"])
                     self._update_ui(win, 86, sdk_result.get("message") or "تم تجهيز الأدوات، لكن تعذر حفظ متغيرات البيئة.", 3)
                 else:
                     self._update_ui(win, 86, "تم تجهيز أدوات أندرويد بنجاح", 3)
@@ -1088,7 +1144,7 @@ class OnboardingApi:
                 startupinfo.wShowWindow = 0
                 creationflags = subprocess.CREATE_NO_WINDOW
                 try:
-                    subprocess.run(
+                    config_result = subprocess.run(
                         [flutter_bat, "config", "--android-sdk", sdk_result["sdk_root"]],
                         capture_output=True,
                         text=True,
@@ -1096,8 +1152,15 @@ class OnboardingApi:
                         creationflags=creationflags,
                         timeout=30,
                     )
+                    if config_result.returncode != 0:
+                        detail = (config_result.stderr or config_result.stdout or "").strip()
+                        self.state["env_warnings"].append(
+                            "تعذر تسجيل مسار Android SDK داخل Flutter"
+                            + (f": {detail[-300:]}" if detail else ".")
+                        )
                 except Exception as e:
                     print("Flutter android-sdk config error:", e)
+                    self.state["env_warnings"].append(f"تعذر تسجيل مسار Android SDK داخل Flutter: {e}")
                 time.sleep(0.3)
 
                 # Stage 4: VS Code Configuration & Extensions (75% - 90%) -> Checklist Item 4
@@ -1144,6 +1207,9 @@ class OnboardingApi:
                 self.state["current_step"] = 3
                 if win:
                     win.evaluate_js("showStep(3);")
+                    warnings = self.state.get("env_warnings", [])
+                    if warnings:
+                        win.evaluate_js(_js_call("showSetupWarnings", warnings))
             except Exception as e:
                 fail(f"خطأ غير متوقع أثناء التجهيز: {e}", 0)
 

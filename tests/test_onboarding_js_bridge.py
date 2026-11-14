@@ -22,11 +22,11 @@ class FakeWindow:
 class OnboardingJsBridgeTests(unittest.TestCase):
     def test_js_call_json_encodes_windows_paths_quotes_and_line_separators(self):
         message = "C:\\flutter\\bin\\java.exe: 'setup failed'\n\u2028\u2029"
-        source = onboarding_app._js_call("updateBuildTicker", 12, message, 3)
+        source = onboarding_app._js_call("updateBuildTicker", 12, message)
 
         self.assertTrue(source.startswith("updateBuildTicker(12, "))
-        self.assertTrue(source.endswith(", 3);"))
-        encoded_message = source[len("updateBuildTicker(12, "):-len(", 3);")]
+        self.assertTrue(source.endswith(");"))
+        encoded_message = source[len("updateBuildTicker(12, "):-len(");")]
         self.assertEqual(json.loads(encoded_message), message)
         self.assertNotIn("\u2028", source)
         self.assertNotIn("\u2029", source)

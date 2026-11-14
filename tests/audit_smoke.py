@@ -46,8 +46,8 @@ def static_checks() -> None:
     assert "const buildOk = stages.build ? stages.build === 'success'" in html_src, (
         "finishRealBuild must read the build stage"
     )
-    assert "if (!buildOk || !installOk)" in html_src, (
-        "finishRealBuild must separate build failure from install failure"
+    assert "if (!setupOk || !buildOk || !installOk)" in html_src, (
+        "finishRealBuild must separate setup, build, and install failure"
     )
     assert "external_change" in html_src, "the UI must surface Hot Reload conflicts"
     diag_src = (ROOT / "gui" / "diagnostics.py").read_text(encoding="utf-8")
@@ -461,11 +461,12 @@ def ui_checks() -> None:
 
         # 5) Only a successful build + install shows the celebration card.
         page.evaluate(
-            "finishRealBuild({success: true, installed_ok: true, device_name: 'Test Phone', build_time: '5s', apk_size: '12.3 MB'})"
+            "finishRealBuild({success: true, installed_ok: true, launched_ok: true, device_name: 'Test Phone', build_time: '5s', apk_size: '12.3 MB'})"
         )
         page.wait_for_timeout(850)
         assert page.locator("#benchmark-card").is_visible()
-        assert "Test Phone" in page.locator("#benchmark-head-text").inner_text()
+        assert "تم تثبيت التطبيق وتشغيله" in page.locator("#benchmark-head-text").inner_text()
+        assert "Test Phone" not in page.locator("#benchmark-head-text").inner_text()
         assert page.locator("#stat-size").inner_text().strip() == "12.3 MB"
         assert not page.locator("#btn-run-test").is_visible(), "success must not expose a rebuild CTA"
         page.evaluate(

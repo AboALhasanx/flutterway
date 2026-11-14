@@ -30,11 +30,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install pywebview pythonnet psutil pillow playwright
+      - name: Install Chromium for onboarding UI tests
+        run: python -m playwright install chromium
       - name: Run safe unit tests
         env:
           PYTHONDONTWRITEBYTECODE: "1"
         run: |
           python -m unittest discover -s tests -p "test_*.py" -v
+      - name: Run onboarding UI reliability tests
+        run: python tests/reliability_faults.py
       - name: Resolve the live Flutter release manifest
         run: |
           python -c "from gui import toolchain; r=toolchain.resolve_flutter_release('stable'); print('release=', r); assert r and len(r.sha256)==64"

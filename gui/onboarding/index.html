@@ -1039,6 +1039,22 @@
       color: #fff;
     }
 
+    .chk-item.active {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .chk-item.active .chk-icon {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .bidi-ltr {
+      direction: ltr;
+      unicode-bidi: isolate;
+      display: inline-block;
+    }
+
     /* STEP 3: Phone Boss View & Commentary */
     .device-card {
       width: 100%;
@@ -1223,6 +1239,11 @@
       font-weight: 700;
     }
 
+    .build-step-row.active .bstep-icon {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
     .build-step-row.done {
       color: var(--success);
       font-weight: 700;
@@ -1253,6 +1274,16 @@
       background: var(--danger);
       border-color: var(--danger);
       color: #fff;
+    }
+
+    .build-step-row.warning {
+      color: var(--warning);
+      font-weight: 700;
+    }
+
+    .build-step-row.warning .bstep-icon {
+      border-color: var(--warning);
+      color: var(--warning);
     }
 
     /* HOT RELOAD STUDIO */
@@ -3035,11 +3066,11 @@
 
           <div class="diag-specs-grid">
             <div class="spec-item">
-              <div class="spec-val" id="spec-ram">11.7 GB</div>
+              <div class="spec-val bidi-ltr" id="spec-ram">11.7 GB</div>
               <div class="spec-lbl">الرام الإجمالية في جهازك</div>
             </div>
             <div class="spec-item">
-              <div class="spec-val" id="spec-disk">65.1 GB</div>
+              <div class="spec-val bidi-ltr" id="spec-disk">65.1 GB</div>
               <div class="spec-lbl">مساحة القرص C المتاحة</div>
             </div>
             <div class="spec-item">
@@ -3137,19 +3168,19 @@
 
           <div class="checklist">
             <div id="chk-step-1" class="chk-item">
-              <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+              <div class="chk-icon"></div>
               <span>فحص اللابتوب وتجهيز بيئة النظام</span>
             </div>
             <div id="chk-step-2" class="chk-item">
-              <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+              <div class="chk-icon"></div>
               <span>تثبيت Java وأدوات بناء أندرويد</span>
             </div>
             <div id="chk-step-3" class="chk-item">
-              <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+              <div class="chk-icon"></div>
               <span>تنزيل Flutter وإضافته إلى PATH</span>
             </div>
             <div id="chk-step-4" class="chk-item">
-              <div class="chk-icon"><span class="icon" style="width: 10px; height: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+              <div class="chk-icon"></div>
               <span>تجهيز VS Code وأول مشروع</span>
             </div>
           </div>
@@ -3180,6 +3211,10 @@
         <div class="hero-title" id="step3-title">وصّل هاتفك بالكيبل</div>
         <div class="hero-desc" id="step3-desc">
           عندما يظهر تطبيقك على شاشة الهاتف، تكون جاهزاً للبرمجة.
+        </div>
+        <div id="setup-env-warning" role="status" aria-live="polite" style="display:none; width:100%; max-width:680px; margin:0 auto 12px; padding:10px 12px; border:1px solid var(--warning); border-radius:10px; color:var(--warning); text-align:right; font-size:12px;">
+          <strong>ملاحظة إعداد:</strong>
+          <ul id="setup-env-warning-list" style="margin:6px 0 0; padding-inline-start:20px; line-height:1.7;"></ul>
         </div>
 
         <div class="device-card">
@@ -3253,15 +3288,15 @@
 
             <div class="build-steps-list">
               <div id="bstep-1" class="build-step-row active">
-                <div class="bstep-icon"><span class="icon" style="width: 8px; height: 8px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+                <div class="bstep-icon"></div>
                 <span>تجهيز المشروع ومكتبات أندرويد</span>
               </div>
               <div id="bstep-2" class="build-step-row">
-                <div class="bstep-icon"><span class="icon" style="width: 8px; height: 8px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+                <div class="bstep-icon"></div>
                 <span>بناء التطبيق</span>
               </div>
               <div id="bstep-3" class="build-step-row">
-                <div class="bstep-icon"><span class="icon" style="width: 8px; height: 8px;"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+                <div class="bstep-icon"></div>
                 <span>تثبيت التطبيق وتشغيله على هاتفك</span>
               </div>
             </div>
@@ -3291,7 +3326,7 @@
               التطبيق يعمل الآن بنجاح على شاشة هاتفك الحقيقي!
             </div>
             <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
-              انظر لهاتفك الآن! إذا ظهر شعار فلاتر فانتظر لحظات حتى يكتمل فتح التطبيق، ثم جرّب العداد بيدك.
+              انظر إلى هاتفك: إذا ظهرت شاشة التطبيق ورسالة <span class="bidi-ltr">Your project is ready</span> فالبناء والتشغيل نجحا. افتح مشروعك لبدء التعديل.
             </div>
             <div class="diag-specs-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 12px;">
               <div class="spec-item">
@@ -3299,7 +3334,7 @@
                 <div class="spec-lbl">زمن البناء والتثبيت</div>
               </div>
               <div class="spec-item">
-                <div class="spec-val" style="color: var(--success);" id="stat-size">—</div>
+                <div class="spec-val bidi-ltr" style="color: var(--success);" id="stat-size">—</div>
                 <div class="spec-lbl">حجم ملف APK</div>
               </div>
             </div>
@@ -3655,6 +3690,7 @@
     let buildProgressCeiling = 0;
     let buildProgressLastAt = 0;
     let buildProgressTimer = null;
+    let buildStageMessage = '';
     let setupUiRunning = false;
     window.appInit = null;
 
@@ -3768,7 +3804,8 @@
 
     function homePrimaryAction() {
       if (window.appInit && window.appInit.has_setup) {
-        openHotReload(true);
+        if (getActiveProjectPath()) openHotReload(true);
+        else switchCompanionTab('projects');
       } else {
         switchMainView('wizard');
         showStep(1);
@@ -3809,7 +3846,9 @@
         if (desc) desc.innerText = project
           ? `مشروعك ${project.name} جاهز. جرّب تعديلاً سريعاً أو افتح مشروعك.`
           : 'بيئتك جاهزة. أنشئ مشروعاً جديداً أو افتح مشروعك الحالي.';
-        if (primary) primary.innerText = 'جرّب Hot Reload';
+        if (primary) primary.innerText = getActiveProjectPath()
+          ? 'جرّب Hot Reload'
+          : 'أنشئ مشروعاً أو افتح مشروعاً';
         if (secondary) secondary.innerText = 'افتح مشروعي';
         if (steps) steps.style.display = 'none';
         if (quick) quick.style.display = 'grid';
@@ -5260,17 +5299,32 @@
       for (let i = 1; i <= 4; i++) {
         const item = document.getElementById(`chk-step-${i}`);
         if (item) {
+          const icon = item.querySelector('.chk-icon');
           if (i < chkStep) {
             item.className = 'chk-item done';
+            if (icon) icon.innerHTML = '<span class="icon" style="width:10px;height:10px;">' + BUILD_CHECK_ICON + '</span>';
           } else if (i === chkStep) {
-            item.className = 'chk-item';
-            item.style.color = 'var(--accent)';
+            item.className = 'chk-item active';
+            if (icon) icon.innerHTML = '<span class="icon" style="width:10px;height:10px;">' + BUILD_ACTIVE_ICON + '</span>';
           } else {
             item.className = 'chk-item';
-            item.style.color = 'var(--text-muted)';
+            if (icon) icon.innerHTML = '';
           }
         }
       }
+    }
+
+    function showSetupWarnings(warnings) {
+      const box = document.getElementById('setup-env-warning');
+      const list = document.getElementById('setup-env-warning-list');
+      if (!box || !list) return;
+      list.replaceChildren();
+      (Array.isArray(warnings) ? warnings : []).forEach(warning => {
+        const item = document.createElement('li');
+        item.textContent = String(warning);
+        list.appendChild(item);
+      });
+      box.style.display = list.childElementCount ? 'block' : 'none';
     }
 
     function startDevicePolling() {
@@ -5409,6 +5463,8 @@
 
     const BUILD_CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
     const BUILD_X_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    const BUILD_WARNING_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3 2.8 20h18.4L12 3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
+    const BUILD_ACTIVE_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="4"/></svg>';
 
     function setActionLabel(btn, text) {
       if (!btn) return;
@@ -5426,7 +5482,24 @@
       el.className = state ? `build-step-row ${state}` : 'build-step-row';
       const icon = el.querySelector('.bstep-icon');
       if (icon) {
-        icon.innerHTML = `<span class="icon" style="width: 8px; height: 8px;">${state === 'error' ? BUILD_X_ICON : BUILD_CHECK_ICON}</span>`;
+        const icons = {
+          active: BUILD_ACTIVE_ICON,
+          done: BUILD_CHECK_ICON,
+          error: BUILD_X_ICON,
+          warning: BUILD_WARNING_ICON
+        };
+        icon.innerHTML = icons[state]
+          ? `<span class="icon" style="width: 10px; height: 10px;">${icons[state]}</span>`
+          : '';
+      }
+    }
+
+    function updateBuildStage(stepNum, state, commentary) {
+      setBuildStep(stepNum, state);
+      if (commentary) {
+        buildStageMessage = commentary;
+        const commEl = document.getElementById('build-commentary-text');
+        if (commEl) commEl.innerText = commentary;
       }
     }
 
@@ -5544,13 +5617,13 @@
       if (buildProgressTimer) { clearInterval(buildProgressTimer); buildProgressTimer = null; }
     }
 
-    function failBuildProgress() {
+    function failBuildProgress(message) {
       const meta = document.querySelector('.build-progress-meta');
       if (meta) meta.classList.add('error');
       const fill = document.getElementById('build-progress-fill');
       if (fill) fill.classList.add('error');
       const labelEl = document.getElementById('build-progress-label');
-      if (labelEl) labelEl.innerText = 'فشل البناء — راجع التفاصيل';
+      if (labelEl) labelEl.innerText = message || 'فشل البناء — راجع التفاصيل';
     }
 
     function inferBuildProgress(line) {
@@ -5583,6 +5656,7 @@
       if (task) task.innerText = 'Compiling...';
       const commentary = document.getElementById('build-commentary-text');
       if (commentary) commentary.innerText = '🚀 نجهّز مشروعك للبناء... أول بناء قد يأخذ عدة دقائق.';
+      buildStageMessage = '';
       const terminal = document.getElementById('build-terminal-lines');
       if (terminal) terminal.innerHTML = '<div style="color: #64748b;">$ flutter build apk --debug -v</div>';
       const details = document.getElementById('build-log-details');
@@ -5593,13 +5667,16 @@
       buildState = 'failed';
       setBuildStep(1, 'error');
       appendLiveBuildLog(`[ERROR] ${message}`);
-      failBuildProgress();
       const reportBtn = document.getElementById('btn-build-report');
       if (reportBtn) reportBtn.style.display = 'inline-flex';
       const task = document.getElementById('build-task-active');
-      if (task) task.innerText = 'Build Failed';
+      if (task) task.innerText = 'Build Not Started';
+      buildStageMessage = message;
+      const commentary = document.getElementById('build-commentary-text');
+      if (commentary) commentary.innerText = message;
       const details = document.getElementById('build-log-details');
       if (details) details.open = true;
+      failBuildProgress('تعذر بدء البناء — راجع التفاصيل');
       setBuildCta('failed');
     }
 
@@ -5625,7 +5702,7 @@
       }
     }
 
-    function updateBuildTicker(elapsedSeconds, commentary, phase) {
+    function updateBuildTicker(elapsedSeconds, commentary) {
       const timerEl = document.getElementById('build-elapsed-timer');
       const commEl = document.getElementById('build-commentary-text');
 
@@ -5633,31 +5710,7 @@
       const secs = elapsedSeconds % 60;
       const fmt = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
       if (timerEl) timerEl.innerText = fmt;
-      if (commEl) commEl.innerText = commentary;
-
-      const s1 = document.getElementById('bstep-1');
-      const s2 = document.getElementById('bstep-2');
-      const s3 = document.getElementById('bstep-3');
-
-      if (phase === 1) {
-        if (s1) s1.className = 'build-step-row active';
-      } else if (phase === 2) {
-        if (s1) {
-          s1.className = 'build-step-row done';
-          s1.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
-        }
-        if (s2) s2.className = 'build-step-row active';
-      } else if (phase === 3) {
-        if (s1) {
-          s1.className = 'build-step-row done';
-          s1.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
-        }
-        if (s2) {
-          s2.className = 'build-step-row done';
-          s2.querySelector('.bstep-icon').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
-        }
-        if (s3) s3.className = 'build-step-row active';
-      }
+      if (commEl && !buildStageMessage) commEl.innerText = commentary;
     }
 
     function appendLiveBuildLog(line) {
@@ -5669,7 +5722,9 @@
       div.innerText = line;
       div.dir = 'auto';
       div.style.whiteSpace = 'pre-wrap';
-      if (line.includes('> Task')) {
+      if (/^\[(?:ERROR|ADB Error)\]/i.test(line)) {
+        div.style.color = '#f87171';
+      } else if (line.includes('> Task')) {
         div.style.color = '#a78bfa';
         if (taskActive) taskActive.innerText = line.replace('> Task ', '');
       } else if (line.includes('[APK]')) {
@@ -5678,12 +5733,8 @@
       } else if (line.includes('[ADB]') || line.includes('تثبيت') || line.includes('تشغيل شاشة')) {
         div.style.color = '#fbbf24';
         if (taskActive) taskActive.innerText = 'Installing on device...';
-      } else if (line.includes('Built build') || line.includes('Success') || line.includes('SUCCESSFUL')) {
+      } else if (line.includes('Built build') || line.includes('SUCCESSFUL')) {
         div.style.color = '#34d399';
-        if (taskActive) taskActive.innerText = 'Build Succeeded';
-      } else if (line.includes('Error') || line.includes('FAILED') || line.includes('Exception')) {
-        div.style.color = '#f87171';
-        if (taskActive) taskActive.innerText = 'Build Error';
       } else {
         div.style.color = '#38bdf8';
       }
@@ -5698,13 +5749,18 @@
       const taskActive = document.getElementById('build-task-active');
       const reportBtn = document.getElementById('btn-build-report');
       const stages = (res && res.stages) || {};
+      const setupOk = stages.setup !== 'failed';
       const buildOk = stages.build ? stages.build === 'success' : !!(res && res.success === true);
       const installOk = stages.install ? stages.install === 'success' : !!(res && res.installed_ok);
       const launchOk = stages.launch ? stages.launch === 'success' : !!(res && res.launched_ok);
 
-      if (!buildOk || !installOk) {
+      if (!setupOk || !buildOk || !installOk) {
         buildState = 'failed';
-        if (!buildOk) {
+        if (!setupOk) {
+          setBuildStep(1, 'error');
+          setBuildStep(2, '');
+          setBuildStep(3, '');
+        } else if (!buildOk) {
           setBuildStep(1, 'done');
           setBuildStep(2, 'error');
           setBuildStep(3, '');
@@ -5713,13 +5769,21 @@
           setBuildStep(2, 'done');
           setBuildStep(3, 'error');
         }
-        failBuildProgress();
+        const progressFailure = !setupOk
+          ? 'تعذر تجهيز المشروع — راجع التفاصيل'
+          : (buildOk ? 'تعذر تثبيت التطبيق — راجع التفاصيل' : 'فشل البناء — راجع التفاصيل');
+        failBuildProgress(progressFailure);
         if (reportBtn) reportBtn.style.display = 'inline-flex';
-        if (taskActive) taskActive.innerText = buildOk ? 'Install Failed' : 'Build Failed';
-        const fallback = buildOk
-          ? 'تم البناء، لكن تعذر تثبيت التطبيق على الهاتف. تحقق من الكيبل والمساحة.'
-          : 'فشل البناء. راجع سجل الأخطاء أعلاه.';
+        if (taskActive) taskActive.innerText = !setupOk ? 'Project Setup Failed' : (buildOk ? 'Install Failed' : 'Build Failed');
+        const fallback = !setupOk
+          ? 'تعذر تجهيز مشروع البناء. راجع التفاصيل ثم أعد المحاولة.'
+          : (buildOk
+            ? 'تم البناء، لكن تعذر تثبيت التطبيق على الهاتف. تحقق من الكيبل والمساحة.'
+            : 'فشل البناء. راجع سجل الأخطاء أعلاه.');
         const reason = (res && (res.message || res.error)) || fallback;
+        buildStageMessage = reason;
+        const commentary = document.getElementById('build-commentary-text');
+        if (commentary) commentary.innerText = reason;
         appendLiveBuildLog(`[ERROR] ${reason}`);
         const logDetails = document.getElementById('build-log-details');
         if (logDetails) logDetails.open = true;
@@ -5735,26 +5799,30 @@
       buildState = launchOk ? 'success' : 'partial';
       setBuildStep(1, 'done');
       setBuildStep(2, 'done');
-      setBuildStep(3, 'done');
+      setBuildStep(3, launchOk ? 'done' : 'warning');
       setBuildCta('hidden');
       if (reportBtn) reportBtn.style.display = launchOk ? 'none' : 'inline-flex';
-      setBuildProgressTarget(100, 'اكتمل البناء');
-      buildProgressShown = 100;
+      const finalProgress = launchOk ? 100 : 96;
+      setBuildProgressTarget(finalProgress, launchOk ? 'اكتمل البناء' : 'تم التثبيت؛ التشغيل غير مؤكد');
+      buildProgressShown = finalProgress;
       paintBuildProgress();
       const firstHint = document.getElementById('first-build-hint');
       if (firstHint) firstHint.style.display = 'none';
       if (taskActive) taskActive.innerText = launchOk ? 'Build Succeeded' : 'Installed — launch not verified';
+      buildStageMessage = launchOk
+        ? 'اكتمل البناء والتثبيت، وبدأ التطبيق على الهاتف.'
+        : 'تم التثبيت، لكن لم نتحقق من فتح التطبيق بعد.';
+      const commentary = document.getElementById('build-commentary-text');
+      if (commentary) commentary.innerText = buildStageMessage;
 
       setTimeout(() => {
         if (consoleBox) consoleBox.style.display = 'none';
         if (benchmarkCard) benchmarkCard.style.display = 'block';
         const head = document.getElementById('benchmark-head-text');
         if (head) {
-          if (!launchOk) {
-            head.innerText = `تم تثبيت التطبيق على ${res.device_name || 'هاتفك'}، لكننا لم نتحقق من فتحه. افتحه من شاشة الهاتف.`;
-          } else if (res.device_name) {
-            head.innerText = `التطبيق يعمل الآن بنجاح على شاشة ${res.device_name}!`;
-          }
+          head.innerText = launchOk
+            ? 'تم تثبيت التطبيق وتشغيله بنجاح على هاتفك.'
+            : 'تم تثبيت التطبيق، لكن لم نتحقق من فتحه بعد. افتحه من شاشة الهاتف.';
         }
         if (res.build_time) {
           document.getElementById('stat-speed').innerText = res.build_time;

@@ -16,7 +16,6 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = ROOT / "gui" / "onboarding" / "index.html"
-CHROMIUM = Path.home() / "AppData/Local/ms-playwright/chromium-1243/chrome-win64/chrome.exe"
 
 RESULTS: list[tuple[str, bool, str]] = []
 
@@ -96,6 +95,8 @@ def test_build_stage_truth(browser) -> None:
     }""")
     step3 = page.locator("#bstep-3").get_attribute("class") or ""
     check("build-stage: install failure marks install step", "error" in step3, step3)
+    check("build-stage: install failure is named accurately",
+          "تعذر تثبيت التطبيق" in page.locator("#build-progress-label").inner_text())
     check("build-stage: install failure shows retry", page.locator("#btn-run-test").is_visible())
 
     page.evaluate("""() => {
@@ -108,6 +109,10 @@ def test_build_stage_truth(browser) -> None:
     check("build-stage: launch unknown is partial", "تم تثبيت التطبيق" in head and "لم نتحقق" in head, head)
     report_display = page.locator("#btn-build-report").evaluate("el => el.style.display")
     check("build-stage: partial keeps report button", report_display == "inline-flex", report_display)
+    partial_step = page.locator("#bstep-3").get_attribute("class") or ""
+    check("build-stage: unverified launch is not marked complete", "warning" in partial_step, partial_step)
+    check("build-stage: unverified launch does not claim 100%",
+          page.locator("#build-progress-pct").inner_text() == "96%")
     page.close()
 
 
@@ -248,10 +253,112 @@ def test_build_progress_mapping(browser) -> None:
         return {before, after: document.getElementById('build-progress-pct').innerText};
     }""")
     check("build-progress: stalled estimate does not creep", stalled["after"] == stalled["before"], f"before={stalled['before']} after={stalled['after']}")
-    page.evaluate("finishRealBuild({success:true, installed_ok:true, device_name:'Phone', build_time:'1s', apk_size:'71 MB'})")
+    page.evaluate("finishRealBuild({success:true, installed_ok:true, launched_ok:true, device_name:'Phone', build_time:'1s', apk_size:'71 MB'})")
     page.wait_for_timeout(650)
     final = page.evaluate("parseInt(document.getElementById('build-progress-pct').innerText)")
     check("build-progress: completes at 100", final == 100, f"final={final}")
+    page.close()
+
+
+def test_build_ticker_does_not_advance_stages(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("""() => {
+        switchMainView('wizard'); showStep(3); resetBuildUi();
+        const before = [1, 2, 3].map(i => document.getElementById(`bstep-${i}`).className);
+        updateBuildTicker(155, 'ما زال البناء جارياً.');
+        window.__stageBefore = before;
+    }""")
+    after = page.evaluate("[1, 2, 3].map(i => document.getElementById(`bstep-${i}`).className)")
+    before = page.evaluate("window.__stageBefore")
+    check("build-ticker: elapsed time does not change stages", after == before, f"before={before} after={after}")
+    check("build-ticker: future stages have no check mark",
+          page.locator("#bstep-3 .bstep-icon").inner_html().strip() == "")
+    page.evaluate("updateBuildStage(1, 'done', 'تم تجهيز المشروع.'); updateBuildStage(2, 'active', 'بدأ البناء.');")
+    check("build-stage: events alone update active stage",
+          "done" in (page.locator("#bstep-1").get_attribute("class") or "")
+          and "active" in (page.locator("#bstep-2").get_attribute("class") or "")
+          and "done" not in (page.locator("#bstep-3").get_attribute("class") or ""))
+    page.close()
+
+
+def test_build_log_does_not_decide_terminal_state(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("""() => {
+        switchMainView('wizard'); showStep(3); resetBuildUi();
+        appendLiveBuildLog('Checking ErrorProne configuration...');
+        appendLiveBuildLog('BUILD SUCCESSFUL');
+    }""")
+    task = page.locator("#build-task-active").inner_text()
+    check("build-log: incidental error text is not terminal failure", task != "Build Error", task)
+    check("build-log: success line does not replace final backend result", task == "Compiling...", task)
+    page.evaluate("finishRealBuild({success:true, installed_ok:true, launched_ok:true, device_name:'Phone'})")
+    check("build-result: terminal state comes from result", page.locator("#build-task-active").inner_text() == "Build Succeeded")
+    page.close()
+
+
+def test_setup_warnings_are_retained_for_completion(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("switchMainView('wizard'); showStep(3);")
+    page.evaluate("showSetupWarnings(['ANDROID_HOME لم يُحفظ', 'platform-tools لم تُضف إلى PATH'])")
+    box = page.locator("#setup-env-warning")
+    check("setup-warning: summary becomes visible", box.is_visible())
+    check("setup-warning: each cause is shown", "ANDROID_HOME لم يُحفظ" in box.inner_text()
+          and "platform-tools لم تُضف إلى PATH" in box.inner_text())
+    page.evaluate("showSetupWarnings([])")
+    check("setup-warning: clean result hides warning", not box.is_visible())
+    page.close()
+
+
+def test_setup_checklist_uses_distinct_state_icons(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("updateProgress(48, 'ننزّل Flutter...', 3)")
+    first = page.locator("#chk-step-1")
+    current = page.locator("#chk-step-3")
+    future = page.locator("#chk-step-4")
+    check("setup-checklist: completed step has check", "<svg" in first.locator(".chk-icon").inner_html())
+    check("setup-checklist: active step has a distinct marker", "active" in (current.get_attribute("class") or "")
+          and "<svg" in current.locator(".chk-icon").inner_html())
+    check("setup-checklist: future step has no check icon", future.locator(".chk-icon").inner_html().strip() == "")
+    page.close()
+
+
+def test_home_primary_requires_a_project_for_hot_reload(browser) -> None:
+    page = new_page(browser)
+    page.evaluate("""() => {
+        window.appInit = {has_setup:true, recent_projects:[], active_project:null};
+        window.__homeAction = '';
+        window.switchCompanionTab = tab => { window.__homeAction = tab; };
+        renderHome();
+        homePrimaryAction();
+    }""")
+    check("home-action: missing project routes to projects",
+          page.evaluate("window.__homeAction") == "projects")
+    check("home-action: missing project copy is actionable",
+          "أنشئ مشروعاً أو افتح مشروعاً" in page.locator("#home-primary").inner_text())
+    page.evaluate("""() => {
+        selectActiveProject('demo', 'C:/Projects/demo');
+        window.__hotReloadStarted = false;
+        window.openHotReload = autoStart => { window.__hotReloadStarted = !!autoStart; };
+        renderHome();
+        homePrimaryAction();
+    }""")
+    check("home-action: selected project offers Hot Reload",
+          "Hot Reload" in page.locator("#home-primary").inner_text())
+    check("home-action: selected project starts Hot Reload",
+          page.evaluate("window.__hotReloadStarted") is True)
+    page.close()
+
+
+def test_ltr_values_and_success_copy_are_truthful(browser) -> None:
+    page = new_page(browser)
+    direction = page.locator("#spec-ram").evaluate(
+        "el => [getComputedStyle(el).direction, getComputedStyle(el).unicodeBidi]"
+    )
+    check("rtl: memory value is isolated LTR", direction[0] == "ltr" and direction[1] == "isolate",
+          str(direction))
+    copy = page.locator("#benchmark-card").evaluate("el => el.textContent")
+    check("build-copy: no unsupported counter instruction", "العداد" not in copy)
+    check("build-copy: verifies the starter-template screen", "Your project is ready" in copy)
     page.close()
 
 
@@ -437,11 +544,19 @@ def test_projects_load_failure(browser) -> None:
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    if not CHROMIUM.exists():
-        print(f"Chromium not found: {CHROMIUM}")
-        return 2
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(executable_path=str(CHROMIUM))
+        browser_candidates = list(
+            (Path.home() / "AppData/Local/ms-playwright").glob("chromium-*/chrome-win64/chrome.exe")
+        )
+        browser_candidates += list(
+            (Path.home() / "AppData/Local/ms-playwright").glob("chromium-*/chrome-win/chrome.exe")
+        )
+        executable = max(browser_candidates, key=lambda path: path.stat().st_mtime) \
+            if browser_candidates else Path(playwright.chromium.executable_path)
+        if not executable.exists():
+            print(f"Chromium not found: {executable}")
+            return 2
+        browser = playwright.chromium.launch(executable_path=str(executable))
         tests = [
             test_driver_alert_truth,
             test_report_modal,
@@ -452,6 +567,12 @@ def main() -> int:
             test_progress_smooth_and_rotating,
             test_progress_reduced_motion,
             test_build_progress_mapping,
+            test_build_ticker_does_not_advance_stages,
+            test_build_log_does_not_decide_terminal_state,
+            test_setup_warnings_are_retained_for_completion,
+            test_setup_checklist_uses_distinct_state_icons,
+            test_home_primary_requires_a_project_for_hot_reload,
+            test_ltr_values_and_success_copy_are_truthful,
             test_build_success_loop,
             test_build_double_start,
             test_build_retry_resets,
